@@ -91,3 +91,102 @@
     border-color: var(--color-gray-200, currentColor);
   }
 }
+
+@theme {
+  /* Cơ bản */
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Gray scale (base chuyên nghiệp) */
+  --color-gray-50:  #f9fafb;
+  --color-gray-100: #f3f4f6; /* = bg-muted */
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937; /* Dark Charcoal */
+  --color-gray-900: #111827;
+
+  /* Accents */
+  --color-electric-blue:  #2563eb; /* Primary đề xuất */
+  --color-lightning-yellow: #facc15; /* Accent / CTA */
+
+  /* Semantic tokens (dễ đổi toàn app) */
+  --color-ink: var(--color-gray-800); /* text chính */
+  --color-bg:  var(--color-white);
+  --color-bg-muted: var(--color-gray-100);
+
+  /* Brand */
+  --color-brand: var(--color-electric-blue);
+  /* --color-brand: var(--color-lightning-yellow); */
+
+  --color-accent: var(--color-lightning-yellow);
+
+  /* Brand scale (Electric Blue) */
+  --color-brand-50:  #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Accent scale (Lightning Yellow) */
+  --color-accent-50:  #fefce8;
+  --color-accent-100: #fef9c3;
+  --color-accent-200: #fef08a;
+  --color-accent-300: #fde047;
+  --color-accent-400: #facc15;
+  --color-accent-500: #eab308;
+  --color-accent-600: #ca8a04;
+  --color-accent-700: #a16207;
+  --color-accent-800: #854d0e;
+  --color-accent-900: #713f12;
+
+  /* Purple (for gradients) */
+  --color-purple-600: #7c3aed;
+}
+
+/* Dark mode (nếu bạn dùng class .dark trên <html>) */
+@layer base {
+  .dark {
+    --color-ink: var(--color-gray-100);
+    --color-bg:  var(--color-gray-900);
+    --color-bg-muted: var(--color-gray-800);
+  }
+
+  body {
+    color: var(--color-ink);
+    background: var(--color-bg);
+  }
+}
+
+/* Components helpers (tuỳ chọn) */
+@layer components {
+  /* Nút chính: brand mạnh mẽ (speed + professionalism) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 font-medium shadow-sm transition bg-brand text-white hover:opacity-90 active:opacity-80 ring-1 ring-black/0 focus:outline-none focus:ring-2 focus:ring-brand/40;
+  }
+
+  /* Nút accent (Yellow cho CTA nổi bật) */
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 font-semibold shadow-sm transition bg-accent text-black hover:brightness-95 active:brightness-90 focus:outline-none focus:ring-2 focus:ring-accent/40;
+  }
+
+  /* Card sạch, breathable */
+  .card {
+    @apply rounded-2xl border border-black/5 bg-bg-muted p-4 shadow-sm;
+  }
+}
+
+/* Gradients gợi ý cho CTA (Blue -> Purple) */
+@layer utilities {
+  .gradient-cta {
+    @apply bg-gradient-to-r from-brand to-purple-600 text-white;
+  }
+}

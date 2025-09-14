@@ -116,11 +116,13 @@ export default function Testimonials() {
         {/* Section header */}
         <div className="mx-auto max-w-3xl pb-12 text-center">
           <h2 className="animate-[gradient_6s_linear_infinite] bg-[linear-gradient(to_right,var(--color-gray-200),var(--color-indigo-200),var(--color-gray-50),var(--color-indigo-300),var(--color-gray-200))] bg-[length:200%_auto] bg-clip-text pb-4 font-nacelle text-3xl font-semibold text-transparent md:text-4xl">
-            Don't take our word for it
+            What people say
           </h2>
-          <p className="text-lg text-indigo-200/65">
-            We provide tech-first solutions that empower decision-makers to
-            build healthier and happier workspaces from anywhere in the world.
+          <p className="text-lg text-gray-600">
+            “70% of workers say they waste hours weekly on repetitive tasks instead of strategic work.”
+          </p>
+          <p className="text-base text-gray-600/80">
+            Early adopters in tech, professional services, and client-facing industries.
           </p>
         </div>
 
@@ -254,7 +256,7 @@ export function Testimonial({
         <div>
           <Image src={testimonial.clientImg} height={36} alt="Client logo" />
         </div>
-        <p className="text-indigo-200/65 before:content-['“'] after:content-['”']">
+        <p className="text-gray-700 before:content-['“'] after:content-['”']">
           {children}
         </p>
         <div className="flex items-center gap-3">
@@ -265,11 +267,11 @@ export function Testimonial({
             height={36}
             alt={testimonial.name}
           />
-          <div className="text-sm font-medium text-gray-200">
+          <div className="text-sm font-medium text-ink">
             <span>{testimonial.name}</span>
             <span className="text-gray-700"> - </span>
             <a
-              className="text-indigo-200/65 transition-colors hover:text-indigo-500"
+              className="text-gray-600 transition-colors hover:text-brand-600"
               href="#0"
             >
               {testimonial.company}
