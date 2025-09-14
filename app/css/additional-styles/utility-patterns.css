@@ -1,7 +1,7 @@
 /* Buttons */
 .btn,
 .btn-sm {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all cursor-pointer;
 }
 
 .btn {
@@ -26,19 +26,19 @@ input[type='search']::-webkit-search-results-decoration {
 .form-select,
 .form-checkbox,
 .form-radio {
-    @apply border border-gray-700 bg-gray-900/50 focus:border-gray-600 focus:ring-0 focus:ring-offset-0;
+    @apply border border-gray-300 bg-white focus:border-gray-400 focus:ring-0 focus:ring-offset-0;
 }
 
 .form-input,
 .form-textarea,
 .form-multiselect,
 .form-select {
-    @apply rounded-lg px-4 py-2.5 text-sm text-gray-200;
+    @apply rounded-lg px-4 py-2.5 text-sm text-gray-900;
 }
 
 .form-input,
 .form-textarea {
-    @apply placeholder-gray-600;
+    @apply placeholder-gray-400;
 }
 
 .form-select {

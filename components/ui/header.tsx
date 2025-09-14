@@ -19,7 +19,7 @@ export default function Header() {
 
           {/* Desktop sign in links */}
           <ul className="flex flex-1 items-center justify-end gap-3">
-            <li>
+            {/* <li>
               <Link
                 href="/signin"
                 className="btn-sm relative bg-linear-to-b from-gray-100 to-gray-100/60 bg-[length:100%_100%] bg-[bottom] py-[5px] text-gray-700 hover:bg-[length:100%_150%]"
@@ -33,6 +33,14 @@ export default function Header() {
                 className="btn-sm bg-linear-to-t from-brand-600 to-brand-500 bg-[length:100%_100%] bg-[bottom] py-[5px] text-white shadow-[inset_0px_1px_0px_0px_--theme(--color-white/.16)] hover:bg-[length:100%_150%]"
               >
                 Register
+              </Link>
+            </li> */}
+            <li>
+              <Link
+                href="/contact"
+                className="btn-sm bg-linear-to-t from-brand-600 to-brand-500 bg-[length:100%_100%] bg-[bottom] py-[5px] text-white shadow-[inset_0px_1px_0px_0px_--theme(--color-white/.16)] hover:bg-[length:100%_150%]"
+              >
+                Contact
               </Link>
             </li>
           </ul>

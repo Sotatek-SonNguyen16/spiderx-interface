@@ -29,7 +29,7 @@ export default function Cta() {
               <div data-aos="fade-up" data-aos-delay={400}>
                 <a
                   className="btn-accent group mb-4 w-full sm:mb-0 sm:w-auto"
-                  href="/signup"
+                  href="/contact"
                 >
                   <span className="relative inline-flex items-center">
                     Join Early Access
