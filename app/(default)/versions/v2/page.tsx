@@ -35,12 +35,12 @@ export default function HomeV2() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <VersionBadge version="v2" />
-      <Navigation />
+      {/* <VersionBadge version="v2" /> */}
+      {/* <Navigation /> */}
       <HeroSection onEmailSubmit={handleEmailSubmit} />
       <ProblemStatement />
       <DemoSection />
-      <IntegrationSection onRequestIntegration={() => setShowFeatureRequest(true)} />
+      <IntegrationSection onRequestIntegrationAction={() => setShowFeatureRequest(true)} />
       <RoadmapSection onRequestFeature={() => setShowFeatureRequest(true)} />
       <CTASection onEmailSubmit={handleEmailSubmit} />
       <Footer />

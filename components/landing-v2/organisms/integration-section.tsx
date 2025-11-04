@@ -1,14 +1,14 @@
 "use client";
 
-import { Mail, MessageSquare, MessageCircle } from 'lucide-react';
+import Image from 'next/image';
 import { IntegrationCard } from '../molecules';
 import { Button } from '../atoms';
 
 interface IntegrationSectionProps {
-  onRequestIntegration: () => void;
+  onRequestIntegrationAction: () => void;
 }
 
-export default function IntegrationSection({ onRequestIntegration }: IntegrationSectionProps) {
+export default function IntegrationSection({ onRequestIntegrationAction }: IntegrationSectionProps) {
   return (
     <section className="py-20 px-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
@@ -25,12 +25,28 @@ export default function IntegrationSection({ onRequestIntegration }: Integration
             <div className="flex justify-center gap-6 flex-wrap">
               <IntegrationCard
                 name="Gmail"
-                icon={<Mail className="w-7 h-7 text-red-500" />}
+                icon={
+                  <Image
+                    src="/images/Gmail.png"
+                    alt="Gmail"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 object-contain"
+                  />
+                }
                 status="connected"
               />
               <IntegrationCard
                 name="Google Chat"
-                icon={<MessageSquare className="w-7 h-7 text-green-600" />}
+                icon={
+                  <Image
+                    src="/images/Google-Chat.png"
+                    alt="Google Chat"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-contain"
+                  />
+                }
                 status="connected"
                 iconBgColor="bg-green-50"
               />
@@ -44,31 +60,63 @@ export default function IntegrationSection({ onRequestIntegration }: Integration
             <div className="flex justify-center gap-6 flex-wrap">
               <IntegrationCard
                 name="Slack"
-                icon={<span className="text-2xl font-bold text-purple-600">#</span>}
+                icon={
+                  <Image
+                    src="/images/Slack.png"
+                    alt="Slack"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-contain"
+                  />
+                }
                 status="coming-soon"
               />
               <IntegrationCard
                 name="WhatsApp"
-                icon={<MessageCircle className="w-7 h-7 text-green-500" />}
+                icon={
+                  <Image
+                    src="/images/whatsapp.webp"
+                    alt="WhatsApp"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-contain rounded-full"
+                  />
+                }
                 status="coming-soon"
               />
               <IntegrationCard
                 name="Telegram"
-                icon={<span className="text-2xl font-bold text-blue-600">✈</span>}
+                icon={
+                  <Image
+                    src="/images/Telegram.png"
+                    alt="Telegram"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-contain"
+                  />
+                }
                 status="coming-soon"
               />
               <IntegrationCard
                 name="Discord"
-                icon={<span className="text-2xl font-bold text-indigo-600">🎮</span>}
+                icon={
+                  <Image
+                    src="/images/discord.jpg"
+                    alt="Discord"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-contain"
+                  />
+                }
                 status="coming-soon"
               />
             </div>
           </div>
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Want to request an integration?</p>
-          <Button variant="outline" onClick={onRequestIntegration}>
+        <div className="mt-12 text-center flex flex-col items-center justify-center gap-4">
+          <p className="text-gray-600">Want to request an integration?</p>
+          <Button variant="outline" onClick={onRequestIntegrationAction}>
             Request Integration
           </Button>
         </div>

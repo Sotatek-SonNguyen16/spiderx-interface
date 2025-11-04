@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function DemoSection() {
   return (
     <section className="py-20 px-6 bg-gray-50">
@@ -9,8 +11,15 @@ export default function DemoSection() {
           <p className="text-xl text-gray-600">SpiderX sidebar captures tasks automatically while you work</p>
         </div>
 
-        <div className="bg-gray-200 rounded-2xl aspect-video flex items-center justify-center">
-          <p className="text-gray-500">Gmail + SpiderX Demo Screenshot</p>
+        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-200">
+          <Image
+            src="/images/cover.png"
+            alt="Gmail + SpiderX demo screenshot"
+            fill
+            sizes="(min-width: 1280px) 1120px, 100vw"
+            className="object-contain p-2 md:p-4"
+            priority
+          />
         </div>
       </div>
     </section>

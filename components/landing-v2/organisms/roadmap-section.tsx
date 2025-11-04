@@ -43,9 +43,9 @@ export default function RoadmapSection({ onRequestFeature }: RoadmapSectionProps
           ))}
         </div>
 
-        <div className="mt-12 text-center p-8 bg-gray-50 rounded-2xl">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Have a feature idea?</h3>
-          <p className="text-gray-600 mb-4">We'd love to hear your suggestions for SpiderX</p>
+        <div className="mt-12 text-center p-8 bg-gray-50 rounded-2xl flex flex-col items-center justify-center gap-4">
+          <h3 className="text-xl font-semibold text-gray-900">Have a feature idea?</h3>
+          <p className="text-gray-600">We'd love to hear your suggestions for SpiderX</p>
           <Button variant="outline" onClick={onRequestFeature}>
             Request Feature
           </Button>
