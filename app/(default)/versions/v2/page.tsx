@@ -15,22 +15,54 @@ import {
   FeatureRequestModal,
 } from '@/components/landing-v2';
 
+const n8nUrl: Record<'test' | 'production' , string> = {test: 'https://n8n.sotaagents.ai/webhook-test/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3', production: 'https://n8n.sotaagents.ai/webhook-production/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3'};
+
+
 export default function HomeV2() {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showEmailConfetti, setShowEmailConfetti] = useState(false);
   const [showFeatureRequest, setShowFeatureRequest] = useState(false);
 
-  const handleEmailSubmit = (email: string) => {
+  const handleEmailSubmit = async (email: string) => {
     setShowEmailConfetti(true);
     setShowEmailModal(true);
+
+    // Send email to n8n webhook
+    try {
+      await fetch(n8nUrl.production, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: "email_submission",
+          email,
+        }),
+      });
+    } catch {
+    }
+
     setTimeout(() => {
       setShowEmailConfetti(false);
     }, 3000);
   };
 
-  const handleFeatureSubmit = (description: string, priority: string) => {
-    // Handle feature submission logic here
-    console.log('Feature request:', { description, priority });
+  const handleFeatureSubmit = async (description: string, priority: string) => {
+    // Send feature request data to n8n webhook
+    try {
+        await fetch(n8nUrl.production, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: "feature_request",
+          description,
+          priority,
+        }),
+      });
+    } catch  {
+    }
   };
 
   return (
