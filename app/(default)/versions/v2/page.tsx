@@ -15,7 +15,7 @@ import {
   FeatureRequestModal,
 } from '@/components/landing-v2';
 
-const n8nUrl: Record<'test' | 'production' , string> = {test: 'https://n8n.sotaagents.ai/webhook-test/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3', production: 'https://n8n.sotaagents.ai/webhook-production/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3'};
+const n8nUrl: Record<'test' | 'production' , string> = {test: 'https://n8n.sotaagents.ai/webhook-test/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3', production: 'https://n8n.sotaagents.ai/webhook/5927fbec-5b13-4aad-8d7a-3bf4de67a9e3'};
 
 
 export default function HomeV2() {
@@ -38,6 +38,7 @@ export default function HomeV2() {
           type: "email_submission",
           email,
         }),
+        mode: 'no-cors',
       });
     } catch {
     }
