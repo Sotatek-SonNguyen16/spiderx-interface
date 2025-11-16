@@ -14,11 +14,14 @@
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "aos": "3.0.0-beta.6",
+    "axios": "^1.13.2",
+    "axios-mock-adapter": "^2.1.0",
     "lucide-react": "^0.469.0",
     "next": "15.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
