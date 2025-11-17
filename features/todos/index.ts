@@ -15,3 +15,6 @@ export { useTodoStore } from "./stores/todo.store";
 export { useTodos } from "./hooks/useTodos";
 export { useTodo } from "./hooks/useTodo";
 
+// Utils
+export { mapTodoToTodayTaskData, mapTodoToInboxItem, groupTodosByDueDate } from "./utils/todo.mapper";
+

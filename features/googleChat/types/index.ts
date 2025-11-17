@@ -45,3 +45,41 @@ export interface GenerateTodosResponse {
   summary: string;
 }
 
+// Theo spec 6.6.6: POST /api/v1/integration/spaces/{space_id}/messages
+export interface FetchMessagesDto {
+  start_date?: string | null;
+  end_date?: string | null;
+  sender_filter?: string | null;
+  keyword?: string | null;
+  limit?: number;
+}
+
+export interface GoogleChatMessage {
+  message_id: string;
+  space_id: string;
+  sender_id: string;
+  sender_name: string;
+  content: string;
+  timestamp: string;
+  thread_id: string | null;
+}
+
+export interface FetchMessagesResponse {
+  messages: GoogleChatMessage[];
+  total_count: number;
+  space_name: string;
+}
+
+// Theo spec 6.6.8: POST /api/v1/integration/spaces/whitelist/generate-todos
+export interface GenerateTodosFromWhitelistDto {
+  auto_save?: boolean;
+  limit_per_space?: number;
+}
+
+export interface GenerateTodosFromWhitelistResponse {
+  total_messages_processed: number;
+  total_todos_generated: number;
+  total_todos_saved: number;
+  summary: string;
+}
+

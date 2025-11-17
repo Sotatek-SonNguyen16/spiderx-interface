@@ -5,6 +5,10 @@ import type {
   UpdateWhitelistDto,
   GenerateTodosDto,
   GenerateTodosResponse,
+  FetchMessagesDto,
+  FetchMessagesResponse,
+  GenerateTodosFromWhitelistDto,
+  GenerateTodosFromWhitelistResponse,
 } from "../types";
 
 // API response types theo spec (snake_case)
@@ -80,6 +84,19 @@ export const googleChatApi = {
   },
 
   /**
+   * GET /api/v1/integration/spaces/whitelist
+   * Theo spec 6.6.4: Lấy danh sách spaces đã được whitelist của user
+   * Auth: required
+   * Note: Chỉ trả về các spaces đã được whitelist, tất cả đều có isWhitelisted: true
+   */
+  getWhitelistedSpaces: async (): Promise<SpacesApiResponse> => {
+    const response = await apiClient.get<SpacesApiResponse>(
+      "/api/v1/integration/spaces/whitelist"
+    );
+    return response.data;
+  },
+
+  /**
    * PUT /api/v1/integration/spaces/whitelist
    * Theo spec 6.6.4: Cập nhật danh sách spaces được phép quét
    * Auth: required
@@ -91,6 +108,23 @@ export const googleChatApi = {
     const response = await apiClient.put<WhitelistApiResponse>(
       "/api/v1/integration/spaces/whitelist",
       payload
+    );
+    return response.data;
+  },
+
+  /**
+   * POST /api/v1/integration/spaces/{space_id}/messages
+   * Theo spec 6.6.6: Lấy messages từ Google Chat space với optional filtering
+   * Auth: required
+   * Body: { "start_date": "...", "end_date": "...", "sender_filter": "...", "keyword": "...", "limit": 100 }
+   */
+  getMessages: async (
+    spaceId: string,
+    payload?: FetchMessagesDto
+  ): Promise<FetchMessagesResponse> => {
+    const response = await apiClient.post<FetchMessagesResponse>(
+      `/api/v1/integration/spaces/${spaceId}/messages`,
+      payload || {}
     );
     return response.data;
   },
@@ -111,6 +145,78 @@ export const googleChatApi = {
       payload
     );
     return response.data;
+  },
+
+  /**
+   * POST /api/v1/integration/spaces/whitelist/generate-todos
+   * Theo spec 6.6.9: Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
+   * Auth: required
+   * Body: { "auto_save": true, "limit_per_space": 1000 }
+   * Note: Backend Python expect snake_case (auto_save, limit_per_space)
+   * KHÔNG cần spaceId và messageIds (backend sẽ tự động lấy từ whitelist)
+   * 
+   * IMPORTANT: Backend có thể đang dùng schema sai. Nếu backend expect spaceId và messageIds,
+   * đó là bug ở backend. Frontend chỉ gửi auto_save và limit_per_space theo spec.
+   */
+  generateTodosFromWhitelist: async (
+    payload?: GenerateTodosFromWhitelistDto
+  ): Promise<GenerateTodosFromWhitelistResponse> => {
+    // Đảm bảo payload luôn có giá trị và đúng format snake_case
+    // Chỉ gửi auto_save và limit_per_space, KHÔNG gửi spaceId và messageIds
+    const requestBody: Record<string, any> = {};
+    
+    // Chỉ thêm các field có giá trị để tránh gửi undefined
+    if (payload?.auto_save !== undefined) {
+      requestBody.auto_save = payload.auto_save;
+    } else {
+      requestBody.auto_save = true; // Default value
+    }
+    
+    if (payload?.limit_per_space !== undefined) {
+      requestBody.limit_per_space = payload.limit_per_space;
+    } else {
+      requestBody.limit_per_space = 1000; // Default value
+    }
+    
+    // Log để debug
+    console.log("GenerateTodosFromWhitelist - Request URL:", "/api/v1/integration/spaces/whitelist/generate-todos");
+    console.log("GenerateTodosFromWhitelist - Request body:", JSON.stringify(requestBody, null, 2));
+    
+    try {
+      const response = await apiClient.post<GenerateTodosFromWhitelistResponse>(
+        "/api/v1/integration/spaces/whitelist/generate-todos",
+        requestBody
+      );
+      return response.data;
+    } catch (error: any) {
+      // Log chi tiết lỗi để debug
+      console.error("GenerateTodosFromWhitelist error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        requestBody: requestBody,
+      });
+      
+      // Nếu backend báo thiếu spaceId và messageIds, đó là bug ở backend
+      // Frontend đã gửi đúng theo spec (chỉ auto_save và limit_per_space)
+      if (error.response?.status === 422) {
+        const errorDetail = error.response?.data?.detail;
+        if (Array.isArray(errorDetail)) {
+          const missingFields = errorDetail
+            .filter((err: any) => err.type === "missing")
+            .map((err: any) => err.loc?.join("."))
+            .filter(Boolean);
+          
+          if (missingFields.includes("body.spaceId") || missingFields.includes("body.messageIds")) {
+            throw new Error(
+              "Backend đang expect spaceId và messageIds, nhưng endpoint này không cần những fields đó. " +
+              "Vui lòng kiểm tra backend schema. Frontend đã gửi đúng: { auto_save: true, limit_per_space: 1000 }"
+            );
+          }
+        }
+      }
+      
+      throw error;
+    }
   },
 };
 

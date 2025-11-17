@@ -9,7 +9,7 @@ Tài liệu này mô tả contract giữa Backend (FastAPI) và Frontend (Next.j
 - AI-powered todo extraction từ text
 - Kết nối Google Chat và tự động extract todos từ messages
 
-**Phiên bản:** v1.0  
+**Phiên bản:** v1.1  
 **Owner:** BE team (cập nhật nếu có breaking changes)
 
 ---
@@ -162,17 +162,27 @@ Authorization: Bearer <access_token>
 7. FE gọi `GET /api/v1/integration/spaces` để lấy danh sách Google Chat spaces
 8. User tick chọn spaces muốn bật SpiderX scanning
 9. FE gọi `PUT /api/v1/integration/spaces/whitelist` với danh sách `spaceIds`
-10. FE hiển thị trạng thái đã bật / chưa bật cho từng space
+10. FE có thể gọi `GET /api/v1/integration/spaces/whitelist` để lấy danh sách spaces đã whitelist
+11. FE hiển thị trạng thái đã bật / chưa bật cho từng space
 
 ### 5.3. Flow "Tạo Todo từ Google Chat Message"
 
+**Option 1: Generate từ một space cụ thể**
 1. User đã connect Google Chat và whitelist spaces
-2. FE gọi `POST /api/v1/integration/spaces/{space_id}/messages` để lấy messages
+2. FE gọi `POST /api/v1/integration/spaces/{space_id}/messages` để lấy messages (mặc định 1000 tin nhắn mới nhất)
 3. User chọn messages muốn extract todos
 4. FE gọi `POST /api/v1/integration/spaces/{space_id}/generate-todos` với `messageIds`
 5. BE dùng AI agent extract todos từ messages
 6. BE trả về statistics: số messages processed, số todos generated, số todos saved
 7. FE refresh todo list để hiển thị todos mới
+
+**Option 2: Generate từ tất cả whitelisted spaces**
+1. User đã connect Google Chat và whitelist spaces
+2. FE gọi `POST /api/v1/integration/spaces/whitelist/generate-todos` với `autoSave` và `limitPerSpace`
+3. BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
+4. BE dùng AI agent extract todos từ tất cả messages
+5. BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
+6. FE refresh todo list để hiển thị todos mới
 
 ### 5.4. Flow "AI Extract Todos từ Text"
 
@@ -860,39 +870,26 @@ Check AI service status
 #### 6.6.1. `POST /api/v1/integration/connect`
 
 **Mục đích:**  
-Kết nối Google Chat account, lưu refresh token đã mã hóa vào database và khởi tạo integration.
+Kết nối Google Chat account, lưu refresh token
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
 
 **Request Body:**
 ```json
 {
-  "refresh_token": "ya29.a0AfB_byC1234567890..."
+  "refreshToken": "ya29.a0AfB_byC1234567890..."
 }
 ```
-
-**Fields:**
-| Field         | Type   | Required | Mô tả                                    |
-|---------------|--------|----------|------------------------------------------|
-| refresh_token | string | yes      | Google OAuth refresh token từ next-auth |
 
 **Response 200:**
 ```json
 {
   "status": "connected",
   "provider": "google_chat",
-  "last_sync_at": null,
-  "last_error": null
+  "lastSyncAt": null,
+  "lastError": null
 }
 ```
-
-**Response Fields:**
-| Field        | Type    | Mô tả                                    |
-|--------------|---------|------------------------------------------|
-| status       | string  | `connected`, `not_connected`, hoặc `error` |
-| provider     | string  | `google_chat` hoặc `null`                |
-| last_sync_at | string  | ISO8601 datetime hoặc `null`             |
-| last_error   | string  | Error message hoặc `null`                |
 
 **Status Enum:** `connected`, `not_connected`, `error`
 
@@ -904,61 +901,38 @@ Kết nối Google Chat account, lưu refresh token đã mã hóa vào database 
 #### 6.6.2. `GET /api/v1/integration/status`
 
 **Mục đích:**  
-Kiểm tra trạng thái kết nối Google Chat hiện tại. Trả về connection status, thời gian sync cuối cùng, và các lỗi (nếu có).
+Kiểm tra trạng thái kết nối Google Chat
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
 
 **Response 200:**
-
-Nếu đã kết nối thành công:
 ```json
 {
   "status": "connected",
   "provider": "google_chat",
-  "last_sync_at": "2024-12-19T15:30:00Z",
-  "last_error": null
+  "lastSyncAt": "2024-12-19T15:30:00Z",
+  "lastError": null
 }
 ```
 
-Nếu chưa kết nối:
+Hoặc nếu chưa connect:
 ```json
 {
   "status": "not_connected",
   "provider": null,
-  "last_sync_at": null,
-  "last_error": null
+  "lastSyncAt": null,
+  "lastError": null
 }
 ```
-
-Nếu có lỗi (có `last_error`):
-```json
-{
-  "status": "error",
-  "provider": "google_chat",
-  "last_sync_at": "2024-12-19T15:30:00Z",
-  "last_error": "Failed to refresh access token"
-}
-```
-
-**Response Fields:**
-| Field        | Type    | Mô tả                                    |
-|--------------|---------|------------------------------------------|
-| status       | string  | `connected`, `not_connected`, hoặc `error` |
-| provider     | string  | `google_chat` hoặc `null`                |
-| last_sync_at | string  | ISO8601 datetime hoặc `null`             |
-| last_error   | string  | Error message hoặc `null`                |
-
-**Errors:**
-- `500` – Failed to get status (server error)
 
 ---
 
 #### 6.6.3. `GET /api/v1/integration/spaces`
 
 **Mục đích:**  
-Lấy danh sách Google Chat spaces với whitelist status. Endpoint này fetch tất cả spaces từ Google Chat API và merge với whitelist status từ database.
+Lấy danh sách Google Chat spaces với whitelist status
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
 
 **Response 200:**
 ```json
@@ -968,86 +942,103 @@ Lấy danh sách Google Chat spaces với whitelist status. Endpoint này fetch 
       "id": "AAAAAAAAAAA",
       "name": "Team Engineering",
       "description": "Engineering team space",
-      "is_whitelisted": false,
-      "display_name": "Team Engineering",
-      "space_type": "SPACE"
+      "isWhitelisted": false,
+      "displayName": "Team Engineering",
+      "spaceType": "SPACE"
     },
     {
       "id": "BBBBBBBBBBB",
       "name": "General Chat",
       "description": null,
-      "is_whitelisted": true,
-      "display_name": "General Chat",
-      "space_type": "SPACE"
+      "isWhitelisted": true,
+      "displayName": "General Chat",
+      "spaceType": "SPACE"
     }
   ]
 }
 ```
 
-**Response Fields:**
-| Field          | Type    | Mô tả                                                      |
-|----------------|---------|------------------------------------------------------------|
-| spaces         | array   | Danh sách Google Chat spaces                              |
-| spaces[].id    | string  | Google Chat space ID                                       |
-| spaces[].name  | string  | Display name của space                                     |
-| spaces[].description | string | Mô tả của space hoặc `null`                          |
-| spaces[].is_whitelisted | boolean | `true` nếu space được whitelist để quét messages |
-| spaces[].display_name | string | Display name hoặc `null`                    |
-| spaces[].space_type | string | `SPACE`, `DIRECT_MESSAGE`, `GROUP_CONVERSATION` hoặc `null` |
-
 **Errors:**
-- `403` – User chưa connect Google Chat (ValueError)
-- `500` – Google Chat API error hoặc server error
+- `403` – User chưa connect Google Chat
+- `500` – Google Chat API error
 
 ---
 
-#### 6.6.4. `PUT /api/v1/integration/spaces/whitelist`
+#### 6.6.4. `GET /api/v1/integration/spaces/whitelist`
 
 **Mục đích:**  
-Cập nhật danh sách spaces được phép quét messages. Chỉ các spaces trong whitelist mới được background worker quét.
+Lấy danh sách spaces đã được whitelist của user
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
+
+**Response 200:**
+```json
+{
+  "spaces": [
+    {
+      "id": "AAAAAAAAAAA",
+      "name": "Team Engineering",
+      "description": "Engineering team space",
+      "isWhitelisted": true,
+      "displayName": "Team Engineering",
+      "spaceType": "SPACE"
+    },
+    {
+      "id": "BBBBBBBBBBB",
+      "name": "General Chat",
+      "description": null,
+      "isWhitelisted": true,
+      "displayName": "General Chat",
+      "spaceType": "SPACE"
+    }
+  ]
+}
+```
+
+**Note:** 
+- Chỉ trả về các spaces đã được whitelist
+- Nếu không có space nào trong whitelist, trả về `spaces: []`
+- Tất cả spaces trong response đều có `isWhitelisted: true`
+
+**Errors:**
+- `403` – User chưa connect Google Chat
+- `500` – Google Chat API error
+
+---
+
+#### 6.6.5. `PUT /api/v1/integration/spaces/whitelist`
+
+**Mục đích:**  
+Cập nhật danh sách spaces được phép quét
+
+**Auth:** `required`
 
 **Request Body:**
 ```json
 {
-  "space_ids": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
+  "spaceIds": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
 }
 ```
-
-**Fields:**
-| Field      | Type     | Required | Mô tả                                    |
-|------------|----------|----------|------------------------------------------|
-| space_ids  | string[] | yes      | Danh sách space IDs để whitelist         |
 
 **Response 200:**
 ```json
 {
   "status": "ok",
-  "updated_spaces": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
+  "updatedSpaces": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
 }
 ```
 
-**Response Fields:**
-| Field          | Type     | Mô tả                                    |
-|----------------|----------|------------------------------------------|
-| status         | string   | `ok`                                     |
-| updated_spaces | string[] | Danh sách space IDs đã được cập nhật     |
-
 **Errors:**
-- `403` – User chưa connect Google Chat (ValueError)
-- `500` – Failed to update whitelist (server error)
+- `403` – User chưa connect Google Chat
 
 ---
 
-#### 6.6.5. `POST /api/v1/integration/disconnect`
+#### 6.6.6. `POST /api/v1/integration/disconnect`
 
 **Mục đích:**  
-Ngắt kết nối Google Chat integration. Revoke refresh token và xóa connection khỏi database.
+Ngắt kết nối Google Chat, xóa token
 
-**Auth:** `required` (JWT Bearer token)
-
-**Request Body:** Không cần (empty body)
+**Auth:** `required`
 
 **Response 200:**
 ```json
@@ -1056,152 +1047,160 @@ Ngắt kết nối Google Chat integration. Revoke refresh token và xóa connec
 }
 ```
 
-**Response Fields:**
-| Field  | Type   | Mô tả                                    |
-|--------|--------|------------------------------------------|
-| status | string | `disconnected`                          |
-
 **Errors:**
-- `404` – Không tìm thấy Google Chat connection
-- `500` – Failed to disconnect (server error)
+- `404` – Không tìm thấy connection
 
 ---
 
-#### 6.6.6. `POST /api/v1/integration/spaces/{space_id}/messages`
+#### 6.6.7. `POST /api/v1/integration/spaces/{space_id}/messages`
 
 **Mục đích:**  
-Lấy messages từ Google Chat space với optional filtering. Endpoint này fetch fresh data từ Google Chat API và có thể lưu messages vào database để tham khảo sau này.
+Lấy messages từ Google Chat space với filter
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
 
 **Path Params:**
-| Name     | Type   | Required | Mô tả                    |
-|----------|--------|----------|---------------------------|
-| space_id | string | yes      | Google Chat space ID      |
+| Name     | Type   | Required | Mô tả         |
+|----------|--------|----------|---------------|
+| space_id | string | yes      | Google Chat space ID |
 
 **Request Body:**
 ```json
 {
+  "space_id": "AAAAAAAAAAA",
   "start_date": "2024-12-18T00:00:00Z",
   "end_date": "2024-12-19T23:59:59Z",
   "sender_filter": "John",
   "keyword": "meeting",
-  "limit": 100
+  "limit": 1000
 }
 ```
 
+**Note:** Messages được trả về theo thứ tự mới nhất trước (newest first). Mặc định lấy 1000 tin nhắn mới nhất.
+
 **Fields:**
-| Field         | Type    | Required | Default | Mô tả                                    |
-|---------------|---------|----------|---------|------------------------------------------|
-| start_date    | string  | no       | null    | ISO8601 datetime - Filter messages sau ngày này |
-| end_date      | string  | no       | null    | ISO8601 datetime - Filter messages trước ngày này |
-| sender_filter | string  | no       | null    | Filter by sender name/ID (case-insensitive) |
-| keyword       | string  | no       | null    | Search keyword trong content (case-insensitive) |
-| limit         | number  | no       | 100     | Maximum số messages (max: 1000)          |
+| Field        | Type    | Required | Default | Mô tả                    |
+|--------------|---------|----------|---------|--------------------------|
+| space_id     | string  | yes      |         | Space ID (duplicate từ path) |
+| start_date   | string  | no       | null    | ISO8601 datetime         |
+| end_date     | string  | no       | null    | ISO8601 datetime         |
+| sender_filter| string  | no       | null    | Filter by sender name/ID |
+| keyword      | string  | no       | null    | Search keyword           |
+| limit        | number  | no       | 1000    | Max 1000, newest first   |
 
 **Response 200:**
 ```json
 {
   "messages": [
     {
-      "message_id": "msg-123",
-      "space_id": "AAAAAAAAAAA",
-      "sender_id": "user-123",
-      "sender_name": "John Doe",
+      "messageId": "msg-123",
+      "spaceId": "AAAAAAAAAAA",
+      "senderId": "user-123",
+      "senderName": "John Doe",
       "content": "Hôm nay vào họp lúc 2h30 nhé",
       "timestamp": "2024-12-19T14:30:00Z",
-      "thread_id": null
+      "threadId": null
     }
   ],
-  "total_count": 1,
-  "space_name": "Team Engineering"
+  "totalCount": 1,
+  "spaceName": "Team Engineering"
 }
 ```
 
-**Response Fields:**
-| Field         | Type    | Mô tả                                    |
-|---------------|---------|------------------------------------------|
-| messages      | array   | Danh sách messages                      |
-| messages[].message_id | string | Google Chat message ID           |
-| messages[].space_id | string | Google Chat space ID              |
-| messages[].sender_id | string | Sender user ID                    |
-| messages[].sender_name | string | Sender display name              |
-| messages[].content | string | Message content                  |
-| messages[].timestamp | string | ISO8601 datetime                |
-| messages[].thread_id | string | Thread ID hoặc `null`            |
-| total_count   | number  | Tổng số messages sau khi filter          |
-| space_name    | string  | Display name của space                   |
-
-**Note:** 
-- Endpoint này fetch fresh data từ Google Chat API
-- Messages được lưu vào database để tham khảo sau này
-- Để extract todos từ messages, sử dụng endpoint `/generate-todos`
-
 **Errors:**
-- `403` – Space không trong whitelist hoặc user chưa connect Google Chat (ValueError)
-- `500` – Google Chat API error hoặc server error
+- `403` – Space không trong whitelist hoặc user chưa connect
+- `500` – Google Chat API error
 
 ---
 
-#### 6.6.7. `POST /api/v1/integration/spaces/{space_id}/generate-todos`
+#### 6.6.8. `POST /api/v1/integration/spaces/{space_id}/generate-todos`
 
 **Mục đích:**  
-Generate todos từ Google Chat messages sử dụng AI (SpiderX AI agent với multi-provider fallback). Endpoint này sử dụng TodoExtractorAgent để extract todos từ messages, bao gồm title, priority, due date, tags, và eisenhower matrix.
+Generate todos từ Google Chat messages sử dụng AI
 
-**Auth:** `required` (JWT Bearer token)
+**Auth:** `required`
 
 **Path Params:**
-| Name     | Type   | Required | Mô tả                    |
-|----------|--------|----------|---------------------------|
-| space_id | string | yes      | Google Chat space ID      |
+| Name     | Type   | Required | Mô tả         |
+|----------|--------|----------|---------------|
+| space_id | string | yes      | Google Chat space ID |
 
 **Request Body:**
 ```json
 {
-  "message_ids": ["msg-123", "msg-456"],
-  "auto_save": true
+  "spaceId": "AAAAAAAAAAA",
+  "messageIds": ["msg-123", "msg-456"],
+  "autoSave": true
 }
 ```
 
 **Fields:**
-| Field        | Type     | Required | Default | Mô tả                                    |
-|--------------|----------|----------|---------|------------------------------------------|
-| message_ids  | string[] | yes      |         | Danh sách message IDs để process         |
-| auto_save    | boolean  | no       | true    | Tự động lưu todos vào database           |
+| Field       | Type    | Required | Default | Mô tả                    |
+|-------------|---------|----------|---------|--------------------------|
+| spaceId     | string  | yes      |         | Space ID (duplicate từ path) |
+| messageIds  | array   | yes      |         | List of message IDs      |
+| autoSave    | boolean | no       | true    | Tự động lưu todos        |
 
 **Response 200:**
 ```json
 {
-  "total_messages_processed": 2,
-  "total_todos_generated": 3,
-  "total_todos_saved": 3,
+  "totalMessagesProcessed": 2,
+  "totalTodosGenerated": 3,
+  "totalTodosSaved": 3,
   "summary": "Processed 2 messages from space 'Team Engineering'. Generated 3 todos, saved 3 to database."
 }
 ```
 
-**Response Fields:**
-| Field                    | Type   | Mô tả                                    |
-|--------------------------|--------|------------------------------------------|
-| total_messages_processed | number | Số messages đã được process              |
-| total_todos_generated    | number | Tổng số todos được AI extract            |
-| total_todos_saved        | number | Số todos đã được lưu vào database (nếu `auto_save=true`) |
-| summary                  | string | Tóm tắt kết quả operation                |
-
-**AI Processing:**
-- Sử dụng TodoExtractorAgent với multi-provider fallback
-- Extract: title, priority, due date, tags, eisenhower matrix
-- Link todos về source messages qua `source_space_id` và `source_message_id`
-- Todos được tạo với `source_type: "chat"`
-
-**Note:** 
-- Todos được tạo sẽ có `source_space_id` và `source_message_id` để link về message gốc
-- Nếu `auto_save=false`, todos chỉ được generate nhưng không lưu vào database
-- Nếu có lỗi khi process một message, hệ thống sẽ tiếp tục process các messages khác
-
 **Errors:**
 - `404` – Không tìm thấy messages với IDs đã cho
-- `403` – Space không trong whitelist hoặc user chưa connect Google Chat (ValueError)
+- `403` – Space không trong whitelist
 - `500` – AI extraction error hoặc Google Chat API error
+
+**Note:** Todos được tạo sẽ có `source_space_id` và `source_message_id` để link về message gốc
+
+---
+
+#### 6.6.9. `POST /api/v1/integration/spaces/whitelist/generate-todos`
+
+**Mục đích:**  
+Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
+
+**Auth:** `required`
+
+**Request Body:**
+```json
+{
+  "autoSave": true,
+  "limitPerSpace": 1000
+}
+```
+
+**Fields:**
+| Field          | Type    | Required | Default | Mô tả                    |
+|----------------|---------|----------|---------|--------------------------|
+| autoSave       | boolean | no       | true    | Tự động lưu todos        |
+| limitPerSpace  | number  | no       | 1000    | Max messages per space (newest first) |
+
+**Response 200:**
+```json
+{
+  "totalMessagesProcessed": 2500,
+  "totalTodosGenerated": 45,
+  "totalTodosSaved": 45,
+  "summary": "Processed 2500 messages from 3 whitelisted spaces. Generated 45 todos, saved 45 to database. Spaces: Team Engineering (1000 messages), General Chat (800 messages), Project Alpha (700 messages)"
+}
+```
+
+**Errors:**
+- `400` – Không có whitelisted spaces nào
+- `403` – User chưa connect Google Chat
+- `500` – AI extraction error hoặc Google Chat API error
+
+**Note:** 
+- Endpoint này sẽ xử lý tất cả spaces trong whitelist của user
+- Mỗi space sẽ lấy `limitPerSpace` tin nhắn mới nhất (default: 1000)
+- Todos được tạo sẽ có `source_space_id` và `source_message_id` để link về message gốc
+- Nếu một space có lỗi, endpoint sẽ tiếp tục xử lý các space khác
 
 ---
 
@@ -1338,6 +1337,17 @@ type ExtractedTodo = {
   - `/integration/spaces/{space_id}/generate-todos`
 - Thêm fields `source_space_id` và `source_message_id` vào TodoItem model
 
+### 2025-11-16 (v1.1)
+- **Thay đổi**: `POST /api/v1/integration/spaces/{space_id}/messages`
+  - Limit mặc định thay đổi từ 100 thành 1000
+  - Messages được sắp xếp theo thứ tự mới nhất trước (newest first)
+- **Thêm mới**: `GET /api/v1/integration/spaces/whitelist`
+  - Endpoint để lấy danh sách spaces đã được whitelist của user
+  - Trả về thông tin chi tiết của các spaces trong whitelist
+- **Thêm mới**: `POST /api/v1/integration/spaces/whitelist/generate-todos`
+  - Endpoint để generate todos từ tất cả whitelisted spaces
+  - Hỗ trợ batch processing với `limitPerSpace` parameter
+
 ---
 
 ## 9. Notes & Best Practices
@@ -1366,10 +1376,15 @@ type ExtractedTodo = {
 - Check `status` trước khi gọi các endpoints khác
 - Handle `error` status và hiển thị `lastError` cho user
 - Chỉ spaces được whitelist mới có thể lấy messages
+- Messages được lấy theo thứ tự mới nhất trước (newest first), mặc định 1000 tin nhắn
+- Có thể lấy danh sách whitelisted spaces bằng `GET /api/v1/integration/spaces/whitelist`
+- Có 2 cách generate todos:
+  - **Từ một space cụ thể**: Chọn messages và generate
+  - **Từ tất cả whitelisted spaces**: Generate tự động từ tất cả spaces trong whitelist
 - Background worker tự động scan messages mỗi 5 phút (không cần FE gọi)
 
 ---
 
 **Cập nhật:** 2025-11-16
-**Phiên bản:** 1.0.0
+**Phiên bản:** 1.1.0
 

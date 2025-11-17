@@ -71,7 +71,31 @@ export const useGoogleChat = () => {
     }
   }, [status?.status, spaces.length, loading, fetchSpaces]);
 
-  // 3. Hàm cập nhật whitelist
+  // 3. Hàm lấy danh sách whitelisted spaces
+  // Theo spec 6.6.4: GET /api/v1/integration/spaces/whitelist
+  // Chỉ trả về các spaces đã được whitelist, tất cả đều có isWhitelisted: true
+  const fetchWhitelistedSpaces = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const result = await googleChatService.fetchWhitelistedSpaces();
+
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+      return { success: false, error: result.error };
+    }
+
+    if (result.data) {
+      // Set spaces với chỉ whitelisted spaces
+      setSpaces(result.data.spaces);
+    }
+
+    setLoading(false);
+    return { success: true, data: result.data };
+  }, [setLoading, setError, setSpaces]);
+
+  // 4. Hàm cập nhật whitelist
   // Theo spec 6.6.4: PUT /api/v1/integration/spaces/whitelist
   // Body: { "space_ids": [...] } - userId lấy từ JWT token trong Authorization header
   const updateWhitelist = useCallback(
@@ -107,7 +131,7 @@ export const useGoogleChat = () => {
     [spaces, setLoading, setError, setSpaces, updateSpaceWhitelist]
   );
 
-  // 4. Hàm ngắt kết nối
+  // 5. Hàm ngắt kết nối
   // Theo spec 6.6.5: POST /api/v1/integration/disconnect
   // Không cần body, userId lấy từ JWT token trong Authorization header
   const disconnect = useCallback(async () => {
@@ -136,12 +160,12 @@ export const useGoogleChat = () => {
     return { success: true, data: result.data };
   }, [setLoading, setError, reset, setStatus]);
 
-  // 5. Hàm refresh data
+  // 6. Hàm refresh data
   const refresh = useCallback(async () => {
     await Promise.all([fetchStatus(), fetchSpaces()]);
   }, [fetchStatus, fetchSpaces]);
 
-  // 6. Hàm connect Google Chat
+  // 7. Hàm connect Google Chat
   // Flow mới: refreshToken được truyền vào từ Google OAuth popup
   // Backend sẽ lấy userId từ JWT token trong Authorization header
   const connect = useCallback(async (refreshToken: string) => {
@@ -169,7 +193,7 @@ export const useGoogleChat = () => {
     return { success: true, data: result.data };
   }, [setLoading, setError, fetchStatus]);
 
-  // 7. Hàm generate todos từ messages
+  // 8. Hàm generate todos từ messages
   // Theo spec 6.6.7: POST /api/v1/integration/spaces/{space_id}/generate-todos
   // Body: { "message_ids": [...], "auto_save": true }
   // Backend sẽ lấy userId từ JWT token trong Authorization header
@@ -182,6 +206,34 @@ export const useGoogleChat = () => {
       const result = await googleChatService.generateTodos(spaceId, {
         message_ids: messageIds,
         auto_save: autoSave,
+      });
+
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+        return { success: false, error: result.error };
+      }
+
+      setLoading(false);
+      return { success: true, data: result.data };
+    },
+    [setLoading, setError]
+  );
+
+  // 9. Hàm generate todos từ tất cả whitelisted spaces
+  // Theo spec 6.6.8: POST /api/v1/integration/spaces/whitelist/generate-todos
+  // Body: { "auto_save": true, "limit_per_space": 1000 }
+  // BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
+  // BE dùng AI agent extract todos từ tất cả messages
+  // BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
+  const generateTodosFromWhitelist = useCallback(
+    async (autoSave: boolean = true, limitPerSpace: number = 1000) => {
+      setLoading(true);
+      setError(null);
+
+      const result = await googleChatService.generateTodosFromWhitelist({
+        auto_save: autoSave,
+        limit_per_space: limitPerSpace,
       });
 
       if (result.error) {
@@ -215,11 +267,13 @@ export const useGoogleChat = () => {
     // Actions
     fetchStatus,
     fetchSpaces,
+    fetchWhitelistedSpaces,
     updateWhitelist,
     disconnect,
     refresh,
     connect,
     generateTodos,
+    generateTodosFromWhitelist,
   };
 };
 

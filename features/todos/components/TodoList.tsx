@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Sidebar from "./Sidebar";
 import TodayView from "./TodayView";
 import MemoryPopup from "./MemoryPopup";
+import { useTodos, mapTodoToInboxItem, groupTodosByDueDate, mapTodoToTodayTaskData } from "../index";
 import type { AppState, TodayTaskData, InboxTab, DueType, Priority, TaskStatus } from "../types/ui.types";
 
 // Initial empty state
@@ -35,12 +36,73 @@ const initialAppState: AppState = {
 };
 
 export default function TodoList() {
+  // Fetch todos from API
+  const {
+    todos,
+    loading: todosLoading,
+    error: todosError,
+    refresh: refreshTodos,
+    createTodo: createTodoApi,
+    toggleTodo: toggleTodoApi,
+    updateTodo: updateTodoApi,
+  } = useTodos();
+
   const [appState, setAppState] = useState<AppState>(initialAppState);
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
   const [showMemory, setShowMemory] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Map todos to inbox items (only todos with status "todo")
+  const inboxItems = useMemo(() => {
+    return todos
+      .filter((todo) => todo.status === "todo")
+      .map(mapTodoToInboxItem);
+  }, [todos]);
+
+  // Group todos by due date for Today View
+  const taskGroups = useMemo(() => {
+    // Only show active todos (not completed) in today view
+    const activeTodos = todos.filter((todo) => todo.status !== "completed");
+    return groupTodosByDueDate(activeTodos);
+  }, [todos]);
+
+  // Get completed todos for completed summary
+  const completedTasks = useMemo(() => {
+    const completedTodos = todos.filter((todo) => todo.status === "completed");
+    return completedTodos.map(mapTodoToTodayTaskData);
+  }, [todos]);
+
+  // Update app state when todos change
+  useEffect(() => {
+    if (!todosLoading && todos.length >= 0) {
+      // Calculate active task count
+      const activeCount = todos.filter((todo) => todo.status !== "completed").length;
+
+      setAppState((prev) => ({
+        ...prev,
+        sidebar: {
+          ...prev.sidebar,
+          smartInbox: {
+            ...prev.sidebar.smartInbox,
+            inboxCount: inboxItems.length,
+            items: inboxItems,
+          },
+        },
+        todayView: {
+          ...prev.todayView,
+          taskGroups,
+          remainingLabel: `${activeCount} tasks remaining`,
+          completedSummary: {
+            label: `${completedTasks.length} Completed`,
+            isExpanded: prev.todayView.completedSummary.isExpanded,
+            items: completedTasks,
+          },
+        },
+      }));
+    }
+  }, [todos, todosLoading, inboxItems, taskGroups, completedTasks]);
 
   // Sidebar resize functionality
   useEffect(() => {
@@ -109,243 +171,82 @@ export default function TodoList() {
     }));
   };
 
-  const handleSmartInboxItemAccept = (id: string) => {
+  const handleSmartInboxItemAccept = async (id: string) => {
     const item = appState.sidebar.smartInbox.items.find((i) => i.id === id);
     if (!item) return;
 
-    // Create new task from inbox item
-    const getDueLabel = (type: DueType) => {
-      switch (type) {
-        case "today":
-          return "Due today";
-        case "tomorrow":
-          return "Due tomorrow";
-        case "overdue":
-          return "Overdue";
-        default:
-          return undefined;
-      }
-    };
+    // Find the original todo
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
 
-    const newTask: TodayTaskData = {
-      id: `task-${Date.now()}`,
-      type: "simple",
-      title: item.title,
-      status: "active",
-      dueType: item.dueType,
-      dueLabel: getDueLabel(item.dueType),
-      priority: "none",
-    };
-
-    // Determine which group to add task to
-    const targetGroupLabel =
-      item.dueType === "today"
-        ? "Today"
-        : item.dueType === "tomorrow"
-          ? "Tomorrow"
-          : item.dueType === "overdue"
-            ? "Today"
-            : "Next 7 days";
-
-    setAppState((prev) => {
-      const taskGroups = [...prev.todayView.taskGroups];
-      const targetGroupIndex = taskGroups.findIndex((g) => g.label === targetGroupLabel);
-
-      if (targetGroupIndex >= 0) {
-        taskGroups[targetGroupIndex] = {
-          ...taskGroups[targetGroupIndex],
-          tasks: [...taskGroups[targetGroupIndex].tasks, newTask],
-          count: taskGroups[targetGroupIndex].count + 1,
-        };
-      } else {
-        taskGroups.push({
-          label: targetGroupLabel,
-          count: 1,
-          tasks: [newTask],
-        });
-      }
-
-      // Remove item from inbox and update counts
-      const remainingItems = prev.sidebar.smartInbox.items.filter((i) => i.id !== id);
-      const newInboxCount =
-        prev.sidebar.smartInbox.activeTab === "inbox"
-          ? prev.sidebar.smartInbox.inboxCount - 1
-          : prev.sidebar.smartInbox.inboxCount;
-
-      return {
-        ...prev,
-        sidebar: {
-          ...prev.sidebar,
-          smartInbox: {
-            ...prev.sidebar.smartInbox,
-            items: remainingItems,
-            inboxCount: newInboxCount,
-            acceptedCount: prev.sidebar.smartInbox.acceptedCount + 1,
-          },
-        },
-        todayView: {
-          ...prev.todayView,
-          taskGroups,
-          remainingLabel: `${taskGroups.reduce((sum, g) => sum + g.count, 0)} tasks remaining`,
-          highlightedTaskId: newTask.id,
-        },
-      };
-    });
-
-    // Highlight animation
-    setHighlightedTaskId(newTask.id);
-    setTimeout(() => setHighlightedTaskId(null), 1000);
+    // Update todo status from "todo" to "in_progress" (accepting from inbox)
+    const result = await updateTodoApi(id, { status: "in_progress" });
+    if (result.success) {
+      // Refresh todos to sync with server
+      await refreshTodos();
+      // Highlight animation
+      setHighlightedTaskId(id);
+      setTimeout(() => setHighlightedTaskId(null), 1000);
+    }
   };
 
-  const handleSmartInboxItemReject = (id: string) => {
-    setAppState((prev) => {
-      const remainingItems = prev.sidebar.smartInbox.items.filter((i) => i.id !== id);
-      const isInboxTab = prev.sidebar.smartInbox.activeTab === "inbox";
-      const newInboxCount = isInboxTab
-        ? prev.sidebar.smartInbox.inboxCount - 1
-        : prev.sidebar.smartInbox.inboxCount;
-
-      return {
-        ...prev,
-        sidebar: {
-          ...prev.sidebar,
-          smartInbox: {
-            ...prev.sidebar.smartInbox,
-            items: remainingItems,
-            inboxCount: newInboxCount,
-            rejectedCount: prev.sidebar.smartInbox.rejectedCount + 1,
-          },
-        },
-      };
-    });
+  const handleSmartInboxItemReject = async (id: string) => {
+    // Update todo status to "cancelled" (rejecting from inbox)
+    const result = await updateTodoApi(id, { status: "cancelled" });
+    if (result.success) {
+      // Refresh todos to sync with server
+      await refreshTodos();
+    }
   };
 
   // Handlers for TodayView
-  const handleAddTaskSubmit = (
+  const handleAddTaskSubmit = async (
     title: string,
     dueType?: DueType,
     priority?: Priority,
     dueDate?: Date
   ) => {
-    const getDueLabel = (type: DueType, date?: Date) => {
-      if (date && type === "none") {
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        return `${date.getDate()} ${monthNames[date.getMonth()]}`;
-      }
-      switch (type) {
-        case "today":
-          return "Due today";
-        case "tomorrow":
-          return "Due tomorrow";
-        case "overdue":
-          return "Overdue";
+    // Map UI priority to API priority
+    const mapPriorityToApi = (p?: Priority): "low" | "medium" | "high" | "urgent" => {
+      switch (p) {
+        case "high":
+          return "high";
+        case "medium":
+          return "medium";
+        case "low":
+          return "low";
         default:
-          return undefined;
+          return "medium";
       }
     };
 
-    const newTask: TodayTaskData = {
-      id: `task-${Date.now()}`,
-      type: "simple",
+    // Convert dueDate to ISO string if provided
+    const dueDateISO = dueDate ? dueDate.toISOString() : undefined;
+
+    // Create todo via API
+    const result = await createTodoApi({
       title,
-      status: "active",
-      dueType: dueType || "none",
-      dueLabel: getDueLabel(dueType || "none", dueDate),
-      priority: priority || "none",
-      dueDate: dueDate,
-    };
-
-    // Determine which group to add task to
-    const targetGroupLabel =
-      dueType === "today"
-        ? "Today"
-        : dueType === "tomorrow"
-          ? "Tomorrow"
-          : dueType === "overdue"
-            ? "Today"
-            : "Next 7 days";
-
-    setAppState((prev) => {
-      const taskGroups = [...prev.todayView.taskGroups];
-      const targetGroupIndex = taskGroups.findIndex((g) => g.label === targetGroupLabel);
-
-      if (targetGroupIndex >= 0) {
-        taskGroups[targetGroupIndex] = {
-          ...taskGroups[targetGroupIndex],
-          tasks: [...taskGroups[targetGroupIndex].tasks, newTask],
-          count: taskGroups[targetGroupIndex].count + 1,
-        };
-      } else {
-        taskGroups.push({
-          label: targetGroupLabel,
-          count: 1,
-          tasks: [newTask],
-        });
-      }
-
-      return {
-        ...prev,
-        todayView: {
-          ...prev.todayView,
-          taskGroups,
-          remainingLabel: `${taskGroups.reduce((sum, g) => sum + g.count, 0)} tasks remaining`,
-          highlightedTaskId: newTask.id,
-        },
-      };
+      priority: mapPriorityToApi(priority),
+      dueDate: dueDateISO,
+      status: "in_progress", // New tasks are in progress
     });
 
-    // Highlight animation
-    setHighlightedTaskId(newTask.id);
-    setTimeout(() => setHighlightedTaskId(null), 1000);
+    if (result.success && result.data) {
+      // Refresh todos to sync with server
+      await refreshTodos();
+      // Highlight animation
+      setHighlightedTaskId(result.data.id);
+      setTimeout(() => setHighlightedTaskId(null), 1000);
+    }
   };
 
-  const handleTaskToggleStatus = (id: string) => {
-    setAppState((prev) => {
-      const taskGroups = prev.todayView.taskGroups.map((group) => {
-        const updatedTasks = group.tasks.map((task) => {
-          if (task.id === id) {
-            const newStatus: TaskStatus = task.status === "active" ? "completed" : "active";
-            return { ...task, status: newStatus };
-          }
-          return task;
-        });
-
-        const activeTasks = updatedTasks.filter((t) => t.status === "active");
-        const completedTasks = updatedTasks.filter((t) => t.status === "completed");
-
-        return {
-          ...group,
-          tasks: activeTasks,
-          count: activeTasks.length,
-        };
-      });
-
-      // Collect all completed tasks
-      const allCompletedTasks = taskGroups
-        .flatMap((g) => g.tasks.filter((t) => t.status === "completed"))
-        .concat(
-          prev.todayView.taskGroups
-            .flatMap((g) => g.tasks)
-            .filter((t) => t.id === id && t.status === "active")
-            .map((t) => ({ ...t, status: "completed" as const }))
-        );
-
-      const activeCount = taskGroups.reduce((sum, g) => sum + g.count, 0);
-
-      return {
-        ...prev,
-        todayView: {
-          ...prev.todayView,
-          taskGroups,
-          remainingLabel: `${activeCount} tasks remaining`,
-          completedSummary: {
-            ...prev.todayView.completedSummary,
-            items: allCompletedTasks,
-            label: `${allCompletedTasks.length} Completed`,
-          },
-        },
-      };
-    });
+  const handleTaskToggleStatus = async (id: string) => {
+    // Toggle todo status via API
+    const result = await toggleTodoApi(id);
+    if (result.success) {
+      // Refresh todos to sync with server
+      await refreshTodos();
+    }
   };
 
   const handleTaskClick = (id: string) => {
@@ -396,50 +297,46 @@ export default function TodoList() {
     }));
   };
 
-  const handleTaskUpdate = (
+  const handleTaskUpdate = async (
     taskId: string,
     updates: { dueType?: DueType; priority?: Priority; dueDate?: Date }
   ) => {
-    const getDueLabel = (type: DueType, date?: Date) => {
-      if (date && type === "none") {
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        return `${date.getDate()} ${monthNames[date.getMonth()]}`;
-      }
-      switch (type) {
-        case "today":
-          return "Due today";
-        case "tomorrow":
-          return "Due tomorrow";
-        case "overdue":
-          return "Overdue";
+    // Map UI priority to API priority
+    const mapPriorityToApi = (p?: Priority): "low" | "medium" | "high" | "urgent" | undefined => {
+      switch (p) {
+        case "high":
+          return "high";
+        case "medium":
+          return "medium";
+        case "low":
+          return "low";
+        case "none":
+          return undefined;
         default:
           return undefined;
       }
     };
 
-    setAppState((prev) => ({
-      ...prev,
-      todayView: {
-        ...prev.todayView,
-        taskGroups: prev.todayView.taskGroups.map((group) => ({
-          ...group,
-          tasks: group.tasks.map((task) => {
-            if (task.id === taskId) {
-              const updatedDueType = updates.dueType !== undefined ? updates.dueType : task.dueType;
-              const updatedDueDate = updates.dueDate !== undefined ? updates.dueDate : task.dueDate;
-              return {
-                ...task,
-                dueType: updatedDueType,
-                priority: updates.priority !== undefined ? updates.priority : task.priority,
-                dueDate: updatedDueDate,
-                dueLabel: getDueLabel(updatedDueType, updatedDueDate),
-              };
-            }
-            return task;
-          }),
-        })),
-      },
-    }));
+    // Prepare update payload
+    const updatePayload: { priority?: "low" | "medium" | "high" | "urgent"; dueDate?: string } = {};
+
+    if (updates.priority !== undefined) {
+      const apiPriority = mapPriorityToApi(updates.priority);
+      if (apiPriority) {
+        updatePayload.priority = apiPriority;
+      }
+    }
+
+    if (updates.dueDate !== undefined) {
+      updatePayload.dueDate = updates.dueDate.toISOString();
+    }
+
+    // Update todo via API
+    const result = await updateTodoApi(taskId, updatePayload);
+    if (result.success) {
+      // Refresh todos to sync with server
+      await refreshTodos();
+    }
   };
 
   const handleToggleCompletedSummary = () => {
@@ -457,6 +354,7 @@ export default function TodoList() {
 
   const handleGenerateSubtasks = (taskId: string) => {
     // Generate subtasks based on task title
+    // TODO: Implement AI API call to generate subtasks
     setAppState((prev) => ({
       ...prev,
       todayView: {
@@ -482,6 +380,35 @@ export default function TodoList() {
       },
     }));
   };
+
+  // Show loading state while fetching todos
+  if (todosLoading && todos.length === 0) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-[#f5f5f7] items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600">Loading todos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error
+  if (todosError && todos.length === 0) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-[#f5f5f7] items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading todos: {todosError}</p>
+          <button
+            onClick={() => refreshTodos()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">

@@ -2,6 +2,7 @@ import { googleChatApi } from "../api/googleChat.api";
 import type {
   UpdateWhitelistDto,
   GenerateTodosDto,
+  GenerateTodosFromWhitelistDto,
 } from "../types";
 
 export class GoogleChatService {
@@ -35,6 +36,23 @@ export class GoogleChatService {
       return {
         data: null,
         error: error.message || "Failed to fetch spaces",
+      };
+    }
+  }
+
+  /**
+   * GET /api/v1/integration/spaces/whitelist
+   * Lấy danh sách spaces đã được whitelist của user
+   * Chỉ trả về các spaces đã được whitelist, tất cả đều có isWhitelisted: true
+   */
+  async fetchWhitelistedSpaces() {
+    try {
+      const data = await googleChatApi.getWhitelistedSpaces();
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to fetch whitelisted spaces",
       };
     }
   }
@@ -106,6 +124,25 @@ export class GoogleChatService {
       return {
         data: null,
         error: error.message || "Failed to generate todos",
+      };
+    }
+  }
+
+  /**
+   * POST /api/v1/integration/spaces/whitelist/generate-todos
+   * Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
+   * BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
+   * BE dùng AI agent extract todos từ tất cả messages
+   * BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
+   */
+  async generateTodosFromWhitelist(payload?: GenerateTodosFromWhitelistDto) {
+    try {
+      const data = await googleChatApi.generateTodosFromWhitelist(payload);
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to generate todos from whitelist",
       };
     }
   }
