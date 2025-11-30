@@ -48,7 +48,7 @@ export const useGoogleChat = () => {
     if (result.error) {
       setError(result.error);
     } else if (result.data) {
-      setSpaces(result.data.spaces);
+      setSpaces(result.data.spaces || []);
     }
 
     setLoading(false);
