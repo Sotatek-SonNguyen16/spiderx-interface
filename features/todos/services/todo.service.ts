@@ -1,5 +1,5 @@
 import { todoApi } from "../api/todo.api";
-import type { CreateTodoDto, UpdateTodoDto, TodoQueryParams } from "../types";
+import type { CreateTodoDto, UpdateTodoDto, TodoQueryParams, Todo } from "../types";
 import {
   mapCreateTodoToApi,
   mapUpdateTodoToApi,

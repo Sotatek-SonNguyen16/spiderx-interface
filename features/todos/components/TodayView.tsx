@@ -475,7 +475,9 @@ export default function TodayView({
                                   </span>
                                   {showDeadlineEditor === task.id && (
                                     <div
-                                      ref={(el) => (deadlineEditorRefs.current[task.id] = el)}
+                                      ref={(el) => {
+                                        deadlineEditorRefs.current[task.id] = el;
+                                      }}
                                       className="deadline-popup absolute left-0 top-full z-[1000] mt-2 min-w-[300px] rounded-xl bg-white p-4 shadow-[0_10px_40px_rgba(0,0,0,0.15)] animate-[fadeInScale_0.2s_ease]"
                                     >
                                       <CalendarPopup
@@ -529,7 +531,9 @@ export default function TodayView({
                                   </span>
                                   {showPriorityDropdown === task.id && (
                                     <div
-                                      ref={(el) => (priorityDropdownRefs.current[task.id] = el)}
+                                      ref={(el) => {
+                                        priorityDropdownRefs.current[task.id] = el;
+                                      }}
                                       className="priority-dropdown show absolute left-0 top-full z-[1000] mt-2 min-w-[120px] rounded-lg bg-white p-1 shadow-[0_4px_16px_rgba(0,0,0,0.15)] animate-[fadeInScale_0.2s_ease]"
                                     >
                                       {(["low", "medium", "high"] as Priority[]).map((priority) => (
