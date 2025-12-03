@@ -222,12 +222,12 @@ export const useGoogleChat = () => {
 
   // 9. Hàm generate todos từ tất cả whitelisted spaces
   // Theo spec 6.6.8: POST /api/v1/integration/spaces/whitelist/generate-todos
-  // Body: { "auto_save": true, "limit_per_space": 1000 }
-  // BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
+  // Body: { "auto_save": true, "limit_per_space": 30 }
+  // BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 30 tin nhắn mới nhất mỗi space)
   // BE dùng AI agent extract todos từ tất cả messages
   // BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
   const generateTodosFromWhitelist = useCallback(
-    async (autoSave: boolean = true, limitPerSpace: number = 1000) => {
+    async (autoSave: boolean = true, limitPerSpace: number = 30) => {
       setLoading(true);
       setError(null);
 

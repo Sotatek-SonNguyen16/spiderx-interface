@@ -131,7 +131,7 @@ export class GoogleChatService {
   /**
    * POST /api/v1/integration/spaces/whitelist/generate-todos
    * Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
-   * BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
+   * BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 30 tin nhắn mới nhất mỗi space)
    * BE dùng AI agent extract todos từ tất cả messages
    * BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
    */

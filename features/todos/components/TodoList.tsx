@@ -19,6 +19,7 @@ export default function TodoList() {
 
   const [activeTab, setActiveTab] = useState<TodoTabType>("todo");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [expandedTodoId, setExpandedTodoId] = useState<string | null>(null);
 
   // Filter todos based on active tab
   const filteredTodos = useMemo(() => {
@@ -58,8 +59,8 @@ export default function TodoList() {
   };
 
   const handleItemClick = (id: string) => {
-    console.log("Clicked item:", id);
-    // Open detail view (future implementation)
+    // Toggle expansion: if already expanded, collapse it; otherwise expand it
+    setExpandedTodoId(prev => prev === id ? null : id);
   };
 
   if (todosLoading && todos.length === 0) {
@@ -71,46 +72,55 @@ export default function TodoList() {
   }
 
   return (
-    <div className="flex h-full flex-col p-6 md:p-10">
-      <div className="mx-auto w-full max-w-4xl">
-        {/* Calendar Strip */}
-        <div className="mb-8">
-          <CalendarStrip
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-8">
-          <TodoTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            counts={counts}
-          />
-        </div>
-
-        {/* List */}
-        <div className="space-y-3">
-          {filteredTodos.length === 0 ? (
-            <div className="py-12 text-center text-gray-500">
-              No tasks found in {activeTab}.
-            </div>
-          ) : (
-            filteredTodos.map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                variant={activeTab === "queue" ? "queue" : activeTab === "completed" ? "completed" : "todo"}
-                onToggle={handleToggleTodo}
-                onAccept={handleAcceptQueue}
-                onReject={handleRejectQueue}
-                onClick={handleItemClick}
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Fixed Header Section */}
+      <div className="flex-none p-4 md:p-6 pb-0">
+         <div className="mx-auto w-full max-w-4xl">
+            {/* Calendar Strip */}
+            <div className="mb-4">
+              <CalendarStrip
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
               />
-            ))
-          )}
+            </div>
+
+            {/* Tabs */}
+            <div className="mb-3">
+              <TodoTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                counts={counts}
+              />
+            </div>
+         </div>
+      </div>
+
+      {/* Scrollable List Section */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-0">
+        <div className="mx-auto w-full max-w-4xl">
+            <div className="space-y-2 pb-4">
+              {filteredTodos.length === 0 ? (
+                <div className="py-12 text-center text-gray-500">
+                  No tasks found in {activeTab}.
+                </div>
+              ) : (
+                filteredTodos.map((todo) => (
+                  <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    variant={activeTab === "queue" ? "queue" : activeTab === "completed" ? "completed" : "todo"}
+                    isExpanded={expandedTodoId === todo.id}
+                    onToggle={handleToggleTodo}
+                    onAccept={handleAcceptQueue}
+                    onReject={handleRejectQueue}
+                    onClick={handleItemClick}
+                  />
+                ))
+              )}
+            </div>
         </div>
       </div>
     </div>
   );
 }
+

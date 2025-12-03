@@ -116,7 +116,7 @@ export const googleChatApi = {
    * POST /api/v1/integration/spaces/{space_id}/messages
    * Theo spec 6.6.6: Lấy messages từ Google Chat space với optional filtering
    * Auth: required
-   * Body: { "start_date": "...", "end_date": "...", "sender_filter": "...", "keyword": "...", "limit": 100 }
+   * Body: { "start_date": "...", "end_date": "...", "sender_filter": "...", "keyword": "...", "limit": 30 }
    */
   getMessages: async (
     spaceId: string,
@@ -151,7 +151,7 @@ export const googleChatApi = {
    * POST /api/v1/integration/spaces/whitelist/generate-todos
    * Theo spec 6.6.9: Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
    * Auth: required
-   * Body: { "auto_save": true, "limit_per_space": 1000 }
+   * Body: { "auto_save": true, "limit_per_space": 30 }
    * Note: Backend Python expect snake_case (auto_save, limit_per_space)
    * KHÔNG cần spaceId và messageIds (backend sẽ tự động lấy từ whitelist)
    * 
@@ -175,7 +175,7 @@ export const googleChatApi = {
     if (payload?.limit_per_space !== undefined) {
       requestBody.limit_per_space = payload.limit_per_space;
     } else {
-      requestBody.limit_per_space = 1000; // Default value
+      requestBody.limit_per_space = 30; // Default value
     }
     
     // Log để debug
@@ -209,7 +209,7 @@ export const googleChatApi = {
           if (missingFields.includes("body.spaceId") || missingFields.includes("body.messageIds")) {
             throw new Error(
               "Backend đang expect spaceId và messageIds, nhưng endpoint này không cần những fields đó. " +
-              "Vui lòng kiểm tra backend schema. Frontend đã gửi đúng: { auto_save: true, limit_per_space: 1000 }"
+              "Vui lòng kiểm tra backend schema. Frontend đã gửi đúng: { auto_save: true, limit_per_space: 30 }"
             );
           }
         }
