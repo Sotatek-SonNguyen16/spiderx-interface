@@ -43,6 +43,8 @@ export interface TodoApiModel {
   created_at: string;
   updated_at: string;
   subtasks: SubtaskApiModel[];
+  // Assignee field - can be string (name) or null
+  assignee?: string | null;
   assignee_id?: string | null;
   assignee_name?: string | null;
   // Update v1: Sender information from chat.memberships.readonly scope
@@ -144,5 +146,29 @@ export interface TodoApiQueryParams {
   skip?: number;
   limit?: number;
   keyword?: string;
+}
+
+// =============================================================================
+// SUBTASK API TYPES - Theo OpenAPI spec
+// =============================================================================
+
+/**
+ * SubTaskCreate - Schema for creating a subtask
+ * POST /api/v1/todos/{todo_id}/subtasks
+ */
+export interface SubtaskCreatePayload {
+  title: string; // required, 1-255 chars
+  status?: SubtaskStatus; // default: "todo"
+  order?: number; // default: 0
+}
+
+/**
+ * SubTaskUpdate - Schema for updating a subtask
+ * PUT /api/v1/todos/{todo_id}/subtasks/{subtask_id}
+ */
+export interface SubtaskUpdatePayload {
+  title?: string; // optional, 1-255 chars
+  status?: SubtaskStatus; // optional
+  order?: number; // optional
 }
 

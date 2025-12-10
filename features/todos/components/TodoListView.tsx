@@ -17,6 +17,7 @@ interface TodoListViewProps {
   onRejectQueue: (id: string) => void;
   onItemClick: (id: string) => void;
   onNavigateToDetail: (id: string) => void;
+  onAddSubtasks?: (todoId: string, subtasks: Array<{ title: string }>) => Promise<void>;
 }
 
 export const TodoListView = ({
@@ -31,6 +32,7 @@ export const TodoListView = ({
   onRejectQueue,
   onItemClick,
   onNavigateToDetail,
+  onAddSubtasks,
 }: TodoListViewProps) => {
   if (loading && todos.length === 0) {
     return (
@@ -74,6 +76,7 @@ export const TodoListView = ({
                   onAccept={onAcceptQueue}
                   onReject={onRejectQueue}
                   onClick={onItemClick}
+                  onAddSubtasks={onAddSubtasks}
                 />
               </div>
             ))

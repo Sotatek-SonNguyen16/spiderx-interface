@@ -121,6 +121,116 @@ export class TodoService {
       };
     }
   }
+
+  // =============================================================================
+  // SUBTASK METHODS - Theo OpenAPI spec
+  // =============================================================================
+
+  /**
+   * Add multiple subtasks to a todo
+   * Gọi API POST /api/v1/todos/{todo_id}/subtasks cho từng subtask
+   */
+  async addSubtasks(todoId: string, subtasks: Array<{ title: string }>) {
+    try {
+      // Tạo subtasks tuần tự với order tăng dần
+      for (let i = 0; i < subtasks.length; i++) {
+        await todoApi.createSubtask(todoId, {
+          title: subtasks[i].title,
+          status: "todo",
+          order: i,
+        });
+      }
+      return { error: null };
+    } catch (error: any) {
+      return {
+        error: error.message || "Failed to add subtasks",
+      };
+    }
+  }
+
+  /**
+   * Create a single subtask
+   * POST /api/v1/todos/{todo_id}/subtasks
+   */
+  async createSubtask(todoId: string, payload: { title: string; status?: "todo" | "completed"; order?: number }) {
+    try {
+      const data = await todoApi.createSubtask(todoId, payload);
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to create subtask",
+      };
+    }
+  }
+
+  /**
+   * Get all subtasks for a todo
+   * GET /api/v1/todos/{todo_id}/subtasks
+   */
+  async getSubtasks(todoId: string) {
+    try {
+      const data = await todoApi.getSubtasks(todoId);
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to fetch subtasks",
+      };
+    }
+  }
+
+  /**
+   * Update a subtask
+   * PUT /api/v1/todos/{todo_id}/subtasks/{subtask_id}
+   */
+  async updateSubtask(
+    todoId: string,
+    subtaskId: string,
+    payload: { title?: string; status?: "todo" | "completed"; order?: number }
+  ) {
+    try {
+      const data = await todoApi.updateSubtask(todoId, subtaskId, payload);
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to update subtask",
+      };
+    }
+  }
+
+  /**
+   * Delete a subtask
+   * DELETE /api/v1/todos/{todo_id}/subtasks/{subtask_id}
+   */
+  async deleteSubtask(todoId: string, subtaskId: string) {
+    try {
+      await todoApi.deleteSubtask(todoId, subtaskId);
+      return { error: null };
+    } catch (error: any) {
+      return {
+        error: error.message || "Failed to delete subtask",
+      };
+    }
+  }
+
+  /**
+   * Toggle subtask completion status
+   * PUT /api/v1/todos/{todo_id}/subtasks/{subtask_id}
+   */
+  async toggleSubtask(todoId: string, subtaskId: string, currentStatus: "todo" | "completed") {
+    try {
+      const nextStatus = currentStatus === "completed" ? "todo" : "completed";
+      const data = await todoApi.updateSubtask(todoId, subtaskId, { status: nextStatus });
+      return { data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: error.message || "Failed to toggle subtask",
+      };
+    }
+  }
 }
 
 // Export singleton instance

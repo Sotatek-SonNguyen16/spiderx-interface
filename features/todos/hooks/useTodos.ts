@@ -166,6 +166,28 @@ export const useTodos = () => {
     await fetchTodos();
   }, [fetchTodos]);
 
+  // 6.1 Hàm thêm subtasks vào todo
+  const addSubtasks = useCallback(
+    async (todoId: string, subtasks: Array<{ title: string }>) => {
+      setLoading(true);
+      setError(null);
+
+      const result = await todoService.addSubtasks(todoId, subtasks);
+
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+        return { success: false, error: result.error };
+      }
+
+      // Refresh để sync với server
+      await fetchTodos();
+      setLoading(false);
+      return { success: true };
+    },
+    [setLoading, setError, fetchTodos]
+  );
+
   // 7. Hàm apply filters
   const applyFilters = useCallback(
     (newFilters: typeof filters) => {
@@ -214,6 +236,7 @@ export const useTodos = () => {
     updateTodo: updateTodoById,
     deleteTodo,
     toggleTodo,
+    addSubtasks,
     applyFilters,
     changePage,
     refresh,

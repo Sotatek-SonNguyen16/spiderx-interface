@@ -273,20 +273,50 @@ export const googleChatApi = {
   },
 
   // =============================================================================
-  // Extract Text API - Update v1
-  // Paste context to extract action items
+  // AI Extract API - Theo OpenAPI spec
+  // POST /api/v1/ai/extract
   // =============================================================================
 
   /**
-   * POST /api/v1/todos/extract-from-text
-   * Extract todos from pasted text using AI
+   * POST /api/v1/ai/extract
+   * Extract todos from text using AI (Gemini)
+   * 
+   * Request Body (application/x-www-form-urlencoded):
+   * - text: string (required) - Text to analyze for todos
+   * - auto_save: boolean (default: false) - Automatically save extracted todos
+   * - source_type: string (default: "chat") - Source type: chat, email, or meeting
+   * - source_id: string (optional) - Optional source ID
+   * 
+   * Response (ExtractionResult):
+   * - todos: ExtractedTodoResponse[] - List of extracted todos
+   * - confidence: number (0-1) - Confidence score
+   * - summary: string - Summary of extraction
+   * - saved_count: number - Number of todos saved (if auto_save=true)
    */
   extractTodosFromText: async (
     payload: ExtractTextRequest
   ): Promise<ExtractTextResponse> => {
-    const response = await apiClient.post<ExtractTextResponse>(
-      "/api/v1/todos/extract-from-text",
-      payload
+    // OpenAPI spec yêu cầu form-urlencoded format
+    const formData = new URLSearchParams();
+    formData.append("text", payload.text);
+    if (payload.auto_save !== undefined) {
+      formData.append("auto_save", String(payload.auto_save));
+    }
+    if (payload.source_type) {
+      formData.append("source_type", payload.source_type);
+    }
+    if (payload.source_id) {
+      formData.append("source_id", payload.source_id);
+    }
+
+    const response = await apiClient.getInstance().post<ExtractTextResponse>(
+      "/api/v1/ai/extract",
+      formData,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
     );
     return response.data;
   },

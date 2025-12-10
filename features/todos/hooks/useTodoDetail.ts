@@ -105,6 +105,7 @@ export const useTodoDetail = (todoId: string) => {
   }, [todoId, setSelectedTodo]);
 
   // Toggle subtask status
+  // PUT /api/v1/todos/{todo_id}/subtasks/{subtask_id}
   const toggleSubtask = useCallback(async (subtaskId: string): Promise<{
     success: boolean;
     error?: string;
@@ -127,12 +128,39 @@ export const useTodoDetail = (todoId: string) => {
       } : null,
     }));
 
-    // TODO: Call API to update subtask when endpoint is available
-    // For now, just return success
-    return { success: true };
-  }, [state.todo]);
+    try {
+      const result = await todoService.toggleSubtask(todoId, subtaskId, subtask.status);
+      if (result.error) {
+        // Revert optimistic update on error
+        setState((prev) => ({
+          ...prev,
+          todo: prev.todo ? {
+            ...prev.todo,
+            subtasks: prev.todo.subtasks.map((s) =>
+              s.id === subtaskId ? { ...s, status: subtask.status } : s
+            ),
+          } : null,
+        }));
+        return { success: false, error: result.error };
+      }
+      return { success: true };
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setState((prev) => ({
+        ...prev,
+        todo: prev.todo ? {
+          ...prev.todo,
+          subtasks: prev.todo.subtasks.map((s) =>
+            s.id === subtaskId ? { ...s, status: subtask.status } : s
+          ),
+        } : null,
+      }));
+      return { success: false, error: error.message || "Failed to toggle subtask" };
+    }
+  }, [state.todo, todoId]);
 
   // Add subtask
+  // POST /api/v1/todos/{todo_id}/subtasks
   const addSubtask = useCallback(async (title: string): Promise<{
     success: boolean;
     data?: Subtask;
@@ -160,29 +188,31 @@ export const useTodoDetail = (todoId: string) => {
     }));
 
     try {
-      // Call API to create subtask: POST /api/v1/todos/{todo_id}/subtasks
-      const { apiClient } = await import("@/lib/api");
-      const response = await apiClient.post<{
-        subtask_id: string;
-        todo_id: string;
-        title: string;
-        status: SubtaskStatus;
-        order: number;
-        created_at: string;
-        completed_at: string | null;
-      }>(`/api/v1/todos/${todoId}/subtasks`, {
+      const result = await todoService.createSubtask(todoId, {
         title,
         status: "todo",
         order: state.todo.subtasks.length,
       });
 
+      if (result.error || !result.data) {
+        // Revert optimistic update on error
+        setState((prev) => ({
+          ...prev,
+          todo: prev.todo ? {
+            ...prev.todo,
+            subtasks: prev.todo.subtasks.filter((s) => s.id !== tempSubtask.id),
+          } : null,
+        }));
+        return { success: false, error: result.error || "Failed to create subtask" };
+      }
+
       const savedSubtask: Subtask = {
-        id: response.data.subtask_id,
-        title: response.data.title,
-        status: response.data.status,
-        order: response.data.order,
-        createdAt: response.data.created_at,
-        completedAt: response.data.completed_at,
+        id: result.data.subtask_id,
+        title: result.data.title,
+        status: result.data.status,
+        order: result.data.order,
+        createdAt: result.data.created_at,
+        completedAt: result.data.completed_at,
       };
 
       // Update with real data from server
@@ -214,11 +244,15 @@ export const useTodoDetail = (todoId: string) => {
   }, [state.todo, todoId]);
 
   // Delete subtask
+  // DELETE /api/v1/todos/{todo_id}/subtasks/{subtask_id}
   const deleteSubtask = useCallback(async (subtaskId: string): Promise<{
     success: boolean;
     error?: string;
   }> => {
     if (!state.todo) return { success: false, error: "No todo loaded" };
+
+    // Store subtask for potential rollback
+    const deletedSubtask = state.todo.subtasks.find((s) => s.id === subtaskId);
 
     // Optimistic update
     setState((prev) => ({
@@ -229,9 +263,36 @@ export const useTodoDetail = (todoId: string) => {
       } : null,
     }));
 
-    // TODO: Call API to delete subtask when endpoint is available
-    return { success: true };
-  }, [state.todo]);
+    try {
+      const result = await todoService.deleteSubtask(todoId, subtaskId);
+      if (result.error) {
+        // Revert optimistic update on error
+        if (deletedSubtask) {
+          setState((prev) => ({
+            ...prev,
+            todo: prev.todo ? {
+              ...prev.todo,
+              subtasks: [...prev.todo.subtasks, deletedSubtask].sort((a, b) => a.order - b.order),
+            } : null,
+          }));
+        }
+        return { success: false, error: result.error };
+      }
+      return { success: true };
+    } catch (error: any) {
+      // Revert optimistic update on error
+      if (deletedSubtask) {
+        setState((prev) => ({
+          ...prev,
+          todo: prev.todo ? {
+            ...prev.todo,
+            subtasks: [...prev.todo.subtasks, deletedSubtask].sort((a, b) => a.order - b.order),
+          } : null,
+        }));
+      }
+      return { success: false, error: error.message || "Failed to delete subtask" };
+    }
+  }, [state.todo, todoId]);
 
   // Start editing a field
   const startEditing = useCallback((field: string) => {

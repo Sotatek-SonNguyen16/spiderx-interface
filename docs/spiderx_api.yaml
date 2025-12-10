@@ -1,0 +1,3612 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SpiderX",
+    "description": "SpiderX - Auto Todo Extraction System API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root endpoint",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "description": "Register a new user.\n\nCreates a new user account with the provided information.\n\n**Request Body**:\n- `username`: Unique username (min 3, max 50 characters)\n- `email`: Valid email address\n- `password`: Password (min 8 characters)\n- `full_name`: Full name (optional)\n- `avatar`: Avatar URL (optional)\n- `timezone`: Timezone (default: UTC)\n- `working_hours`: Working hours configuration (optional)\n\n**Response**:\n- Created user object\n\n**Errors**:\n- 400 if username or email already exists",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Login user and return access token.\n\nAuthenticates user credentials and returns a JWT access token.\n\n**Request Body**:\n```json\n{\n  \"username\": \"your_username\",\n  \"password\": \"your_password\"\n}\n```\n\n**Response**:\n- `access_token`: JWT token for authentication\n- `token_type`: Token type (always \"bearer\")\n\n**Errors**:\n- 401 if credentials are invalid",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Current User",
+        "description": "Get current user profile",
+        "operationId": "get_current_user_api_v1_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update Current User",
+        "description": "Update current user profile",
+        "operationId": "update_current_user_api_v1_users_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/todos/": {
+      "post": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Create Todo",
+        "description": "Create a new todo item",
+        "operationId": "create_todo_api_v1_todos__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoItemCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Get Todos",
+        "description": "Get all todos for current user",
+        "operationId": "get_todos_api_v1_todos__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TodoStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status Filter"
+            }
+          },
+          {
+            "name": "context_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Context Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TodoItem"
+                  },
+                  "title": "Response Get Todos Api V1 Todos  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/todos/{todo_id}": {
+      "get": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Get Todo",
+        "description": "Get a specific todo by ID",
+        "operationId": "get_todo_api_v1_todos__todo_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Update Todo",
+        "description": "Update a todo item",
+        "operationId": "update_todo_api_v1_todos__todo_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoItemUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Delete Todo",
+        "description": "Delete a todo item",
+        "operationId": "delete_todo_api_v1_todos__todo_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/todos/{todo_id}/subtasks": {
+      "post": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Create Subtask",
+        "description": "Create a subtask for a todo",
+        "operationId": "create_subtask_api_v1_todos__todo_id__subtasks_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubTaskCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubTask"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Get Subtasks",
+        "description": "Get all subtasks for a todo",
+        "operationId": "get_subtasks_api_v1_todos__todo_id__subtasks_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubTask"
+                  },
+                  "title": "Response Get Subtasks Api V1 Todos  Todo Id  Subtasks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/todos/{todo_id}/subtasks/{subtask_id}": {
+      "put": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Update Subtask",
+        "description": "Update a subtask",
+        "operationId": "update_subtask_api_v1_todos__todo_id__subtasks__subtask_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          },
+          {
+            "name": "subtask_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subtask Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubTaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubTask"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Delete Subtask",
+        "description": "Delete a subtask",
+        "operationId": "delete_subtask_api_v1_todos__todo_id__subtasks__subtask_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "todo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Todo Id"
+            }
+          },
+          {
+            "name": "subtask_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subtask Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contexts/": {
+      "post": {
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Create Context",
+        "description": "Create a new context",
+        "operationId": "create_context_api_v1_contexts__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Get Contexts",
+        "description": "Get all contexts for current user",
+        "operationId": "get_contexts_api_v1_contexts__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Active Only"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Context"
+                  },
+                  "title": "Response Get Contexts Api V1 Contexts  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contexts/{context_id}": {
+      "get": {
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Get Context",
+        "description": "Get a specific context by ID",
+        "operationId": "get_context_api_v1_contexts__context_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "context_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Context Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Update Context",
+        "description": "Update a context",
+        "operationId": "update_context_api_v1_contexts__context_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "context_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Context Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Delete Context",
+        "description": "Delete a context (soft delete by setting is_active to False)",
+        "operationId": "delete_context_api_v1_contexts__context_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "context_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Context Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/extract": {
+      "post": {
+        "tags": [
+          "AI Todo Extraction"
+        ],
+        "summary": "Extract Todos",
+        "description": "Extract todos from text using AI (Form version - easy to test in Swagger UI)\n\nThis endpoint analyzes text and extracts actionable todo items using Gemini AI.\n\nJust type your text in the form and click Execute!\n\nExample: \"hôm nay vào họp lúc 2h30 nhé, deadline báo cáo là thứ 6\"",
+        "operationId": "extract_todos_api_v1_ai_extract_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_todos_api_v1_ai_extract_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ai/extract-batch": {
+      "post": {
+        "tags": [
+          "AI Todo Extraction"
+        ],
+        "summary": "Extract Todos Batch",
+        "description": "Extract todos from multiple chat messages.\n\nThis endpoint processes multiple messages at once, extracting todos from each.\nUseful for analyzing entire conversations or message threads.\n\n- **messages**: List of chat messages with content and sender info\n- **conversation_id**: Optional ID of the conversation\n- **auto_save**: If True, saves all extracted todos to database\n\nReturns aggregated results from all messages.",
+        "operationId": "extract_todos_batch_api_v1_ai_extract_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchExtractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchExtractionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ai/health": {
+      "get": {
+        "tags": [
+          "AI Todo Extraction"
+        ],
+        "summary": "Ai Health Check",
+        "description": "Check if AI service is configured and ready.\n\nReturns the status of Gemini API configuration.",
+        "operationId": "ai_health_check_api_v1_ai_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integration/connect": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Connect Google Chat",
+        "description": "Connect user's Google Chat account.\n\nSaves the encrypted refresh token and initializes the integration.\n\n**Security**: Requires authentication via JWT token.\n\n**Request Body**:\n```json\n{\n  \"refreshToken\": \"your_google_oauth_refresh_token\"\n}\n```\n\n**Response**:\n- Connection status with provider info\n\n**Errors**:\n- 400 if refresh token is missing or invalid\n- 500 if connection fails",
+        "operationId": "connect_google_chat_api_v1_integration_connect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleChatConnectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/status": {
+      "get": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Get Integration Status",
+        "description": "Get current Google Chat integration status.\n\nReturns connection status, last sync time, and any errors.\n\nIf the refresh token is invalid (invalid_grant), the status will be \"error\"\nand the user should disconnect and reconnect.\n\n**Security**: Requires authentication via JWT token.",
+        "operationId": "get_integration_status_api_v1_integration_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/spaces": {
+      "get": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Get Spaces",
+        "description": "Get list of Google Chat spaces with whitelist status.\n\nFetches all spaces from Google Chat API and merges with whitelist status from database.\n\n**Security**: Requires authentication via JWT token.\n\n**Response**:\n- List of spaces with `isWhitelisted` flag\n\n**Errors**:\n- 403 if user is not connected to Google Chat\n- 500 if Google Chat API fails",
+        "operationId": "get_spaces_api_v1_integration_spaces_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/spaces/whitelist": {
+      "get": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Get Whitelisted Spaces",
+        "description": "Get list of whitelisted Google Chat spaces.\n\nReturns only spaces that are in the user's whitelist with full details.\n\n**Security**: Requires authentication via JWT token.\n\n**Response**:\n- List of whitelisted spaces with details (id, name, description, etc.)\n\n**Errors**:\n- 403 if user is not connected to Google Chat\n- 500 if Google Chat API fails",
+        "operationId": "get_whitelisted_spaces_api_v1_integration_spaces_whitelist_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Update Whitelist",
+        "description": "Update whitelisted spaces for message scanning.\n\nOnly whitelisted spaces will be scanned by the background worker.\n\n**Security**: Requires authentication via JWT token.\n\n**Request Body**:\n- `spaceIds`: List of space IDs to whitelist\n\n**Response**:\n- Status and list of updated space IDs",
+        "operationId": "update_whitelist_api_v1_integration_spaces_whitelist_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhitelistUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhitelistUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/disconnect": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Disconnect Google Chat",
+        "description": "Disconnect Google Chat integration.\n\nRevokes the refresh token and removes the connection from database.\n\n**Security**: Requires authentication via JWT token.",
+        "operationId": "disconnect_google_chat_api_v1_integration_disconnect_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisconnectResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/spaces/{space_id}/messages": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Get Space Messages",
+        "description": "Get messages from a Google Chat space with optional filtering.\n\nThis endpoint fetches messages from Google Chat API and optionally saves them to database.\n\n**Security**: Requires authentication via JWT token.\n\n**Path Parameters**:\n- `space_id`: Google Chat space ID\n\n**Request Body**:\n- `start_date`: Filter messages after this date (optional)\n- `end_date`: Filter messages before this date (optional)\n- `sender_filter`: Filter by sender (optional, not yet implemented)\n- `keyword`: Search keyword (optional, not yet implemented)\n- `limit`: Maximum number of messages (default: 1000, max: 1000, newest first)\n\n**Response**:\n- List of messages with sender info and timestamps\n- Total count of messages\n- Space name\n\n**Note**: This endpoint fetches fresh data from Google Chat API.\nFor AI todo extraction, use the `/generate-todos` endpoint.",
+        "operationId": "get_space_messages_api_v1_integration_spaces__space_id__messages_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "space_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Space Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageFilterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integration/spaces/whitelist/generate-todos": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Generate Todos From Whitelisted Spaces",
+        "description": "Generate todos from all whitelisted Google Chat spaces using AI.\n\nThis endpoint processes messages from all spaces in the user's whitelist\nand extracts todos using SpiderX AI agent.\n\n**Security**: Requires authentication via JWT token.\n\n**Request Body**:\n- `auto_save`: Whether to automatically save generated todos (default: true)\n- `limit_per_space`: Maximum number of messages to process per space (default: 100, newest first)\n\n**Response**:\n- Number of messages processed across all spaces\n- Number of todos generated\n- Number of todos saved (if auto_save=true)\n- Summary of the operation\n\n**AI Processing**:\n- Uses TodoExtractorAgent with multi-provider fallback\n- Processes messages from all whitelisted spaces\n- Extracts title, priority, due date, tags, etc.\n- Links todos to source messages via `source_space_id` and `source_message_id`\n\n**Note**: Only processes spaces that are in the user's whitelist.",
+        "operationId": "generate_todos_from_whitelisted_spaces_api_v1_integration_spaces_whitelist_generate_todos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhitelistedSpacesTodoGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchTodoGenerationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/spaces/{space_id}/generate-todos": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Generate Todos From Messages",
+        "description": "Generate todos from Google Chat messages using AI.\n\nThis endpoint uses SpiderX AI agent to extract todos from messages.\n\n**Security**: Requires authentication via JWT token.\n\n**Path Parameters**:\n- `space_id`: Google Chat space ID\n\n**Request Body**:\n- `spaceId`: Space ID (duplicate from path)\n- `messageIds`: List of message IDs to process\n- `autoSave`: Whether to automatically save generated todos (default: true)\n\n**Response**:\n- Number of messages processed\n- Number of todos generated\n- Number of todos saved (if auto_save=true)\n- Summary of the operation\n\n**AI Processing**:\n- Uses TodoExtractorAgent with multi-provider fallback\n- Extracts title, priority, due date, tags, etc.\n- Links todos to source messages via `source_space_id` and `source_message_id`",
+        "operationId": "generate_todos_from_messages_api_v1_integration_spaces__space_id__generate_todos_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "space_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Space Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchTodoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchTodoGenerationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integration/tasks/whitelist/generate-todos": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Start Whitelisted Todos Task",
+        "description": "Start an async task to generate todos from all whitelisted spaces.\n\nThis endpoint immediately returns a task ID that can be used to poll\nfor progress and results (stored in Redis). Use this for processing\nmultiple spaces to avoid HTTP timeout issues.\n\n**Security**: Requires authentication via JWT token.\n\n**Request Body**:\n- `autoSave`: Whether to automatically save generated todos (default: true)\n- `limitPerSpace`: Maximum messages per space (default: 100, max: 1000)\n\n**Response**:\n- `taskId`: Task ID for polling status\n- `pollUrl`: URL to poll for task progress\n\n**Polling**:\n- Use GET /tasks/{taskId} to check progress\n- Poll every 2-5 seconds until status is \"SUCCESS\" or \"FAILURE\"",
+        "operationId": "start_whitelisted_todos_task_api_v1_integration_tasks_whitelist_generate_todos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/tasks/spaces/{space_id}/generate-todos": {
+      "post": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Start Space Todos Task",
+        "description": "Start an async task to generate todos from a specific space.\n\n**Security**: Requires authentication via JWT token.\n\n**Path Parameters**:\n- `space_id`: Google Chat space ID\n\n**Request Body**:\n- `messageIds`: Optional list of specific message IDs to process\n- `autoSave`: Whether to automatically save generated todos (default: true)\n- `limit`: Maximum messages to fetch if messageIds not specified (default: 30)\n\n**Response**:\n- `taskId`: Task ID for polling status\n- `pollUrl`: URL to poll for task progress",
+        "operationId": "start_space_todos_task_api_v1_integration_tasks_spaces__space_id__generate_todos_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "space_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Space Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpaceTaskStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integration/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Get Task Status",
+        "description": "Get the status and progress of a background task from Redis.\n\nUse this endpoint to poll for task completion.\n\n**Security**: Requires authentication via JWT token.\n\n**Path Parameters**:\n- `task_id`: Task ID returned from task start endpoint\n\n**Response**:\n- `taskId`: Task ID\n- `status`: Current status (PENDING, STARTED, PROGRESS, SUCCESS, FAILURE, REVOKED)\n- `progress`: Progress information (progress message, percent)\n- `result`: Result data when task completes successfully\n- `error`: Error message when task fails\n\n**Polling Strategy**:\n- Poll every 2-5 seconds\n- Stop when status is \"SUCCESS\" or \"FAILURE\"",
+        "operationId": "get_task_status_api_v1_integration_tasks__task_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskProgressResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Google Chat Integration"
+        ],
+        "summary": "Cancel Task",
+        "description": "Cancel a pending or running task.\n\n**Security**: Requires authentication via JWT token.\n\n**Path Parameters**:\n- `task_id`: Task ID to cancel\n\n**Note**: Cannot cancel completed or failed tasks.",
+        "operationId": "cancel_task_api_v1_integration_tasks__task_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchExtractRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Messages",
+            "description": "List of messages"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id",
+            "description": "ID of the conversation"
+          },
+          "auto_save": {
+            "type": "boolean",
+            "title": "Auto Save",
+            "description": "If True, automatically save extracted todos",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "BatchExtractRequest",
+        "description": "Request to extract todos from multiple messages"
+      },
+      "BatchExtractionResult": {
+        "properties": {
+          "total_messages": {
+            "type": "integer",
+            "title": "Total Messages"
+          },
+          "total_todos_found": {
+            "type": "integer",
+            "title": "Total Todos Found"
+          },
+          "total_saved": {
+            "type": "integer",
+            "title": "Total Saved"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionResult"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_messages",
+          "total_todos_found",
+          "total_saved",
+          "results",
+          "summary"
+        ],
+        "title": "BatchExtractionResult",
+        "description": "Result of batch todo extraction"
+      },
+      "BatchTodoGenerationRequest": {
+        "properties": {
+          "spaceId": {
+            "type": "string",
+            "title": "Spaceid",
+            "description": "Space ID"
+          },
+          "messageIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Messageids",
+            "description": "List of message IDs to process"
+          },
+          "autoSave": {
+            "type": "boolean",
+            "title": "Autosave",
+            "description": "Automatically save extracted todos",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "spaceId",
+          "messageIds"
+        ],
+        "title": "BatchTodoGenerationRequest",
+        "description": "Request to generate todos from messages"
+      },
+      "BatchTodoGenerationResponse": {
+        "properties": {
+          "totalMessagesProcessed": {
+            "type": "integer",
+            "title": "Totalmessagesprocessed",
+            "description": "Number of messages processed"
+          },
+          "totalTodosGenerated": {
+            "type": "integer",
+            "title": "Totaltodosgenerated",
+            "description": "Number of todos generated"
+          },
+          "totalTodosSaved": {
+            "type": "integer",
+            "title": "Totaltodossaved",
+            "description": "Number of todos saved to database"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Summary of the operation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalMessagesProcessed",
+          "totalTodosGenerated",
+          "totalTodosSaved",
+          "summary"
+        ],
+        "title": "BatchTodoGenerationResponse",
+        "description": "Response for batch todo generation"
+      },
+      "Body_extract_todos_api_v1_ai_extract_post": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Text to analyze for todos (e.g., 'Meeting at 2pm tomorrow, finish report by Friday')"
+          },
+          "auto_save": {
+            "type": "boolean",
+            "title": "Auto Save",
+            "description": "Automatically save extracted todos to database",
+            "default": false
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type",
+            "description": "Source type: chat, email, or meeting",
+            "default": "chat"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id",
+            "description": "Optional source ID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "Body_extract_todos_api_v1_ai_extract_post"
+      },
+      "ChatMessage": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Message content"
+          },
+          "sender_name": {
+            "type": "string",
+            "title": "Sender Name",
+            "description": "Name of the sender"
+          },
+          "sender_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Id",
+            "description": "ID of the sender"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp",
+            "description": "Message timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "sender_name"
+        ],
+        "title": "ChatMessage",
+        "description": "A single chat message"
+      },
+      "Context": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "context_id": {
+            "type": "string",
+            "title": "Context Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "context_id",
+          "is_active",
+          "created_at"
+        ],
+        "title": "Context",
+        "description": "Schema for context response"
+      },
+      "ContextCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ContextCreate",
+        "description": "Schema for creating a context"
+      },
+      "ContextUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "title": "ContextUpdate",
+        "description": "Schema for updating a context"
+      },
+      "DisconnectResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "disconnected",
+            "title": "Status",
+            "description": "Disconnection status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "DisconnectResponse",
+        "description": "Response for disconnect"
+      },
+      "EisenhowerMatrix": {
+        "type": "string",
+        "enum": [
+          "urgent_important",
+          "not_urgent_important",
+          "urgent_not_important",
+          "not_urgent_not_important"
+        ],
+        "title": "EisenhowerMatrix",
+        "description": "Eisenhower matrix quadrant"
+      },
+      "ExtractedTodoResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "estimated_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Time"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "eisenhower": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eisenhower"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "priority"
+        ],
+        "title": "ExtractedTodoResponse",
+        "description": "Response for a single extracted todo - matches TodoItem DB structure"
+      },
+      "ExtractionResult": {
+        "properties": {
+          "todos": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractedTodoResponse"
+            },
+            "type": "array",
+            "title": "Todos"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Confidence",
+            "description": "Confidence score (0-1)"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "saved_count": {
+            "type": "integer",
+            "title": "Saved Count",
+            "description": "Number of todos saved to database (if auto_save=True)",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "todos",
+          "confidence",
+          "summary"
+        ],
+        "title": "ExtractionResult",
+        "description": "Result of todo extraction"
+      },
+      "GoogleChatConnectRequest": {
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "title": "Refreshtoken",
+            "description": "Google OAuth refresh token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refreshToken"
+        ],
+        "title": "GoogleChatConnectRequest",
+        "description": "Request to connect Google Chat account"
+      },
+      "GoogleChatMessage": {
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "title": "Messageid",
+            "description": "Message ID"
+          },
+          "spaceId": {
+            "type": "string",
+            "title": "Spaceid",
+            "description": "Space ID"
+          },
+          "senderId": {
+            "type": "string",
+            "title": "Senderid",
+            "description": "Sender user ID"
+          },
+          "senderName": {
+            "type": "string",
+            "title": "Sendername",
+            "description": "Sender display name"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Message text content"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Message timestamp"
+          },
+          "threadId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threadid",
+            "description": "Thread ID if message is in a thread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messageId",
+          "spaceId",
+          "senderId",
+          "senderName",
+          "content",
+          "timestamp"
+        ],
+        "title": "GoogleChatMessage",
+        "description": "Google Chat message"
+      },
+      "GoogleChatSpace": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Space ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Space display name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Space description"
+          },
+          "isWhitelisted": {
+            "type": "boolean",
+            "title": "Iswhitelisted",
+            "description": "Whether this space is whitelisted for scanning"
+          },
+          "displayName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Displayname",
+            "description": "Human-readable display name"
+          },
+          "spaceType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spacetype",
+            "description": "Type of space (SPACE, DIRECT_MESSAGE, GROUP_CONVERSATION)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "isWhitelisted"
+        ],
+        "title": "GoogleChatSpace",
+        "description": "Google Chat space information"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IntegrationStatusResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "connected",
+              "not_connected",
+              "error"
+            ],
+            "title": "Status",
+            "description": "Connection status"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Provider name (e.g., 'google_chat')"
+          },
+          "lastSyncAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastsyncat",
+            "description": "Last sync timestamp"
+          },
+          "lastError": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterror",
+            "description": "Last error message if status is 'error'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "IntegrationStatusResponse",
+        "description": "Response for integration status"
+      },
+      "MessageFilterRequest": {
+        "properties": {
+          "space_id": {
+            "type": "string",
+            "title": "Space Id",
+            "description": "Google Chat space ID"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date",
+            "description": "Start date for message filtering (inclusive)"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date",
+            "description": "End date for message filtering (inclusive)"
+          },
+          "sender_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Filter",
+            "description": "Filter by sender name or ID"
+          },
+          "keyword": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keyword",
+            "description": "Search messages containing this keyword"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "title": "Limit",
+            "description": "Maximum number of messages to return (default: 1000, newest first)",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "required": [
+          "space_id"
+        ],
+        "title": "MessageFilterRequest",
+        "description": "Request to filter messages for todo extraction"
+      },
+      "MessageListResponse": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/GoogleChatMessage"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "List of messages"
+          },
+          "totalCount": {
+            "type": "integer",
+            "title": "Totalcount",
+            "description": "Total number of messages matching filter"
+          },
+          "spaceName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spacename",
+            "description": "Name of the space"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages",
+          "totalCount"
+        ],
+        "title": "MessageListResponse",
+        "description": "Response for list of messages"
+      },
+      "SpaceListResponse": {
+        "properties": {
+          "spaces": {
+            "items": {
+              "$ref": "#/components/schemas/GoogleChatSpace"
+            },
+            "type": "array",
+            "title": "Spaces",
+            "description": "List of Google Chat spaces"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spaces"
+        ],
+        "title": "SpaceListResponse",
+        "description": "Response for list of spaces"
+      },
+      "SpaceTaskStartRequest": {
+        "properties": {
+          "messageIds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Messageids",
+            "description": "Optional list of message IDs to process"
+          },
+          "autoSave": {
+            "type": "boolean",
+            "title": "Autosave",
+            "description": "Automatically save extracted todos",
+            "default": true
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 1000,
+            "minimum": 1,
+            "title": "Limit",
+            "description": "Maximum number of messages to fetch (if messageIds not specified)",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "title": "SpaceTaskStartRequest",
+        "description": "Request to start an async task for a specific space"
+      },
+      "SubTask": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubTaskStatus",
+            "default": "todo"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order",
+            "default": 0
+          },
+          "subtask_id": {
+            "type": "string",
+            "title": "Subtask Id"
+          },
+          "todo_id": {
+            "type": "string",
+            "title": "Todo Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "subtask_id",
+          "todo_id",
+          "created_at"
+        ],
+        "title": "SubTask",
+        "description": "Schema for subtask response"
+      },
+      "SubTaskCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubTaskStatus",
+            "default": "todo"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "SubTaskCreate",
+        "description": "Schema for creating a subtask"
+      },
+      "SubTaskStatus": {
+        "type": "string",
+        "enum": [
+          "todo",
+          "completed"
+        ],
+        "title": "SubTaskStatus",
+        "description": "SubTask status enumeration"
+      },
+      "SubTaskUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubTaskStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order"
+          }
+        },
+        "type": "object",
+        "title": "SubTaskUpdate",
+        "description": "Schema for updating a subtask"
+      },
+      "TaskProgressResponse": {
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "title": "Taskid",
+            "description": "Task ID for polling"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current task status (PENDING, STARTED, PROGRESS, SUCCESS, FAILURE, REVOKED)"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Progress",
+            "description": "Progress information (progress message, percent)"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result",
+            "description": "Result data (when completed)"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Error message (when failed)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "taskId",
+          "status"
+        ],
+        "title": "TaskProgressResponse",
+        "description": "Response for task progress/status (stored in Redis via Celery)"
+      },
+      "TaskStartRequest": {
+        "properties": {
+          "autoSave": {
+            "type": "boolean",
+            "title": "Autosave",
+            "description": "Automatically save extracted todos",
+            "default": true
+          },
+          "limitPerSpace": {
+            "type": "integer",
+            "maximum": 1000,
+            "minimum": 1,
+            "title": "Limitperspace",
+            "description": "Maximum number of messages to process per space",
+            "default": 100
+          }
+        },
+        "type": "object",
+        "title": "TaskStartRequest",
+        "description": "Request to start an async task"
+      },
+      "TaskStartResponse": {
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "title": "Taskid",
+            "description": "Task ID for polling status"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Initial task status",
+            "default": "pending"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message"
+          },
+          "pollUrl": {
+            "type": "string",
+            "title": "Pollurl",
+            "description": "URL to poll for task status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "taskId",
+          "message",
+          "pollUrl"
+        ],
+        "title": "TaskStartResponse",
+        "description": "Response when starting an async task"
+      },
+      "TodoItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TodoStatus",
+            "default": "todo"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TodoPriority",
+            "default": "medium"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "estimated_time": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Time"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/TodoSourceType",
+            "default": "manual"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "eisenhower": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EisenhowerMatrix"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "todo_id": {
+            "type": "string",
+            "title": "Todo Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "context_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Id"
+          },
+          "actual_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Time"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "subtasks": {
+            "items": {
+              "$ref": "#/components/schemas/SubTask"
+            },
+            "type": "array",
+            "title": "Subtasks",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "todo_id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TodoItem",
+        "description": "Schema for todo item response"
+      },
+      "TodoItemCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TodoStatus",
+            "default": "todo"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TodoPriority",
+            "default": "medium"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "estimated_time": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Time"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/TodoSourceType",
+            "default": "manual"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "eisenhower": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EisenhowerMatrix"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "context_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "TodoItemCreate",
+        "description": "Schema for creating a todo item"
+      },
+      "TodoItemUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TodoStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TodoPriority"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "estimated_time": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Time"
+          },
+          "actual_time": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Time"
+          },
+          "context_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Id"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "eisenhower": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EisenhowerMatrix"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "TodoItemUpdate",
+        "description": "Schema for updating a todo item"
+      },
+      "TodoPriority": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ],
+        "title": "TodoPriority",
+        "description": "Todo priority enumeration"
+      },
+      "TodoSourceType": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "chat",
+          "email",
+          "meeting",
+          "template"
+        ],
+        "title": "TodoSourceType",
+        "description": "Todo source type enumeration"
+      },
+      "TodoStatus": {
+        "type": "string",
+        "enum": [
+          "todo",
+          "in_progress",
+          "completed",
+          "cancelled"
+        ],
+        "title": "TodoStatus",
+        "description": "Todo status enumeration"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "title": "Token",
+        "description": "Schema for JWT token"
+      },
+      "User": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone",
+            "default": "UTC"
+          },
+          "working_hours": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Working Hours"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "user_id",
+          "role",
+          "created_at"
+        ],
+        "title": "User",
+        "description": "Schema for user response"
+      },
+      "UserCreate": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone",
+            "default": "UTC"
+          },
+          "working_hours": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Working Hours"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "UserCreate",
+        "description": "Schema for creating a user"
+      },
+      "UserLogin": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "UserLogin",
+        "description": "Schema for user login"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "admin",
+          "user",
+          "guest"
+        ],
+        "title": "UserRole",
+        "description": "User role enumeration"
+      },
+      "UserUpdate": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "working_hours": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Working Hours"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdate",
+        "description": "Schema for updating a user"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WhitelistUpdateRequest": {
+        "properties": {
+          "spaceIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Spaceids",
+            "description": "List of space IDs to whitelist for scanning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spaceIds"
+        ],
+        "title": "WhitelistUpdateRequest",
+        "description": "Request to update whitelisted spaces"
+      },
+      "WhitelistUpdateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Update status",
+            "default": "ok"
+          },
+          "updatedSpaces": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Updatedspaces",
+            "description": "List of space IDs that were updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updatedSpaces"
+        ],
+        "title": "WhitelistUpdateResponse",
+        "description": "Response for whitelist update"
+      },
+      "WhitelistedSpacesTodoGenerationRequest": {
+        "properties": {
+          "autoSave": {
+            "type": "boolean",
+            "title": "Autosave",
+            "description": "Automatically save extracted todos",
+            "default": true
+          },
+          "limitPerSpace": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limitperspace",
+            "description": "Maximum number of messages to process per space (default: 100, max: 1000, newest first)",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "title": "WhitelistedSpacesTodoGenerationRequest",
+        "description": "Request to generate todos from all whitelisted spaces"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

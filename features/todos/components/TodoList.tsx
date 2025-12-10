@@ -26,6 +26,7 @@ export default function TodoList() {
     refresh: refreshTodos,
     updateTodo: updateTodoApi,
     toggleTodo: toggleTodoApi,
+    addSubtasks: addSubtasksApi,
   } = useTodos();
 
   // Fetch whitelisted spaces for thread filter
@@ -45,15 +46,14 @@ export default function TodoList() {
     handleRejectQueue
   } = useTodoAnimations(refreshTodos, updateTodoApi, toggleTodoApi);
 
-  // Convert spaces to ConnectedThread format (filter to whitelisted only)
+  // Convert spaces to ConnectedThread format
+  // fetchWhitelistedSpaces đã chỉ trả về các spaces đã whitelist
   const connectedThreads: ConnectedThread[] = useMemo(() => {
-    return spaces
-      .filter((space) => space.is_whitelisted)
-      .map((space) => ({
-        id: space.id,
-        name: space.name,
-        displayName: space.display_name ?? undefined,
-      }));
+    return spaces.map((space) => ({
+      id: space.id,
+      name: space.name,
+      displayName: space.display_name ?? undefined,
+    }));
   }, [spaces]);
 
   // Thread filter hook
@@ -157,6 +157,9 @@ export default function TodoList() {
         onRejectQueue={handleRejectQueue}
         onItemClick={handleItemClick}
         onNavigateToDetail={handleNavigateToDetail}
+        onAddSubtasks={async (todoId, subtasks) => {
+          await addSubtasksApi(todoId, subtasks);
+        }}
       />
 
       {/* Paste Extract Modal */}

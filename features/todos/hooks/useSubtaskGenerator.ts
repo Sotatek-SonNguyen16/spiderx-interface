@@ -64,27 +64,40 @@ export const useSubtaskGenerator = () => {
       console.log("🤖 [SubtaskGenerator] Prompt:", prompt);
       console.log("🤖 [SubtaskGenerator] API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
 
-      // Call the correct extract endpoint: /api/v1/todos/extract-from-text
+      // Call AI extract endpoint: POST /api/v1/ai/extract
       const response = await googleChatApi.extractTodosFromText({
         text: prompt,
         auto_save: false,
+        source_type: "chat",
       });
 
       console.log("🤖 [SubtaskGenerator] Raw API Response:", response);
+      console.log("🤖 [SubtaskGenerator] Response type:", typeof response);
 
-      // Handle both wrapped { data: { todos: [...] } } and direct { todos: [...] } responses
-      const responseData = (response as any)?.data || response;
-      const todos = responseData?.todos;
+      // Handle response - có thể là direct response hoặc wrapped trong data
+      let todos: any[] = [];
+      
+      if (response && typeof response === 'object') {
+        // Direct response: { todos: [...], confidence: ..., summary: ... }
+        if (Array.isArray(response.todos)) {
+          todos = response.todos;
+        }
+        // Wrapped response: { data: { todos: [...] } }
+        else if ((response as any)?.data?.todos && Array.isArray((response as any).data.todos)) {
+          todos = (response as any).data.todos;
+        }
+      }
 
       console.log("🤖 [SubtaskGenerator] Parsed todos:", todos);
+      console.log("🤖 [SubtaskGenerator] Todos count:", todos.length);
 
       // Check if we have todos in the response
-      if (!todos || !Array.isArray(todos) || todos.length === 0) {
+      if (!todos || todos.length === 0) {
         console.warn("🤖 [SubtaskGenerator] No subtasks returned from API");
         setState({
           isGenerating: false,
           generatedSubtasks: [],
-          error: "No subtasks could be generated. Try adding more details to the task.",
+          error: "Không thể tạo subtasks. Hãy thử thêm chi tiết cho task.",
           isPreviewMode: false,
         });
         return { success: false, error: "No subtasks generated" };
@@ -94,7 +107,7 @@ export const useSubtaskGenerator = () => {
 
       // Map AI response to subtasks
       const subtasks: GeneratedSubtask[] = todos.map((todo: any, index: number) => ({
-        title: todo.title || todo.name || "Untitled subtask",
+        title: todo.title || todo.name || "Subtask không có tiêu đề",
         order: index,
         isSelected: true, // Selected by default
       }));
@@ -110,35 +123,47 @@ export const useSubtaskGenerator = () => {
     } catch (error: any) {
       // Enhanced error logging
       console.error("🤖 [SubtaskGenerator] Error:", error);
+      console.error("🤖 [SubtaskGenerator] Error type:", typeof error);
       console.error("🤖 [SubtaskGenerator] Error details:", {
         message: error?.message,
         status: error?.status,
         response: error?.response,
+        data: error?.response?.data,
+        name: error?.name,
+        stack: error?.stack,
       });
       
       // Extract meaningful error message
-      let errorMessage = "Failed to generate subtasks";
+      let errorMessage = "Không thể tạo subtasks. Vui lòng thử lại.";
       const status = error?.status || error?.response?.status;
       
       if (status === 404) {
-        errorMessage = "AI extraction endpoint not available. Please contact support.";
-        console.error("🤖 [SubtaskGenerator] 404 - Endpoint /api/v1/todos/extract-from-text not found");
+        errorMessage = "API endpoint không tồn tại. Vui lòng liên hệ hỗ trợ.";
+        console.error("🤖 [SubtaskGenerator] 404 - Endpoint /api/v1/ai/extract not found");
       } else if (status === 401) {
-        errorMessage = "Authentication required. Please log in again.";
+        errorMessage = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
       } else if (status === 403) {
-        errorMessage = "You don't have permission to use this feature.";
+        errorMessage = "Bạn không có quyền sử dụng tính năng này.";
+      } else if (status === 422) {
+        errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
+        // Log validation errors
+        if (error?.response?.data?.detail) {
+          console.error("🤖 [SubtaskGenerator] Validation errors:", error.response.data.detail);
+        }
       } else if (status === 429) {
-        errorMessage = "Rate limit exceeded. Please try again later.";
+        errorMessage = "Quá nhiều yêu cầu. Vui lòng thử lại sau.";
       } else if (status >= 500) {
-        errorMessage = "Server error. Please try again later.";
+        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
       } else if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.response?.data?.detail) {
         errorMessage = typeof error.response.data.detail === 'string' 
           ? error.response.data.detail 
           : JSON.stringify(error.response.data.detail);
-      } else if (error?.message) {
+      } else if (error?.message && error.message !== "[object Object]") {
         errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
       }
       
       setState((prev) => ({

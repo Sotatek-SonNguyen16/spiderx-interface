@@ -160,25 +160,41 @@ export interface TaskStatusResponse {
 
 
 // =============================================================================
-// Extract Text Types - Update v1
-// Paste context to extract action items
+// AI Extract Types - Theo OpenAPI spec
+// POST /api/v1/ai/extract
 // =============================================================================
 
+/**
+ * Request body for AI extract endpoint
+ * POST /api/v1/ai/extract
+ */
 export interface ExtractTextRequest {
-  text: string;
-  auto_save?: boolean;
+  text: string; // required - Text to analyze for todos
+  auto_save?: boolean; // default: false - Automatically save extracted todos
+  source_type?: "chat" | "email" | "meeting"; // default: "chat"
+  source_id?: string | null; // optional source ID
 }
 
+/**
+ * ExtractedTodoResponse - Response for a single extracted todo
+ * Matches TodoItem DB structure
+ */
 export interface ExtractedTodoItem {
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high" | "urgent";
-  tags: string[];
-  dueDate?: string | null;
-  estimatedTime?: number | null;
+  title: string; // required
+  description?: string | null;
+  priority: "low" | "medium" | "high" | "urgent"; // required
+  due_date?: string | null; // ISO datetime
+  estimated_time?: number | null; // minutes
+  tags?: string[]; // default: []
+  eisenhower?: string | null;
 }
 
+/**
+ * ExtractionResult - Response from AI extract endpoint
+ */
 export interface ExtractTextResponse {
   todos: ExtractedTodoItem[];
+  confidence: number; // 0-1
   summary: string;
+  saved_count?: number; // Number of todos saved (if auto_save=true), default: 0
 }

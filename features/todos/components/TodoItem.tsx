@@ -1,11 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
-import { Check, X, Calendar as CalendarIcon, Flag, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Check, X, Calendar as CalendarIcon, Flag, ChevronDown, ChevronUp, Sparkles, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Todo } from "../types";
 import { SourceLink } from "./SourceLink";
 import { AssigneeDisplay } from "./AssigneeDisplay";
 import { SenderDisplay } from "./SenderDisplay";
+import { useSubtaskGenerator } from "../hooks/useSubtaskGenerator";
 
 interface TodoItemProps {
   todo: Todo;
@@ -16,6 +19,7 @@ interface TodoItemProps {
   onReject?: (id: string) => void;
   onClick?: (id: string) => void;
   onViewDetail?: (id: string) => void;
+  onAddSubtasks?: (todoId: string, subtasks: Array<{ title: string }>) => Promise<void>;
 }
 
 export default function TodoItem({
@@ -27,7 +31,50 @@ export default function TodoItem({
   onReject,
   onClick,
   onViewDetail,
+  onAddSubtasks,
 }: TodoItemProps) {
+  // Subtask generator hook
+  const {
+    isGenerating,
+    generatedSubtasks,
+    error,
+    isPreviewMode,
+    generateSubtasks,
+    toggleSubtaskSelection,
+    updateSubtaskTitle,
+    removeSubtask,
+    getSelectedSubtasks,
+    clearPreview,
+    clearError,
+  } = useSubtaskGenerator();
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Handle generate subtasks
+  const handleGenerateSubtasks = async () => {
+    await generateSubtasks(todo.title, todo.description || undefined);
+  };
+
+  // Handle save generated subtasks
+  const handleSaveSubtasks = async () => {
+    if (!onAddSubtasks) return;
+    
+    const selected = getSelectedSubtasks();
+    if (selected.length === 0) return;
+
+    setIsSaving(true);
+    try {
+      await onAddSubtasks(todo.id, selected.map(s => ({ title: s.title })));
+      clearPreview();
+    } catch (err) {
+      console.error("Failed to save subtasks:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const selectedCount = generatedSubtasks.filter((s) => s.isSelected).length;
+
   // Format time range
   const formatTime = (dateString: string | null, estimatedMinutes: number | null) => {
     if (!dateString) return "All Day";
@@ -237,35 +284,181 @@ export default function TodoItem({
           {/* Subtasks */}
           <div className="pt-3">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-900">Subtasks</h3>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // TODO: Implement generate subtasks
-                  console.log("Generate subtasks clicked");
-                }}
-                className="flex items-center gap-1.5 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors"
-              >
-                <Sparkles className="h-3 w-3" />
-                Generate with AI
-              </button>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Subtasks
+                {todo.subtasks && todo.subtasks.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    ({todo.subtasks.filter(s => s.status === 'completed').length}/{todo.subtasks.length})
+                  </span>
+                )}
+              </h3>
+              {!isPreviewMode && !isGenerating && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleGenerateSubtasks();
+                  }}
+                  disabled={!onAddSubtasks}
+                  className="flex items-center gap-1.5 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Tạo subtask với AI
+                </button>
+              )}
             </div>
+
+            {/* Loading State */}
+            {isGenerating && (
+              <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg mb-3">
+                <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />
+                <span className="text-sm text-purple-700">Đang tạo subtasks...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="p-3 bg-red-50 rounded-lg mb-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-red-700">{error}</p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGenerateSubtasks();
+                        }}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Thử lại
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearError();
+                        }}
+                        className="text-xs text-gray-500 hover:underline"
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview Generated Subtasks */}
+            {isPreviewMode && generatedSubtasks.length > 0 && (
+              <div className="border border-purple-200 rounded-lg overflow-hidden mb-3">
+                <div className="bg-purple-50 px-3 py-2 border-b border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-purple-700 flex items-center gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      Subtasks được tạo bởi AI
+                    </span>
+                    <span className="text-xs text-purple-500">
+                      {selectedCount}/{generatedSubtasks.length} đã chọn
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 space-y-2 max-h-48 overflow-y-auto">
+                  {generatedSubtasks.map((subtask, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                        subtask.isSelected ? "bg-purple-50" : "bg-gray-50 opacity-60"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSubtaskSelection(index);
+                        }}
+                        className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
+                          subtask.isSelected
+                            ? "border-purple-500 bg-purple-500 text-white"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {subtask.isSelected && <Check className="h-2.5 w-2.5" />}
+                      </button>
+                      <span className={`flex-1 text-sm ${
+                        subtask.isSelected ? "text-gray-700" : "text-gray-400 line-through"
+                      }`}>
+                        {subtask.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSubtask(index);
+                        }}
+                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-gray-50 px-3 py-2 border-t border-gray-200 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGenerateSubtasks();
+                    }}
+                    className="text-xs text-purple-600 hover:text-purple-700"
+                  >
+                    Tạo lại
+                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearPreview();
+                      }}
+                      className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveSubtasks();
+                      }}
+                      disabled={selectedCount === 0 || isSaving}
+                      className="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
+                      Lưu {selectedCount} subtask
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             
+            {/* Existing Subtasks */}
             {todo.subtasks && todo.subtasks.length > 0 ? (
               <ul className="space-y-2">
                 {todo.subtasks.map((subtask) => (
                   <li key={subtask.id} className="flex items-start gap-3">
                     <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5 ${
                       subtask.status === 'completed'
-                        ? 'border-gray-300 bg-gray-100'
+                        ? 'border-green-500 bg-green-500'
                         : 'border-gray-300'
                     }`}>
                       {subtask.status === 'completed' && (
-                        <div className="h-2 w-2 rounded-full bg-gray-400" />
+                        <Check className="h-3 w-3 text-white" />
                       )}
                     </div>
                     <span className={`text-sm ${
-                      subtask.status === 'completed' ? 'text-gray-400' : 'text-gray-700'
+                      subtask.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-700'
                     }`}>
                       {subtask.title}
                     </span>
@@ -273,7 +466,9 @@ export default function TodoItem({
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-gray-400 italic">No subtasks yet.</p>
+              !isPreviewMode && !isGenerating && (
+                <p className="text-xs text-gray-400 italic">Chưa có subtask nào.</p>
+              )
             )}
           </div>
         </div>

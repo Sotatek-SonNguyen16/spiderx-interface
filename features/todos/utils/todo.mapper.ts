@@ -56,8 +56,9 @@ export const mapTodoFromApi = (data: TodoApiModel): Todo => ({
   createdAt: data.created_at,
   updatedAt: data.updated_at,
   subtasks: data.subtasks ? data.subtasks.map(toCamelCaseSubtask) : [],
+  // Handle assignee - can be from 'assignee' field (string) or 'assignee_id'/'assignee_name' fields
   assigneeId: data.assignee_id ?? null,
-  assigneeName: data.assignee_name ?? null,
+  assigneeName: data.assignee ?? data.assignee_name ?? null,
   // Update v1: Sender information
   senderName: data.sender_name ?? null,
   senderEmail: data.sender_email ?? null,
