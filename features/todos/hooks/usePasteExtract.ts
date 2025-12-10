@@ -143,8 +143,8 @@ export const usePasteExtract = () => {
           description: todo.description || null,
           priority: todo.priority,
           tags: todo.tags,
-          dueDate: todo.dueDate || null,
-          estimatedTime: todo.estimatedTime || null,
+          dueDate: todo.due_date || null,
+          estimatedTime: todo.estimated_time || null,
         };
 
         const result = await todoService.createTodo(createDto);

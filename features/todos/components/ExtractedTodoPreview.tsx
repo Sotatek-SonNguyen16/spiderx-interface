@@ -46,7 +46,7 @@ export const ExtractedTodoPreview = ({
     const todo = todos[index];
     setEditForm({
       title: todo.title,
-      description: todo.description,
+      description: todo.description ?? "",
       priority: todo.priority,
     });
     setEditingIndex(index);
@@ -164,7 +164,7 @@ export const ExtractedTodoPreview = ({
                     <span className={`text-xs px-2 py-0.5 rounded ${priorityColors[todo.priority]}`}>
                       {todo.priority}
                     </span>
-                    {todo.tags.length > 0 && (
+                    {todo.tags && todo.tags.length > 0 && (
                       <div className="flex gap-1">
                         {todo.tags.slice(0, 3).map((tag, i) => (
                           <span
