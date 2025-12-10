@@ -1,0 +1,153 @@
+# Implementation Plan
+
+- [x] 1. Setup and Core Types
+  - [x] 1.1 Add async task types to Google Chat types
+    - Update `features/googleChat/types/index.ts` with StartTaskResponse, TaskStatusResponse, TaskProgress, TaskResult types
+    - _Requirements: 2.1, 2.2_
+  - [x] 1.2 Extend Todo types with sender fields
+    - Update `features/todos/types/index.ts` to include sender_name, sender_email in TodoApiModel
+    - Update Todo interface with senderName, senderEmail
+    - Update todo mapper to map sender fields
+    - _Requirements: 4.1_
+  - [x] 1.3 Add thread filter types
+    - Create `features/todos/types/thread.ts` with ConnectedThread, ThreadFilterState types
+    - _Requirements: 1.1, 1.2_
+
+- [x] 2. Async Task API Integration
+  - [x] 2.1 Add async task endpoints to Google Chat API
+    - Update `features/googleChat/api/googleChat.api.ts` with:
+      - `startGenerateTodosTask()` - POST /tasks/whitelist/generate-todos
+      - `getTaskStatus(taskId)` - GET /tasks/{taskId}
+      - `cancelTask(taskId)` - DELETE /tasks/{taskId}
+    - _Requirements: 2.1, 2.6_
+  - [x] 2.2 Add async task methods to Google Chat service
+    - Update `features/googleChat/services/googleChat.service.ts` with task methods
+    - Implement polling logic with configurable interval
+    - _Requirements: 2.2, 2.3_
+  - [x] 2.3 Update useSyncTodo hook for async tasks
+    - Update `features/todos/hooks/useSyncTodo.ts` to use async task flow
+    - Implement startTask, pollStatus, cancelTask functions
+    - Add task state management (taskId, status, progress, result, error)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+  - [x] 2.4 Write property test for sync status display
+    - **Property 4: Sync Status Display Consistency**
+    - **Validates: Requirements 2.2, 2.4**
+
+- [x] 3. Update SyncTodoButton Component
+  - [x] 3.1 Refactor SyncTodoButton for async task support
+    - Update `features/todos/components/SyncTodoButton.tsx`
+    - Add progress indicator showing status (PENDING, PROGRESS, SUCCESS, FAILURE)
+    - Add cancel button during sync
+    - Display summary on completion
+    - Handle errors with retry option
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+- [x] 4. Checkpoint - Async Sync Complete
+  - All tests pass ✓
+
+- [x] 5. Thread Filter Feature
+  - [x] 5.1 Create useThreadFilter hook
+    - Create `features/todos/hooks/useThreadFilter.ts`
+    - Implement thread selection state
+    - Implement filterTodosByThread function
+    - Calculate todo counts per thread
+    - _Requirements: 1.2, 1.3, 1.5_
+  - [x] 5.2 Write property test for thread filter
+    - **Property 1: Thread Filter Correctness**
+    - **Validates: Requirements 1.2**
+  - [x] 5.3 Write property test for thread filter clear
+    - **Property 2: Thread Filter Clear**
+    - **Validates: Requirements 1.3**
+  - [x] 5.4 Write property test for thread todo count
+    - **Property 3: Thread Todo Count Accuracy**
+    - **Validates: Requirements 1.5**
+  - [x] 5.5 Create ThreadSidebar component
+    - Create `features/todos/components/ThreadSidebar.tsx`
+    - Display list of connected threads with names
+    - Show todo count badge for each thread
+    - Highlight selected thread
+    - Add "All Threads" option at top
+    - Handle empty state with connect prompt
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - [x] 5.6 Integrate ThreadSidebar into TodoList
+    - Update `features/todos/components/TodoList.tsx`
+    - Add sidebar layout (desktop) or dropdown (mobile)
+    - Connect thread filter to todo display
+    - _Requirements: 1.1, 1.2_
+
+- [x] 6. Checkpoint - Thread Filter Complete
+  - All tests pass ✓
+
+- [x] 7. Paste Extract Feature
+  - [x] 7.1 Add extract text API endpoint
+    - Update `features/googleChat/api/googleChat.api.ts` with extractTodosFromText endpoint
+    - _Requirements: 3.2_
+  - [x] 7.2 Create usePasteExtract hook
+    - Create `features/todos/hooks/usePasteExtract.ts`
+    - Implement extractFromText function
+    - Manage preview state (extracted todos, editing, selection)
+    - Implement saveTodos function for approved items
+    - _Requirements: 3.2, 3.3, 3.4, 3.5_
+  - [x] 7.3 Write property test for extraction preview
+    - **Property 5: Extraction Preview Completeness**
+    - **Validates: Requirements 3.3, 3.5**
+  - [x] 7.4 Create ExtractedTodoPreview component
+    - Create `features/todos/components/ExtractedTodoPreview.tsx`
+    - Display list of extracted todos with checkboxes
+    - Allow editing title, description, priority
+    - Add Save and Cancel buttons
+    - _Requirements: 3.3, 3.4, 3.5_
+  - [x] 7.5 Create PasteExtractModal component
+    - Create `features/todos/components/PasteExtractModal.tsx`
+    - Display text area for pasting content
+    - Add Extract button
+    - Show loading state during extraction
+    - Display ExtractedTodoPreview on success
+    - Handle empty result and error states
+    - _Requirements: 3.1, 3.2, 3.6, 3.7_
+  - [x] 7.6 Add Paste Extract button to TodoList
+    - Update `features/todos/components/TodoList.tsx`
+    - Add button to open PasteExtractModal
+    - _Requirements: 3.1_
+
+- [x] 8. Checkpoint - Paste Extract Complete
+  - All tests pass ✓
+
+- [x] 9. Sender Display Feature
+  - [x] 9.1 Create SenderDisplay component
+    - Create `features/todos/components/SenderDisplay.tsx`
+    - Display sender name when available
+    - Show fallback indicator when unavailable
+    - Style consistently with source link
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [x] 9.2 Write property test for sender display
+    - **Property 6: Sender Information Display**
+    - **Validates: Requirements 4.1, 4.2, 4.3**
+  - [x] 9.3 Integrate SenderDisplay into TodoItem
+    - Update `features/todos/components/TodoItem.tsx`
+    - Show sender alongside source thread info
+    - _Requirements: 4.2_
+  - [x] 9.4 Add scope check and re-auth prompt
+    - Update integration status check to detect missing scope
+    - Add prompt component for re-authorization
+    - _Requirements: 4.4_
+
+- [x] 10. Checkpoint - Sender Display Complete
+  - All tests pass ✓
+
+- [x] 11. Update Todo Mapper
+  - [x] 11.1 Update todo mapper for new fields
+    - Update `features/todos/utils/todo.mapper.ts`
+    - Map sender_name to senderName
+    - Map sender_email to senderEmail
+    - _Requirements: 4.1_
+
+- [x] 12. Export and Integration
+  - [x] 12.1 Update feature exports
+    - Update `features/todos/index.ts` with new components and hooks
+    - _Requirements: All_
+
+- [x] 13. Final Checkpoint - All Features Complete
+  - TypeScript compilation passes ✓
+  - All property tests implemented ✓
+  - All components created and integrated ✓

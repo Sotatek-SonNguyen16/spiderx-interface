@@ -1,0 +1,343 @@
+@import 'tailwindcss';
+
+/* Additional styles */
+@import './additional-styles/utility-patterns.css' layer(components);
+@import './additional-styles/theme.css';
+
+@plugin "@tailwindcss/forms" {
+  strategy: base;
+}
+
+@theme {
+  --font-inter: var(--font-inter), sans-serif;
+  --font-nacelle: var(--font-nacelle), sans-serif;
+
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5384;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5715;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5333;
+  --text-base--letter-spacing: -0.0125em;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5;
+  --text-lg--letter-spacing: -0.0125em;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.5;
+  --text-xl--letter-spacing: -0.0125em;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.415;
+  --text-2xl--letter-spacing: -0.0268em;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 1.3571;
+  --text-3xl--letter-spacing: -0.0268em;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 1.1;
+  --text-4xl--letter-spacing: -0.0268em;
+  --text-5xl: 3.5rem;
+  --text-5xl--line-height: 1;
+  --text-5xl--letter-spacing: -0.0268em;
+  --text-6xl: 4rem;
+  --text-6xl--line-height: 1;
+  --text-6xl--letter-spacing: -0.0268em;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-7xl--letter-spacing: -0.0268em;
+
+  --animate-shine: shine 5s ease-in-out 500ms infinite;
+  --animate-gradient: gradient 6s linear infinite;
+
+  @keyframes shine {
+    0% {
+      top: 0;
+      transform: scaleY(5);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    20% {
+      top: 100%;
+      transform: scaleY(10);
+      opacity: 0;
+    }
+    100% {
+      top: 100%;
+      transform: scaleY(1);
+      opacity: 0;
+    }
+  }
+  @keyframes gradient {
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes slide-up-fade-out {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+  }
+}
+
+@layer utilities {
+  .animate-slide-up-fade-out {
+    animation: slide-up-fade-out 0.3s ease-out forwards;
+  }
+
+  @keyframes highlight-task {
+    0% {
+      background-color: rgba(251, 191, 36, 0.3);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  .animate-highlight-task {
+    animation: highlight-task 1s ease-out;
+    border-radius: 0.5rem;
+  }
+
+  /* Todo List Animations */
+  @keyframes slideOutRight {
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes slideOutLeft {
+    to {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes expandDetail {
+    from {
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      max-height: 1000px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInSubtask {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeOutSubtask {
+    to {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+  }
+
+  @keyframes checkboxPop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fadeToGray {
+    from {
+      color: #1d1d1f;
+      opacity: 1;
+    }
+    to {
+      color: #86868b;
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@theme {
+  /* Cơ bản */
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Gray scale (base chuyên nghiệp) */
+  --color-gray-50:  #f9fafb;
+  --color-gray-100: #f3f4f6; /* = bg-muted */
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937; /* Dark Charcoal */
+  --color-gray-900: #111827;
+
+  /* Accents */
+  --color-electric-blue:  #2563eb; /* Primary đề xuất */
+  --color-lightning-yellow: #facc15; /* Accent / CTA */
+
+  /* Semantic tokens (dễ đổi toàn app) */
+  --color-ink: var(--color-gray-800); /* text chính */
+  --color-bg:  var(--color-white);
+  --color-bg-muted: var(--color-gray-100);
+
+  /* Brand */
+  --color-brand: var(--color-electric-blue);
+  /* --color-brand: var(--color-lightning-yellow); */
+
+  --color-accent: var(--color-lightning-yellow);
+
+  /* Brand scale (Electric Blue) */
+  --color-brand-50:  #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Accent scale (Lightning Yellow) */
+  --color-accent-50:  #fefce8;
+  --color-accent-100: #fef9c3;
+  --color-accent-200: #fef08a;
+  --color-accent-300: #fde047;
+  --color-accent-400: #facc15;
+  --color-accent-500: #eab308;
+  --color-accent-600: #ca8a04;
+  --color-accent-700: #a16207;
+  --color-accent-800: #854d0e;
+  --color-accent-900: #713f12;
+
+  /* Purple (for gradients) */
+  --color-purple-600: #7c3aed;
+}
+
+/* Dark mode (nếu bạn dùng class .dark trên <html>) */
+@layer base {
+  .dark {
+    --color-ink: var(--color-gray-100);
+    --color-bg:  var(--color-gray-900);
+    --color-bg-muted: var(--color-gray-800);
+  }
+
+  body {
+    color: var(--color-ink);
+    background: var(--color-bg);
+  }
+}
+
+/* Components helpers (tuỳ chọn) */
+@layer components {
+  /* Nút chính: brand mạnh mẽ (speed + professionalism) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 font-medium shadow-sm transition bg-brand text-white hover:opacity-90 active:opacity-80 ring-1 ring-black/0 focus:outline-none focus:ring-2 focus:ring-brand/40;
+  }
+
+  /* Nút accent (Yellow cho CTA nổi bật) */
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 font-semibold shadow-sm transition bg-accent text-black hover:brightness-95 active:brightness-90 focus:outline-none focus:ring-2 focus:ring-accent/40;
+  }
+
+  /* Card sạch, breathable */
+  .card {
+    @apply rounded-2xl border border-black/5 bg-bg-muted p-4 shadow-sm;
+  }
+}
+
+/* Gradients gợi ý cho CTA (Blue -> Purple) */
+@layer utilities {
+  .gradient-cta {
+    @apply bg-gradient-to-r from-brand to-purple-600 text-white;
+  }
+}
