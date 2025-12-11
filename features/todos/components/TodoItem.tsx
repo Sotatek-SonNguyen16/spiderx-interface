@@ -304,7 +304,7 @@ export default function TodoItem({
                   className="flex items-center gap-1.5 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="h-3 w-3" />
-                  Tạo subtask với AI
+                  Generate subtasks with AI
                 </button>
               )}
             </div>
@@ -313,7 +313,7 @@ export default function TodoItem({
             {isGenerating && (
               <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg mb-3">
                 <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />
-                <span className="text-sm text-purple-700">Đang tạo subtasks...</span>
+                <span className="text-sm text-purple-700">Generating subtasks...</span>
               </div>
             )}
 
@@ -333,7 +333,7 @@ export default function TodoItem({
                         }}
                         className="text-xs text-red-600 hover:underline"
                       >
-                        Thử lại
+                        Try again
                       </button>
                       <button
                         onClick={(e) => {
@@ -342,7 +342,7 @@ export default function TodoItem({
                         }}
                         className="text-xs text-gray-500 hover:underline"
                       >
-                        Đóng
+                        Dismiss
                       </button>
                     </div>
                   </div>
@@ -357,10 +357,10 @@ export default function TodoItem({
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-purple-700 flex items-center gap-1">
                       <Sparkles className="h-3 w-3" />
-                      Subtasks được tạo bởi AI
+                      AI Generated Subtasks
                     </span>
                     <span className="text-xs text-purple-500">
-                      {selectedCount}/{generatedSubtasks.length} đã chọn
+                      {selectedCount}/{generatedSubtasks.length} selected
                     </span>
                   </div>
                 </div>
@@ -413,7 +413,7 @@ export default function TodoItem({
                     }}
                     className="text-xs text-purple-600 hover:text-purple-700"
                   >
-                    Tạo lại
+                    Regenerate
                   </button>
                   <div className="flex gap-2">
                     <button
@@ -424,7 +424,7 @@ export default function TodoItem({
                       }}
                       className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
                     >
-                      Hủy
+                      Cancel
                     </button>
                     <button
                       type="button"
@@ -436,7 +436,7 @@ export default function TodoItem({
                       className="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
                       {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
-                      Lưu {selectedCount} subtask
+                      Save {selectedCount} subtask{selectedCount !== 1 ? "s" : ""}
                     </button>
                   </div>
                 </div>
@@ -467,7 +467,7 @@ export default function TodoItem({
               </ul>
             ) : (
               !isPreviewMode && !isGenerating && (
-                <p className="text-xs text-gray-400 italic">Chưa có subtask nào.</p>
+                <p className="text-xs text-gray-400 italic">No subtasks yet.</p>
               )
             )}
           </div>

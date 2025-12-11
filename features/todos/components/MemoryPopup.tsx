@@ -28,48 +28,47 @@ export default function MemoryPopup({ onClose }: MemoryPopupProps) {
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">🎯 Vision & Mission</h2>
           <p className="mb-4">
-            NoteX là một AI-powered meeting và content summarization application phục vụ thị trường
-            B2C và B2B. Chúng tôi giúp các cá nhân và doanh nghiệp tiết kiệm thời gian và nâng cao
-            hiệu quả công việc thông qua công nghệ AI.
+            NoteX is an AI-powered meeting and content summarization application serving both
+            B2C and B2B markets. We help individuals and businesses save time and improve
+            work efficiency through AI technology.
           </p>
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">✨ Core Features</h2>
           <ul className="mb-4 ml-6 list-disc space-y-2">
             <li>
-              <strong>AI Transcription:</strong> Chuyển đổi audio/video thành text với độ chính xác
-              cao
+              <strong>AI Transcription:</strong> Convert audio/video to text with high accuracy
             </li>
             <li>
-              <strong>Smart Summary:</strong> Tóm tắt thông minh nội dung meeting và documents
+              <strong>Smart Summary:</strong> Intelligent summarization of meetings and documents
             </li>
             <li>
-              <strong>Mindmap Generation:</strong> Tự động tạo mindmap từ nội dung
+              <strong>Mindmap Generation:</strong> Automatically generate mindmaps from content
             </li>
             <li>
-              <strong>Multi-language Translation:</strong> Hỗ trợ dịch đa ngôn ngữ
+              <strong>Multi-language Translation:</strong> Support for multi-language translation
             </li>
             <li>
-              <strong>Content Creation Tools:</strong> Công cụ tạo nội dung powered by AI
+              <strong>Content Creation Tools:</strong> AI-powered content creation tools
             </li>
           </ul>
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">🤝 Major Clients</h2>
           <ul className="mb-4 ml-6 list-disc space-y-2">
             <li>
-              <strong>Vietnam Airlines:</strong> Đang trong giai đoạn pilot và technical
-              demonstration
+              <strong>Vietnam Airlines:</strong> Currently in pilot and technical
+              demonstration phase
             </li>
             <li>
-              <strong>Musinsa (Korea):</strong> E-commerce company, đang trong quá trình client
-              relationship management
+              <strong>Musinsa (Korea):</strong> E-commerce company, currently in client
+              relationship management process
             </li>
           </ul>
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">🚀 Recent Development</h2>
           <p className="mb-4">
-            Chúng tôi đang tập trung phát triển tính năng "Re-generate Summary" với khả năng
-            version management, cải thiện Vietnamese localization cho các AI features, và tối ưu
-            hóa competitive analysis của meeting transcription tools.
+            We are focusing on developing the "Re-generate Summary" feature with version
+            management capabilities, improving Vietnamese localization for AI features, and
+            optimizing competitive analysis of meeting transcription tools.
           </p>
 
           <blockquote className="mb-4 ml-0 border-l-4 border-[#007aff] pl-4 italic text-[#666]">
@@ -79,9 +78,9 @@ export default function MemoryPopup({ onClose }: MemoryPopupProps) {
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">📊 Market Strategy</h2>
           <p className="mb-4">
-            NoteX đang chuyển đổi từ B2C sang B2B market với focus vào enterprise customers. Chúng
-            tôi đang xây dựng comprehensive feature specifications, user stories cho development
-            teams, và optimize customer support processes.
+            NoteX is transitioning from B2C to B2B market with a focus on enterprise customers. We
+            are building comprehensive feature specifications, user stories for development
+            teams, and optimizing customer support processes.
           </p>
 
           <h3 className="mb-2 mt-5 text-lg font-semibold">Key Metrics</h3>
@@ -108,9 +107,9 @@ const noteX = {
 
           <h2 className="mb-4 mt-6 text-[22px] font-semibold">🔧 Technical Stack</h2>
           <p className="mb-4">
-            NoteX sử dụng các công nghệ tiên tiến nhất bao gồm Large Language Models, n8n workflow
-            automation, computer vision systems, và advanced database management cho việc phân tích
-            và tối ưu hóa hiệu suất.
+            NoteX uses cutting-edge technologies including Large Language Models, n8n workflow
+            automation, computer vision systems, and advanced database management for performance
+            analysis and optimization.
           </p>
         </div>
       </div>

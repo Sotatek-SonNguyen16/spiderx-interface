@@ -34,7 +34,7 @@ const initialState: TodoState = {
   filters: {},
   total: 0,
   page: 1,
-  limit: 10,
+  limit: 1000, // Fetch all todos, pagination handled on frontend
 };
 
 export const useTodoStore = create<TodoState & TodoActions>()(

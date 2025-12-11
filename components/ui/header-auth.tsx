@@ -13,7 +13,7 @@ export default function HeaderAuth() {
           <div className="flex items-center gap-8">
             {/* Logo - Click to navigate to Todos */}
             <Link href="/todos" className="flex items-center gap-2">
-               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
+               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -23,11 +23,11 @@ export default function HeaderAuth() {
             {/* Search */}
             <div className="relative hidden md:block">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-white/60" />
+                <Search className="h-4 w-4 text-white/80" />
               </div>
               <input
                 type="text"
-                className="block w-full rounded-md border-0 bg-white/10 py-1.5 pl-10 pr-3 text-white placeholder:text-white/60 focus:ring-2 focus:ring-white/50 sm:text-sm sm:leading-6 min-w-[300px]"
+                className="block w-full rounded-md border-0 bg-white/30 py-1.5 pl-10 pr-3 text-white placeholder:text-white/80 focus:ring-2 focus:ring-white/50 sm:text-sm sm:leading-6 min-w-[300px]"
                 placeholder="Search..."
               />
             </div>

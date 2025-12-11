@@ -10,10 +10,13 @@ import type { TodoTabType } from "./TodoTabs";
 import { PasteExtractModal } from "./PasteExtractModal";
 import { useThreadFilter } from "../hooks/useThreadFilter";
 import type { ConnectedThread } from "../types/thread";
-import { RefreshCw } from "lucide-react";
+
 import { useTodoAnimations } from "../hooks/useTodoAnimations";
 import { TodoFilterBar } from "./TodoFilterBar";
 import { TodoListView } from "./TodoListView";
+import { Pagination } from "./Pagination";
+
+const ITEMS_PER_PAGE = 20;
 
 export default function TodoList() {
   const router = useRouter();
@@ -36,6 +39,7 @@ export default function TodoList() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [expandedTodoId, setExpandedTodoId] = useState<string | null>(null);
   const [showPasteExtract, setShowPasteExtract] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Animation hook
   const {
@@ -47,7 +51,7 @@ export default function TodoList() {
   } = useTodoAnimations(refreshTodos, updateTodoApi, toggleTodoApi);
 
   // Convert spaces to ConnectedThread format
-  // fetchWhitelistedSpaces đã chỉ trả về các spaces đã whitelist
+  // fetchWhitelistedSpaces already returns only whitelisted spaces
   const connectedThreads: ConnectedThread[] = useMemo(() => {
     return spaces.map((space) => ({
       id: space.id,
@@ -82,6 +86,24 @@ export default function TodoList() {
     });
   }, [threadFilteredTodos, activeTab]);
 
+  // Pagination
+  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
+  const paginatedTodos = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredTodos.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredTodos, currentPage]);
+
+  // Reset to page 1 when tab or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedThreadIds]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of list
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Counts for tabs
   const counts = useMemo(() => {
     return {
@@ -111,15 +133,8 @@ export default function TodoList() {
       <div className="flex-none p-4 md:p-6 pb-0">
         <div className="mx-auto w-full max-w-4xl">
           {/* Month Name Header */}
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">{currentMonthName}</h1>
-            <button
-              onClick={() => refreshTodos()}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </button>
           </div>
 
           {/* Calendar Strip */}
@@ -146,7 +161,7 @@ export default function TodoList() {
 
       {/* List View */}
       <TodoListView
-        todos={filteredTodos}
+        todos={paginatedTodos}
         activeTab={activeTab}
         loading={todosLoading}
         animatingTodoId={animatingTodoId}
@@ -161,6 +176,21 @@ export default function TodoList() {
           await addSubtasksApi(todoId, subtasks);
         }}
       />
+
+      {/* Pagination */}
+      {filteredTodos.length > 0 && (
+        <div className="flex-none px-4 md:px-6 pb-4">
+          <div className="mx-auto w-full max-w-4xl">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              totalItems={filteredTodos.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Paste Extract Modal */}
       <PasteExtractModal

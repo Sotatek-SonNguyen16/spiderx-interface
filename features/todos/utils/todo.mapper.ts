@@ -33,36 +33,54 @@ const toCamelCaseSubtask = (subtask: TodoApiModel["subtasks"][number]): Subtask 
   completedAt: subtask.completed_at,
 });
 
-export const mapTodoFromApi = (data: TodoApiModel): Todo => ({
-  id: data.todo_id,
-  title: data.title,
-  description: data.description,
-  status: data.status,
-  priority: data.priority,
-  dueDate: data.due_date,
-  estimatedTime: data.estimated_time,
-  actualTime: data.actual_time,
-  contextId: data.context_id,
-  sourceType: data.source_type,
-  sourceId: data.source_id,
-  sourceSpaceId: data.source_space_id,
-  sourceMessageId: data.source_message_id,
-  sourceSpaceName: data.source_space_name ?? null,
-  sourceThreadName: data.source_thread_name ?? [],
-  templateId: data.template_id,
-  tags: data.tags || [],
-  eisenhower: data.eisenhower,
-  completedAt: data.completed_at,
-  createdAt: data.created_at,
-  updatedAt: data.updated_at,
-  subtasks: data.subtasks ? data.subtasks.map(toCamelCaseSubtask) : [],
-  // Handle assignee - can be from 'assignee' field (string) or 'assignee_id'/'assignee_name' fields
-  assigneeId: data.assignee_id ?? null,
-  assigneeName: data.assignee ?? data.assignee_name ?? null,
-  // Update v1: Sender information
-  senderName: data.sender_name ?? null,
-  senderEmail: data.sender_email ?? null,
-});
+export const mapTodoFromApi = (data: TodoApiModel): Todo => {
+  // Debug: Log raw API data for assignee field
+  console.log("🔍 [TodoMapper] Raw API data for todo:", data.todo_id, {
+    assignee: data.assignee,
+    assignee_id: data.assignee_id,
+    assignee_name: data.assignee_name,
+    // Log all keys to see what fields are available
+    availableKeys: Object.keys(data),
+  });
+
+  const mapped: Todo = {
+    id: data.todo_id,
+    title: data.title,
+    description: data.description,
+    status: data.status,
+    priority: data.priority,
+    dueDate: data.due_date,
+    estimatedTime: data.estimated_time,
+    actualTime: data.actual_time,
+    contextId: data.context_id,
+    sourceType: data.source_type,
+    sourceId: data.source_id,
+    sourceSpaceId: data.source_space_id,
+    sourceMessageId: data.source_message_id,
+    sourceSpaceName: data.source_space_name ?? null,
+    sourceThreadName: data.source_thread_name ?? [],
+    templateId: data.template_id,
+    tags: data.tags || [],
+    eisenhower: data.eisenhower,
+    completedAt: data.completed_at,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    subtasks: data.subtasks ? data.subtasks.map(toCamelCaseSubtask) : [],
+    // Handle assignee - can be from 'assignee' field (string) or 'assignee_id'/'assignee_name' fields
+    assigneeId: data.assignee_id ?? null,
+    assigneeName: data.assignee ?? data.assignee_name ?? null,
+    // Update v1: Sender information
+    senderName: data.sender_name ?? null,
+    senderEmail: data.sender_email ?? null,
+  };
+
+  console.log("🔍 [TodoMapper] Mapped assignee:", {
+    assigneeId: mapped.assigneeId,
+    assigneeName: mapped.assigneeName,
+  });
+
+  return mapped;
+};
 
 export const mapCreateTodoToApi = (payload: CreateTodoDto): CreateTodoApiPayload => ({
   title: payload.title,

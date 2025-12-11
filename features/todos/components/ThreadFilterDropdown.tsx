@@ -59,8 +59,8 @@ export function ThreadFilterDropdown({
           <>
             <span>
               {hasSelection
-                ? `${selectedCount} Space${selectedCount > 1 ? "s" : ""} đã chọn`
-                : "Lọc theo Space"}
+                ? `${selectedCount} Space${selectedCount > 1 ? "s" : ""} selected`
+                : "Filter by Space"}
             </span>
             {isOpen ? (
               <ChevronUp className="h-4 w-4" />
@@ -78,12 +78,12 @@ export function ThreadFilterDropdown({
             {loading ? (
               <div className="px-3 py-4 text-center">
                 <Loader2 className="h-5 w-5 animate-spin mx-auto text-indigo-500" />
-                <p className="text-sm text-gray-500 mt-2">Đang tải...</p>
+                <p className="text-sm text-gray-500 mt-2">Loading...</p>
               </div>
             ) : threads.length === 0 ? (
               <div className="px-3 py-4 text-center text-sm text-gray-500">
-                <p>Chưa có space nào được kết nối.</p>
-                <p className="text-xs mt-1 text-gray-400">Vui lòng kết nối Google Chat và chọn spaces để whitelist.</p>
+                <p>No spaces connected yet.</p>
+                <p className="text-xs mt-1 text-gray-400">Please connect Google Chat and select spaces to whitelist.</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -128,7 +128,7 @@ export function ThreadFilterDropdown({
                 }}
                 className="w-full rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
               >
-                Bỏ chọn tất cả
+                Clear all
               </button>
             </div>
           )}
