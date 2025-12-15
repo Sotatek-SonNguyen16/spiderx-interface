@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Settings, Bell, Plus } from "lucide-react";
+import { Search, Settings, Bell, Plus, LogOut } from "lucide-react";
+import { useLogout } from "@/hooks/use-logout";
 
 export default function HeaderAuth() {
+  const { logout } = useLogout();
+
   return (
     <header className="z-30 w-full text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -13,11 +16,23 @@ export default function HeaderAuth() {
           <div className="flex items-center gap-8">
             {/* Logo - Click to navigate to Todos */}
             <Link href="/todos" className="flex items-center gap-2">
-               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-               </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 2L3 14H12L11 22L21 10H12L13 2Z"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
             </Link>
 
             {/* Search */}
@@ -35,7 +50,10 @@ export default function HeaderAuth() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
-            <Link href="/integration" className="hidden items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-[#5D5FEF] hover:bg-gray-50 md:flex">
+            <Link
+              href="/integration"
+              className="hidden items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-[#5D5FEF] hover:bg-gray-50 md:flex"
+            >
               <Plus className="h-4 w-4" />
               Platform connection
             </Link>
@@ -56,6 +74,14 @@ export default function HeaderAuth() {
                 fill
                 className="object-cover"
               />
+            </button>
+
+            <button
+              onClick={logout}
+              className="rounded-full p-1.5 text-white/80 hover:bg-white/10 hover:text-white"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
             </button>
           </div>
         </div>

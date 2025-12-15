@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
 import { metadata as siteMetadata } from "@/lib/config/metadata";
-import { MockProvider } from "@/lib/api/MockProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,11 +50,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${nacelle.variable} bg-bg font-inter text-base text-ink antialiased`}
       >
-        <MockProvider>
-          <div className="flex min-h-screen flex-col overflow-hidden supports-[overflow:clip]:overflow-clip">
-            {children}
-          </div>
-        </MockProvider>
+        <div className="flex min-h-screen flex-col overflow-hidden supports-[overflow:clip]:overflow-clip">
+          {children}
+        </div>
       </body>
     </html>
   );
