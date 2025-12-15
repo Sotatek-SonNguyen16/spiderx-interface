@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useRef } from "react";
 import { useTodoStore } from "../stores/todo.store";
 import { todoService } from "../services/todo.service";
 import type { CreateTodoDto, UpdateTodoDto } from "../types";
@@ -14,6 +14,7 @@ export const useTodos = () => {
     page,
     limit,
     total,
+    hasMore,
     setTodos,
     addTodo,
     updateTodo,
@@ -24,9 +25,15 @@ export const useTodos = () => {
     setPagination,
   } = useTodoStore();
 
-  // 1. Hàm lấy danh sách todos
-  const fetchTodos = useCallback(async () => {
-    setLoading(true);
+  // Track if initial fetch has been done
+  const hasFetchedRef = useRef(false);
+  const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // 1. Hàm lấy danh sách todos - OPTIMIZED
+  const fetchTodos = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    }
     setError(null);
 
     const result = await todoService.fetchTodos({
@@ -39,176 +46,193 @@ export const useTodos = () => {
       setError(result.error);
     } else if (result.data) {
       setTodos(result.data.todos);
-      setPagination(result.data.page, result.data.limit, result.data.total);
+      setPagination(result.data.page, result.data.limit, result.data.total, result.data.hasMore);
+      hasFetchedRef.current = true;
     }
 
-    setLoading(false);
+    if (showLoading) {
+      setLoading(false);
+    }
   }, [filters, page, limit, setTodos, setLoading, setError, setPagination]);
 
   // Tự động fetch todos khi mount và khi filters/page thay đổi
   useEffect(() => {
     fetchTodos();
-  }, [fetchTodos]);
+  }, [filters, page, limit]); // Chỉ depend vào params, không depend vào function
 
-  // 2. Hàm tạo todo mới
+  // 2. Hàm tạo todo mới - OPTIMIZED với optimistic update
   const createTodo = useCallback(
     async (payload: CreateTodoDto) => {
-      setLoading(true);
       setError(null);
 
       const result = await todoService.createTodo(payload);
 
       if (result.error) {
         setError(result.error);
-        setLoading(false);
         return { success: false, error: result.error };
       }
 
       if (result.data) {
-        // Optimistic update: thêm vào store ngay
+        // Optimistic update: thêm vào store ngay, không cần fetch lại
         addTodo(result.data);
-        // Refresh để sync với server (quan trọng với mock/real API)
-        await fetchTodos();
-        setLoading(false);
         return { success: true, data: result.data };
       }
 
-      setLoading(false);
       return { success: false, error: "Unknown error" };
     },
-    [addTodo, setLoading, setError, fetchTodos]
+    [addTodo, setError]
   );
 
-  // 3. Hàm cập nhật todo
+  // 3. Hàm cập nhật todo - OPTIMIZED với optimistic update
   const updateTodoById = useCallback(
     async (id: string, payload: UpdateTodoDto) => {
-      setLoading(true);
       setError(null);
+
+      // Optimistic update trước khi gọi API
+      const originalTodo = todos.find(t => t.id === id);
+      updateTodo(id, payload);
 
       const result = await todoService.updateTodo(id, payload);
 
       if (result.error) {
+        // Rollback nếu có lỗi
+        if (originalTodo) {
+          updateTodo(id, originalTodo);
+        }
         setError(result.error);
-        setLoading(false);
         return { success: false, error: result.error };
       }
 
       if (result.data) {
-        // Optimistic update: cập nhật trong store ngay
+        // Sync lại với data từ server
         updateTodo(id, result.data);
-        // Refresh để sync với server
-        await fetchTodos();
-        setLoading(false);
         return { success: true, data: result.data };
       }
 
-      setLoading(false);
       return { success: false, error: "Unknown error" };
     },
-    [updateTodo, setLoading, setError, fetchTodos]
+    [todos, updateTodo, setError]
   );
 
-  // 4. Hàm xóa todo
+  // 4. Hàm xóa todo - OPTIMIZED với optimistic update
   const deleteTodo = useCallback(
     async (id: string) => {
-      setLoading(true);
       setError(null);
+
+      // Optimistic update trước khi gọi API
+      const originalTodo = todos.find(t => t.id === id);
+      removeTodo(id);
 
       const result = await todoService.deleteTodo(id);
 
       if (result.error) {
+        // Rollback nếu có lỗi
+        if (originalTodo) {
+          addTodo(originalTodo);
+        }
         setError(result.error);
-        setLoading(false);
         return { success: false, error: result.error };
       }
 
-      // Optimistic update: xóa khỏi store ngay
-      removeTodo(id);
-      // Refresh để sync với server
-      await fetchTodos();
-      setLoading(false);
       return { success: true };
     },
-    [removeTodo, setLoading, setError, fetchTodos]
+    [todos, removeTodo, addTodo, setError]
   );
 
-  // 5. Hàm toggle todo completion
+  // 5. Hàm toggle todo completion - OPTIMIZED với optimistic update
   const toggleTodo = useCallback(
     async (id: string) => {
-      setLoading(true);
       setError(null);
+
+      // Optimistic update trước khi gọi API
+      const originalTodo = todos.find(t => t.id === id);
+      if (!originalTodo) {
+        return { success: false, error: "Todo not found" };
+      }
+
+      const nextStatus = originalTodo.status === "completed" ? "in_progress" : "completed";
+      updateTodo(id, { status: nextStatus });
 
       const result = await todoService.toggleTodo(id);
 
       if (result.error) {
+        // Rollback nếu có lỗi
+        updateTodo(id, { status: originalTodo.status });
         setError(result.error);
-        setLoading(false);
         return { success: false, error: result.error };
       }
 
       if (result.data) {
-        // Optimistic update: cập nhật trong store ngay
+        // Sync lại với data từ server
         updateTodo(id, result.data);
-        // Refresh để sync với server
-        await fetchTodos();
-        setLoading(false);
         return { success: true, data: result.data };
       }
 
-      setLoading(false);
       return { success: false, error: "Unknown error" };
     },
-    [updateTodo, setLoading, setError, fetchTodos]
+    [todos, updateTodo, setError]
   );
 
-  // 6. Hàm refresh data (force reload)
+  // 6. Hàm refresh data (force reload) - OPTIMIZED với debounce
   const refresh = useCallback(async () => {
-    await fetchTodos();
+    // Clear existing timeout
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    // Debounce refresh calls
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchTodos(false); // Không show loading spinner khi refresh
+    }, 300);
   }, [fetchTodos]);
 
-  // 6.1 Hàm thêm subtasks vào todo
+  // 6.1 Hàm thêm subtasks vào todo - OPTIMIZED
   const addSubtasks = useCallback(
     async (todoId: string, subtasks: Array<{ title: string }>) => {
-      setLoading(true);
       setError(null);
 
       const result = await todoService.addSubtasks(todoId, subtasks);
 
       if (result.error) {
         setError(result.error);
-        setLoading(false);
         return { success: false, error: result.error };
       }
 
-      // Refresh để sync với server
-      await fetchTodos();
-      setLoading(false);
+      // Chỉ refresh todo cụ thể thay vì toàn bộ list
+      refresh();
       return { success: true };
     },
-    [setLoading, setError, fetchTodos]
+    [setError, refresh]
   );
 
-  // 7. Hàm apply filters
+  // 7. Hàm apply filters - OPTIMIZED
   const applyFilters = useCallback(
     (newFilters: typeof filters) => {
       setFilters(newFilters);
-      setPagination(1, limit, total);
-      // Filters sẽ trigger useEffect để fetch lại todos
+      setPagination(1, limit, total, hasMore);
     },
-    [setFilters, setPagination, limit, total]
+    [setFilters, setPagination, limit, total, hasMore]
   );
 
-  // 8. Hàm change page
+  // 8. Hàm change page - OPTIMIZED
   const changePage = useCallback(
     (newPage: number) => {
-      setPagination(newPage, limit, total);
-      // Page change sẽ trigger useEffect để fetch lại todos
+      setPagination(newPage, limit, total, hasMore);
     },
-    [limit, total, setPagination]
+    [limit, total, hasMore, setPagination]
   );
 
-  // Computed values
-  const hasTodos = useMemo(() => todos.length > 0, [todos]);
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Computed values - MEMOIZED
+  const hasTodos = useMemo(() => todos.length > 0, [todos.length]);
   const activeTodosCount = useMemo(
     () => todos.filter((t) => t.status !== "completed").length,
     [todos]
@@ -227,6 +251,7 @@ export const useTodos = () => {
     page,
     limit,
     total,
+    hasMore,
     hasTodos,
     activeTodosCount,
     completedTodosCount,

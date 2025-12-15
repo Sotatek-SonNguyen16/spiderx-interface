@@ -7,6 +7,7 @@ import type {
   SubtaskApiModel,
   SubtaskCreatePayload,
   SubtaskUpdatePayload,
+  TodoListResponse,
 } from "../types";
 
 const BASE_PATH = "/api/v1";
@@ -18,10 +19,10 @@ export const todoApi = {
 
   /**
    * GET /api/v1/todos/
-   * Get all todos for current user
+   * Get all todos for current user with pagination
    */
-  getTodos: async (params?: TodoApiQueryParams): Promise<TodoApiModel[]> => {
-    const response = await apiClient.get<TodoApiModel[]>(`${BASE_PATH}/todos/`, {
+  getTodos: async (params?: TodoApiQueryParams): Promise<TodoListResponse> => {
+    const response = await apiClient.get<TodoListResponse>(`${BASE_PATH}/todos/`, {
       params,
     });
     return response.data;

@@ -148,6 +148,20 @@ export interface TodoApiQueryParams {
   keyword?: string;
 }
 
+// Pagination metadata from API response
+export interface PaginationMeta {
+  total: number | null;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
+// API response with pagination
+export interface TodoListResponse {
+  data: TodoApiModel[];
+  meta: PaginationMeta;
+}
+
 // =============================================================================
 // SUBTASK API TYPES - Theo OpenAPI spec
 // =============================================================================

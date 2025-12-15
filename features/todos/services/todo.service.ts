@@ -12,20 +12,40 @@ interface FetchTodosResult {
   total: number;
   page: number;
   limit: number;
+  hasMore: boolean;
 }
 
 export class TodoService {
   /**
-   * Fetch all todos with optional filters
+   * Fetch all todos with optional filters and server-side pagination
    */
   async fetchTodos(params: TodoQueryParams = {}) {
     try {
       const apiParams = mapFiltersToApiQuery(params);
       const response = await todoApi.getTodos(apiParams);
-      const todos = response.map(mapTodoFromApi);
+      
+      // Handle different response structures
+      let todos: Todo[] = [];
+      let meta: any = {};
+      
+      if (response.data && Array.isArray(response.data)) {
+        // New structure: { data: [...], meta: {...} }
+        todos = response.data.map(mapTodoFromApi);
+        meta = response.meta || {};
+      } else if (Array.isArray(response)) {
+        // Old structure: direct array
+        todos = response.map(mapTodoFromApi);
+        meta = { total: null, limit: 1000, offset: 0, has_more: false };
+      } else {
+        throw new Error("Invalid API response structure");
+      }
+      
+      // Extract pagination info from meta
       const page = params.page ?? 1;
-      const limit = params.limit ?? 10;
-      const total = (page - 1) * limit + todos.length;
+      const limit = params.limit ?? 1000;
+      
+      // Calculate total from meta or fallback to current data length
+      const total = meta.total ?? todos.length;
 
       return {
         data: {
@@ -33,6 +53,7 @@ export class TodoService {
           total,
           page,
           limit,
+          hasMore: meta.has_more || false,
         } satisfies FetchTodosResult,
         error: null,
       };

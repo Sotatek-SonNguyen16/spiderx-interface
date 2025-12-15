@@ -34,15 +34,6 @@ const toCamelCaseSubtask = (subtask: TodoApiModel["subtasks"][number]): Subtask 
 });
 
 export const mapTodoFromApi = (data: TodoApiModel): Todo => {
-  // Debug: Log raw API data for assignee field
-  console.log("🔍 [TodoMapper] Raw API data for todo:", data.todo_id, {
-    assignee: data.assignee,
-    assignee_id: data.assignee_id,
-    assignee_name: data.assignee_name,
-    // Log all keys to see what fields are available
-    availableKeys: Object.keys(data),
-  });
-
   const mapped: Todo = {
     id: data.todo_id,
     title: data.title,
@@ -73,11 +64,6 @@ export const mapTodoFromApi = (data: TodoApiModel): Todo => {
     senderName: data.sender_name ?? null,
     senderEmail: data.sender_email ?? null,
   };
-
-  console.log("🔍 [TodoMapper] Mapped assignee:", {
-    assigneeId: mapped.assigneeId,
-    assigneeName: mapped.assigneeName,
-  });
 
   return mapped;
 };

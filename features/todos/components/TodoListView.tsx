@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import TodoItem from "./TodoItem";
 import type { Todo } from "../types";
 import type { TodoTabType } from "./TodoTabs";
@@ -20,7 +21,7 @@ interface TodoListViewProps {
   onAddSubtasks?: (todoId: string, subtasks: Array<{ title: string }>) => Promise<void>;
 }
 
-export const TodoListView = ({
+const TodoListViewComponent = ({
   todos,
   activeTab,
   loading,
@@ -86,3 +87,6 @@ export const TodoListView = ({
     </div>
   );
 };
+
+// Memoize component để tránh re-render không cần thiết
+export const TodoListView = memo(TodoListViewComponent);

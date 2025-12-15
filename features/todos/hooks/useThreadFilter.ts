@@ -92,22 +92,6 @@ export const useThreadFilter = (todos: Todo[], threads: ConnectedThread[]) => {
    * For any selected thread IDs, all displayed todos SHALL have sourceSpaceId matching one of the selected thread IDs
    */
   const filteredTodos = useMemo(() => {
-    // Debug: Log thread IDs and todo sourceSpaceIds
-    console.log("🔍 [ThreadFilter] Threads:", threads.map(t => ({
-      id: t.id,
-      normalizedId: normalizeSpaceId(t.id),
-      name: t.name,
-      displayName: t.displayName
-    })));
-    console.log("🔍 [ThreadFilter] Selected thread IDs:", selectedThreadIds);
-    console.log("🔍 [ThreadFilter] Todos:", todos.map(t => ({
-      id: t.id,
-      title: t.title,
-      sourceSpaceId: t.sourceSpaceId,
-      sourceSpaceName: t.sourceSpaceName,
-      matchingThreadId: findMatchingThreadId(t)
-    })));
-
     if (selectedThreadIds.length === 0) {
       // **Property 2: Thread Filter Clear**
       // When no filter is applied, return all todos
@@ -122,7 +106,6 @@ export const useThreadFilter = (todos: Todo[], threads: ConnectedThread[]) => {
       return matchingThreadId && selectedSet.has(matchingThreadId);
     });
 
-    console.log("🔍 [ThreadFilter] Filtered todos count:", filtered.length);
     return filtered;
   }, [todos, selectedThreadIds, threads, findMatchingThreadId]);
 

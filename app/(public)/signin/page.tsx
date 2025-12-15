@@ -226,12 +226,6 @@ export default function SignIn() {
                   Remember Me
                 </label>
               </div>
-              <Link
-                href="/reset-password"
-                className="text-sm font-medium text-gray-500 hover:text-gray-800"
-              >
-                Forgot password?
-              </Link>
             </div>
 
             <button

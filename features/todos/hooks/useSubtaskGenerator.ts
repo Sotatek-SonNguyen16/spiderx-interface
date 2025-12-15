@@ -37,7 +37,6 @@ export const useSubtaskGenerator = () => {
   ): Promise<{ success: boolean; subtasks?: GeneratedSubtask[]; error?: string }> => {
     // Validate input
     if (!todoTitle || todoTitle.trim() === "") {
-      console.error("🤖 [SubtaskGenerator] Error: todoTitle is empty");
       setState((prev) => ({
         ...prev,
         error: "Task title is required to generate subtasks.",
@@ -60,19 +59,12 @@ export const useSubtaskGenerator = () => {
         ? `Break down this task into actionable subtasks (return each subtask as a separate todo item):\n\nTask: ${todoTitle}\n\nDescription: ${todoDescription}`
         : `Break down this task into actionable subtasks (return each subtask as a separate todo item):\n\nTask: ${todoTitle}`;
 
-      console.log("🤖 [SubtaskGenerator] Generating subtasks for:", todoTitle);
-      console.log("🤖 [SubtaskGenerator] Prompt:", prompt);
-      console.log("🤖 [SubtaskGenerator] API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
-
       // Call AI extract endpoint: POST /api/v1/ai/extract
       const response = await googleChatApi.extractTodosFromText({
         text: prompt,
         auto_save: false,
         source_type: "chat",
       });
-
-      console.log("🤖 [SubtaskGenerator] Raw API Response:", response);
-      console.log("🤖 [SubtaskGenerator] Response type:", typeof response);
 
       // Handle response - có thể là direct response hoặc wrapped trong data
       let todos: any[] = [];
@@ -88,12 +80,8 @@ export const useSubtaskGenerator = () => {
         }
       }
 
-      console.log("🤖 [SubtaskGenerator] Parsed todos:", todos);
-      console.log("🤖 [SubtaskGenerator] Todos count:", todos.length);
-
       // Check if we have todos in the response
       if (!todos || todos.length === 0) {
-        console.warn("🤖 [SubtaskGenerator] No subtasks returned from API");
         setState({
           isGenerating: false,
           generatedSubtasks: [],
@@ -102,8 +90,6 @@ export const useSubtaskGenerator = () => {
         });
         return { success: false, error: "No subtasks generated" };
       }
-
-      console.log("🤖 [SubtaskGenerator] Generated", todos.length, "subtasks");
 
       // Map AI response to subtasks
       const subtasks: GeneratedSubtask[] = todos.map((todo: any, index: number) => ({
@@ -121,35 +107,18 @@ export const useSubtaskGenerator = () => {
 
       return { success: true, subtasks };
     } catch (error: any) {
-      // Enhanced error logging
-      console.error("🤖 [SubtaskGenerator] Error:", error);
-      console.error("🤖 [SubtaskGenerator] Error type:", typeof error);
-      console.error("🤖 [SubtaskGenerator] Error details:", {
-        message: error?.message,
-        status: error?.status,
-        response: error?.response,
-        data: error?.response?.data,
-        name: error?.name,
-        stack: error?.stack,
-      });
-      
       // Extract meaningful error message
       let errorMessage = "Không thể tạo subtasks. Vui lòng thử lại.";
       const status = error?.status || error?.response?.status;
       
       if (status === 404) {
         errorMessage = "API endpoint không tồn tại. Vui lòng liên hệ hỗ trợ.";
-        console.error("🤖 [SubtaskGenerator] 404 - Endpoint /api/v1/ai/extract not found");
       } else if (status === 401) {
         errorMessage = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
       } else if (status === 403) {
         errorMessage = "Bạn không có quyền sử dụng tính năng này.";
       } else if (status === 422) {
         errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
-        // Log validation errors
-        if (error?.response?.data?.detail) {
-          console.error("🤖 [SubtaskGenerator] Validation errors:", error.response.data.detail);
-        }
       } else if (status === 429) {
         errorMessage = "Quá nhiều yêu cầu. Vui lòng thử lại sau.";
       } else if (status >= 500) {
