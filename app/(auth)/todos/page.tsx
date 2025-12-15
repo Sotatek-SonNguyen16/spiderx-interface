@@ -7,9 +7,8 @@ export const metadata = {
 
 export default function TodosPage() {
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="min-h-screen">
       <TodoList />
     </div>
   );
 }
-

@@ -32,8 +32,8 @@ export default function AuthLayout({
         </div>
 
         {/* Main Content Card */}
-        <main className="-mt-24 px-4 pb-12 sm:px-6 lg:px-8 z-[99] relative">
-          <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-white shadow-xl">
+        <main className="-mt-24 px-4 sm:px-6 lg:px-8 z-99 relative">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-white shadow-2xl">
             {children}
           </div>
         </main>

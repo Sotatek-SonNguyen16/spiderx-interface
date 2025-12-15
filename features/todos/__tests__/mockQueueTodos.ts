@@ -33,6 +33,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Alice Johnson",
     senderName: "Bob Smith",
     senderEmail: "bob.smith@example.com",
+    aiConfidence: 0.95,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-002",
@@ -61,6 +64,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Charlie Davis",
     senderName: "Diana Evans",
     senderEmail: "diana.evans@example.com",
+    aiConfidence: 0.88,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-003",
@@ -89,6 +95,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Eva Martinez",
     senderName: "Frank Wilson",
     senderEmail: "frank.wilson@example.com",
+    aiConfidence: 0.92,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-004",
@@ -117,6 +126,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "George Brown",
     senderName: "Hannah Lee",
     senderEmail: "hannah.lee@example.com",
+    aiConfidence: 0.85,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-005",
@@ -145,6 +157,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Ivy Chen",
     senderName: "Jack Taylor",
     senderEmail: "jack.taylor@example.com",
+    aiConfidence: 0.90,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-006",
@@ -173,6 +188,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Kevin Park",
     senderName: "Laura White",
     senderEmail: "laura.white@example.com",
+    aiConfidence: 0.87,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-007",
@@ -201,6 +219,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Maria Garcia",
     senderName: "Nathan Scott",
     senderEmail: "nathan.scott@example.com",
+    aiConfidence: 0.93,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-008",
@@ -229,6 +250,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Oliver Kim",
     senderName: "Patricia Adams",
     senderEmail: "patricia.adams@example.com",
+    aiConfidence: 0.78,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-009",
@@ -257,6 +281,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Quinn Roberts",
     senderName: "Rachel Green",
     senderEmail: "rachel.green@example.com",
+    aiConfidence: 0.96,
+    isAiGenerated: true,
+    reviewStatus: "ai_pending",
   },
   {
     id: "T-010",
@@ -285,6 +312,9 @@ export const mockQueueTodos: Todo[] = [
     assigneeName: "Sam Thompson",
     senderName: null,
     senderEmail: null,
+    aiConfidence: null,
+    isAiGenerated: false,
+    reviewStatus: null,
   },
 ];
 

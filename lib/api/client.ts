@@ -58,22 +58,37 @@ export class ApiClient {
         if (error.response) {
           const { status, data } = error.response;
           
-          // Handle 401 Unauthorized
+          // Handle 401 Unauthorized - JWT expired or invalid
           if (status === 401) {
+            console.warn("[API Client] 401 Unauthorized - Token expired or invalid");
             if (typeof window !== "undefined") {
               localStorage.removeItem("auth_token");
               sessionStorage.removeItem("auth_token");
               // Redirect to login if not already on auth pages
               const currentPath = window.location.pathname;
-              if (!currentPath.startsWith("/signin") && !currentPath.startsWith("/signup")) {
+              if (!currentPath.startsWith("/signin") && !currentPath.startsWith("/signup") && !currentPath.startsWith("/reset-password")) {
+                console.warn("[API Client] Redirecting to /signin due to 401");
                 window.location.href = "/signin";
               }
             }
           }
 
-          // Handle 403 Forbidden
+          // Handle 403 Forbidden - also could be token related
           if (status === 403) {
-            console.error("Access forbidden");
+            console.error("[API Client] 403 Forbidden");
+            // Check if it's a token-related 403 (some APIs return 403 for expired tokens)
+            const errorMessage = (data?.message || "").toLowerCase();
+            if (errorMessage.includes("token") || errorMessage.includes("jwt") || errorMessage.includes("expired") || errorMessage.includes("unauthorized")) {
+              console.warn("[API Client] 403 appears to be token-related, clearing auth");
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("auth_token");
+                sessionStorage.removeItem("auth_token");
+                const currentPath = window.location.pathname;
+                if (!currentPath.startsWith("/signin") && !currentPath.startsWith("/signup") && !currentPath.startsWith("/reset-password")) {
+                  window.location.href = "/signin";
+                }
+              }
+            }
           }
 
           // Handle 500 Server Error

@@ -7,6 +7,8 @@ export type TodoEisenhower =
   | "urgent_not_important"
   | "not_urgent_not_important";
 
+export type ReviewStatus = "ai_pending" | "ai_approved" | "user_approved" | "rejected";
+
 export type SubtaskStatus = "todo" | "completed";
 
 export interface SubtaskApiModel {
@@ -50,6 +52,10 @@ export interface TodoApiModel {
   // Update v1: Sender information from chat.memberships.readonly scope
   sender_name?: string | null;
   sender_email?: string | null;
+  // AI-related fields
+  ai_confidence?: number | null;
+  is_ai_generated?: boolean;
+  review_status?: ReviewStatus | null;
 }
 
 export interface Subtask {
@@ -89,6 +95,10 @@ export interface Todo {
   // Update v1: Sender information
   senderName: string | null;
   senderEmail: string | null;
+  // AI-related fields
+  aiConfidence: number | null;
+  isAiGenerated: boolean;
+  reviewStatus: ReviewStatus | null;
 }
 
 export interface CreateTodoDto {

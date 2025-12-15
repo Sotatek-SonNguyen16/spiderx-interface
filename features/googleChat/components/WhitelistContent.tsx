@@ -22,26 +22,32 @@ export const WhitelistContent = ({
 }: WhitelistContentProps) => {
   return (
     <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
+      {/* Left Panel: Available Spaces (Input) */}
       <SpaceListPanel
-        title="All Spaces"
+        title="Available Spaces"
+        subtitle="Select spaces to enable todo extraction"
         spaces={availableSpaces}
         variant="available"
         isLoading={isLoading}
         updatingSpaceId={updatingSpaceId}
         showSearch
         emptyMessage="No available spaces"
+        emptySubMessage="Connect to Google Chat first"
         onSpaceAction={onAddToWhitelist}
       />
 
+      {/* Right Panel: Enabled for Extraction (Output - More Prominent) */}
       <SpaceListPanel
-        title="Whitelisted Spaces"
+        title="Enabled for Extraction"
+        subtitle="Todos will be generated from these spaces"
         spaces={whitelistedSpaces}
         variant="whitelisted"
         isLoading={isLoading}
         updatingSpaceId={updatingSpaceId}
         showCount
-        emptyMessage="No spaces whitelisted yet"
-        emptySubMessage="Add spaces from the left list"
+        isOutputPanel
+        emptyMessage="📭 No spaces enabled"
+        emptySubMessage="Enable spaces from the left to extract todos from conversations"
         onSpaceAction={onRemoveFromWhitelist}
       />
     </div>

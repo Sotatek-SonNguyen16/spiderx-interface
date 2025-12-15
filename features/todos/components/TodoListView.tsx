@@ -18,7 +18,10 @@ interface TodoListViewProps {
   onRejectQueue: (id: string) => void;
   onItemClick: (id: string) => void;
   onNavigateToDetail: (id: string) => void;
-  onAddSubtasks?: (todoId: string, subtasks: Array<{ title: string }>) => Promise<void>;
+  onAddSubtasks?: (
+    todoId: string,
+    subtasks: Array<{ title: string }>
+  ) => Promise<void>;
 }
 
 const TodoListViewComponent = ({
@@ -44,9 +47,9 @@ const TodoListViewComponent = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-0">
+    <div className="flex-1 overflow-y-auto p-3 md:p-4 pt-0 custom-scrollbar">
       <div className="mx-auto w-full max-w-4xl">
-        <div className="space-y-2 pb-4">
+        <div className="space-y-3 pb-4">
           {todos.length === 0 ? (
             <div className="rounded-xl bg-white/60 py-12 text-center text-gray-500 backdrop-blur-sm">
               No tasks found in {activeTab}.
@@ -60,17 +63,21 @@ const TodoListViewComponent = ({
                     ? animationType === "accept"
                       ? "translate-x-full opacity-0 scale-95"
                       : animationType === "reject"
-                        ? "-translate-x-full opacity-0 scale-95"
-                        : animationType === "complete"
-                          ? "scale-95 opacity-0"
-                          : ""
+                      ? "-translate-x-full opacity-0 scale-95"
+                      : animationType === "complete"
+                      ? "scale-95 opacity-0"
+                      : ""
                     : ""
                 }`}
               >
                 <TodoItem
                   todo={todo}
                   variant={
-                    activeTab === "queue" ? "queue" : activeTab === "completed" ? "completed" : "todo"
+                    activeTab === "queue"
+                      ? "queue"
+                      : activeTab === "completed"
+                      ? "completed"
+                      : "todo"
                   }
                   isExpanded={expandedTodoId === todo.id}
                   onToggle={onToggleTodo}

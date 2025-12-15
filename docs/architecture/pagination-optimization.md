@@ -3,7 +3,9 @@
 ## Cải tiến
 
 ### 1. Server-side Pagination Metadata
+
 API response bây giờ bao gồm metadata:
+
 ```json
 {
   "data": [...],
@@ -16,7 +18,19 @@ API response bây giờ bao gồm metadata:
 }
 ```
 
+### 2. Per-Tab Pagination
+
+Pagination hoạt động riêng biệt cho từng tab:
+
+- **Todo**: Các task đang in_progress
+- **Queue**: Các task mới (status: todo)
+- **Trash**: Các task đã cancelled
+- **Completed**: Các task đã completed
+
+Mỗi tab có số lượng items riêng và pagination tự động reset về trang 1 khi chuyển tab.
+
 ### 2. Type Safety
+
 ```typescript
 interface PaginationMeta {
   total: number | null;
@@ -32,15 +46,17 @@ interface TodoListResponse {
 ```
 
 ### 3. Store Updates
+
 - Thêm `hasMore` flag để biết có còn data hay không
 - `setPagination` nhận thêm parameter `hasMore`
 
 ### 4. Service Layer
+
 ```typescript
 async fetchTodos(params: TodoQueryParams = {}) {
   const response = await todoApi.getTodos(apiParams);
   const todos = response.data.map(mapTodoFromApi);
-  
+
   return {
     data: {
       todos,
@@ -55,6 +71,7 @@ async fetchTodos(params: TodoQueryParams = {}) {
 ```
 
 ### 5. Component Optimization
+
 - `TodoListView` wrapped với `React.memo` để tránh re-renders
 - Pagination component đã tối ưu sẵn
 

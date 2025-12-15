@@ -12,7 +12,7 @@ import { WhitelistContent } from "@/features/googleChat/components/WhitelistCont
 
 export default function WhitelistPage() {
   const router = useRouter();
-  
+
   // Custom hook for whitelist data and actions
   const {
     whitelistedSpaces,
@@ -22,7 +22,7 @@ export default function WhitelistPage() {
     message: whitelistMessage,
     handleAddToWhitelist,
     handleRemoveFromWhitelist,
-    setMessage: setWhitelistMessage
+    setMessage: setWhitelistMessage,
   } = useWhitelistManagement();
 
   // Sync hook
@@ -84,7 +84,11 @@ export default function WhitelistPage() {
   }
 
   // Combine messages (whitelist error or sync error)
-  const activeMessage = whitelistMessage ?? (syncErrorMessage || syncError ? { type: "error", text: syncErrorMessage || syncError || "Error" } : null);
+  const activeMessage =
+    whitelistMessage ??
+    (syncErrorMessage || syncError
+      ? { type: "error", text: syncErrorMessage || syncError || "Error" }
+      : null);
 
   return (
     <div className="flex h-screen flex-col p-6 md:p-8 overflow-hidden bg-white">
@@ -92,6 +96,7 @@ export default function WhitelistPage() {
         isSyncing={isSyncing}
         isLoading={isLoading}
         hasWhitelistedSpaces={whitelistedSpaces.length > 0}
+        whitelistedCount={whitelistedSpaces.length}
         taskStatus={taskStatus}
         taskProgress={taskProgress}
         onGenerateTodos={handleGenerateTodos}
@@ -102,7 +107,9 @@ export default function WhitelistPage() {
       {activeMessage && (
         <div
           className={`mb-6 rounded-lg p-4 text-sm flex items-center gap-2 shrink-0 ${
-            activeMessage.type === "success" ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+            activeMessage.type === "success"
+              ? "bg-green-50 text-green-600"
+              : "bg-red-50 text-red-600"
           }`}
         >
           {activeMessage.type === "success" ? (
@@ -125,4 +132,3 @@ export default function WhitelistPage() {
     </div>
   );
 }
-

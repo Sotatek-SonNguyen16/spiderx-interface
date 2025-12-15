@@ -58,6 +58,13 @@ const todoArb: fc.Arbitrary<Todo> = fc.record({
   // Update v1: Sender information fields
   senderName: fc.option(fc.string({ minLength: 1, maxLength: 100 }), { nil: null }),
   senderEmail: fc.option(fc.emailAddress(), { nil: null }),
+  // AI-related fields
+  aiConfidence: fc.option(fc.float({ min: 0, max: 1 }), { nil: null }),
+  isAiGenerated: fc.boolean(),
+  reviewStatus: fc.option(
+    fc.constantFrom("ai_pending" as const, "ai_approved" as const, "user_approved" as const, "rejected" as const),
+    { nil: null }
+  ),
 });
 
 describe("Todo Detail Field Completeness", () => {

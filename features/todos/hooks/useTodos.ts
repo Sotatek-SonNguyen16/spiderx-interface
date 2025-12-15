@@ -27,7 +27,7 @@ export const useTodos = () => {
 
   // Track if initial fetch has been done
   const hasFetchedRef = useRef(false);
-  const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // 1. Hàm lấy danh sách todos - OPTIMIZED
   const fetchTodos = useCallback(async (showLoading = true) => {
@@ -55,10 +55,10 @@ export const useTodos = () => {
     }
   }, [filters, page, limit, setTodos, setLoading, setError, setPagination]);
 
-  // Tự động fetch todos khi mount và khi filters/page thay đổi
-  useEffect(() => {
-    fetchTodos();
-  }, [filters, page, limit]); // Chỉ depend vào params, không depend vào function
+  // REMOVED: Tự động fetch todos. moved to TodoList.tsx to prevent duplicate calls
+  // useEffect(() => {
+  //   fetchTodos();
+  // }, [filters, page, limit]);
 
   // 2. Hàm tạo todo mới - OPTIMIZED với optimistic update
   const createTodo = useCallback(

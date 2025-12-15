@@ -63,6 +63,10 @@ export const mapTodoFromApi = (data: TodoApiModel): Todo => {
     // Update v1: Sender information
     senderName: data.sender_name ?? null,
     senderEmail: data.sender_email ?? null,
+    // AI-related fields
+    aiConfidence: data.ai_confidence ?? null,
+    isAiGenerated: data.is_ai_generated ?? false,
+    reviewStatus: data.review_status ?? null,
   };
 
   return mapped;

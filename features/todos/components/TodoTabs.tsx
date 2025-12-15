@@ -1,4 +1,5 @@
 import React from "react";
+import { ListTodo, Layers, Trash2, CheckCircle2 } from "lucide-react";
 
 export type TodoTabType = "todo" | "queue" | "trash" | "completed";
 
@@ -13,34 +14,102 @@ interface TodoTabsProps {
   };
 }
 
-export default function TodoTabs({ activeTab, onTabChange, counts }: TodoTabsProps) {
-  const tabs: { id: TodoTabType; label: string; count?: number }[] = [
-    { id: "todo", label: "Todo", count: counts.todo },
-    { id: "queue", label: "Queue", count: counts.queue },
-    { id: "trash", label: "Trash" }, // Assuming no count needed or 0
-    { id: "completed", label: "Completed" },
+export default function TodoTabs({
+  activeTab,
+  onTabChange,
+  counts,
+}: TodoTabsProps) {
+  const tabs: {
+    id: TodoTabType;
+    label: string;
+    icon: React.ElementType;
+    colorClass: string;
+    activeBg: string;
+    activeText: string;
+    count?: number;
+  }[] = [
+    {
+      id: "todo",
+      label: "Todo",
+      icon: ListTodo,
+      colorClass: "text-blue-600",
+      activeBg: "bg-blue-100",
+      activeText: "text-blue-700",
+      count: counts.todo,
+    },
+    {
+      id: "queue",
+      label: "Queue",
+      icon: Layers,
+      colorClass: "text-orange-600",
+      activeBg: "bg-orange-100",
+      activeText: "text-orange-800",
+      count: counts.queue,
+    },
+    {
+      id: "trash",
+      label: "Trash",
+      icon: Trash2,
+      colorClass: "text-red-600",
+      activeBg: "bg-red-100",
+      activeText: "text-red-700",
+      count: counts.trash,
+    },
+    {
+      id: "completed",
+      label: "Done",
+      icon: CheckCircle2,
+      colorClass: "text-green-600",
+      activeBg: "bg-green-100",
+      activeText: "text-green-700",
+      count: counts.completed,
+    },
   ];
 
   return (
-    <div className="flex gap-6 border-b border-gray-100 pb-1 text-sm font-medium text-gray-500">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`relative flex items-center gap-2 pb-3 transition-colors ${
-            activeTab === tab.id
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-400 hover:text-gray-600"
-          }`}
-        >
-          {tab.label}
-          {tab.count !== undefined && tab.count > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#FF4B4B] px-1.5 text-[10px] font-bold text-white">
-              {tab.count > 99 ? "99+" : tab.count}
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="flex w-full items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex bg-gray-50/50 p-1 rounded-xl border border-gray-100 w-full sm:w-auto">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className={`relative flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-out ${
+                isActive
+                  ? `${tab.activeBg} ${tab.activeText} shadow-sm ring-1 ring-inset ring-black/5`
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              }`}
+            >
+              <Icon
+                className={`h-4 w-4 ${
+                  isActive ? "currentColor" : "text-gray-400"
+                }`}
+              />
+              <span className="hidden sm:inline-block">{tab.label}</span>
+
+              {/* Mobile label fallback/short */}
+              <span className="sm:hidden">
+                {tab.id === "completed" ? "Done" : tab.label}
+              </span>
+
+              {tab.count !== undefined && tab.count > 0 && (
+                <span
+                  className={`ml-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                    isActive
+                      ? "bg-white/60 text-current backdrop-blur-sm"
+                      : "bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  {tab.count > 99 ? "99+" : tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

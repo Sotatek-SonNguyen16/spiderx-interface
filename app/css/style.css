@@ -1,8 +1,8 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Additional styles */
-@import './additional-styles/utility-patterns.css' layer(components);
-@import './additional-styles/theme.css';
+@import "./additional-styles/utility-patterns.css" layer(components);
+@import "./additional-styles/theme.css";
 
 @plugin "@tailwindcss/forms" {
   strategy: base;
@@ -223,6 +223,49 @@
       transform: scale(0.95);
     }
   }
+
+  /* Shimmer animation for AI suggestions */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /*
@@ -249,7 +292,7 @@
   --color-white: #ffffff;
 
   /* Gray scale (base chuyên nghiệp) */
-  --color-gray-50:  #f9fafb;
+  --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6; /* = bg-muted */
   --color-gray-200: #e5e7eb;
   --color-gray-300: #d1d5db;
@@ -261,12 +304,12 @@
   --color-gray-900: #111827;
 
   /* Accents */
-  --color-electric-blue:  #2563eb; /* Primary đề xuất */
+  --color-electric-blue: #2563eb; /* Primary đề xuất */
   --color-lightning-yellow: #facc15; /* Accent / CTA */
 
   /* Semantic tokens (dễ đổi toàn app) */
   --color-ink: var(--color-gray-800); /* text chính */
-  --color-bg:  var(--color-white);
+  --color-bg: var(--color-white);
   --color-bg-muted: var(--color-gray-100);
 
   /* Brand */
@@ -276,7 +319,7 @@
   --color-accent: var(--color-lightning-yellow);
 
   /* Brand scale (Electric Blue) */
-  --color-brand-50:  #eff6ff;
+  --color-brand-50: #eff6ff;
   --color-brand-100: #dbeafe;
   --color-brand-200: #bfdbfe;
   --color-brand-300: #93c5fd;
@@ -288,7 +331,7 @@
   --color-brand-900: #1e3a8a;
 
   /* Accent scale (Lightning Yellow) */
-  --color-accent-50:  #fefce8;
+  --color-accent-50: #fefce8;
   --color-accent-100: #fef9c3;
   --color-accent-200: #fef08a;
   --color-accent-300: #fde047;
@@ -307,7 +350,7 @@
 @layer base {
   .dark {
     --color-ink: var(--color-gray-100);
-    --color-bg:  var(--color-gray-900);
+    --color-bg: var(--color-gray-900);
     --color-bg-muted: var(--color-gray-800);
   }
 

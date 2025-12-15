@@ -1,9 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Transition } from "@headlessui/react";
-import { Check, X, Calendar as CalendarIcon, Flag, ChevronDown, ChevronUp, Sparkles, Loader2, AlertCircle, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Check,
+  X,
+  Calendar as CalendarIcon,
+  Flag,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  Trash2,
+  Flame,
+  Zap,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  format,
+  isBefore,
+  differenceInHours,
+  differenceInMinutes,
+} from "date-fns";
 import type { Todo } from "../types";
 import { SourceLink } from "./SourceLink";
 import { AssigneeDisplay } from "./AssigneeDisplay";
@@ -19,7 +39,10 @@ interface TodoItemProps {
   onReject?: (id: string) => void;
   onClick?: (id: string) => void;
   onViewDetail?: (id: string) => void;
-  onAddSubtasks?: (todoId: string, subtasks: Array<{ title: string }>) => Promise<void>;
+  onAddSubtasks?: (
+    todoId: string,
+    subtasks: Array<{ title: string }>
+  ) => Promise<void>;
 }
 
 export default function TodoItem({
@@ -58,13 +81,16 @@ export default function TodoItem({
   // Handle save generated subtasks
   const handleSaveSubtasks = async () => {
     if (!onAddSubtasks) return;
-    
+
     const selected = getSelectedSubtasks();
     if (selected.length === 0) return;
 
     setIsSaving(true);
     try {
-      await onAddSubtasks(todo.id, selected.map(s => ({ title: s.title })));
+      await onAddSubtasks(
+        todo.id,
+        selected.map((s) => ({ title: s.title }))
+      );
       clearPreview();
     } catch (err) {
       console.error("Failed to save subtasks:", err);
@@ -76,57 +102,251 @@ export default function TodoItem({
   const selectedCount = generatedSubtasks.filter((s) => s.isSelected).length;
 
   // Format time range
-  const formatTime = (dateString: string | null, estimatedMinutes: number | null) => {
+  const formatTime = (
+    dateString: string | null,
+    estimatedMinutes: number | null
+  ) => {
     if (!dateString) return "All Day";
     const start = new Date(dateString);
     const end = new Date(start.getTime() + (estimatedMinutes || 30) * 60000);
-    
-    return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    return `${start.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })} - ${end.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
   };
 
   const timeRange = formatTime(todo.dueDate, todo.estimatedTime);
-  
-  // Get first tag or default
-  const tag = todo.tags && todo.tags.length > 0 ? todo.tags[0] : "Family"; 
 
-  // Priority badge color
-  const getPriorityColor = (priority: string) => {
+  // Get first tag or default
+  const tag = todo.tags && todo.tags.length > 0 ? todo.tags[0] : "Family";
+
+  // Check if task is overdue
+  const isOverdue = useMemo(() => {
+    if (!todo.dueDate || todo.status === "completed") return false;
+    return isBefore(new Date(todo.dueDate), new Date());
+  }, [todo.dueDate, todo.status]);
+
+  // Format time until due
+  const timeUntilDue = useMemo(() => {
+    if (!todo.dueDate) return null;
+    const due = new Date(todo.dueDate);
+    const now = new Date();
+    const minutes = differenceInMinutes(due, now);
+    const hours = differenceInHours(due, now);
+
+    if (minutes < 0) return { text: "Overdue", urgent: true };
+    if (minutes < 60) return { text: `Due in ${minutes}m`, urgent: true };
+    if (hours < 24) return { text: `Due in ${hours}h`, urgent: hours < 3 };
+    return { text: format(due, "MMM d"), urgent: false };
+  }, [todo.dueDate]);
+
+  // Priority styling
+  const getPriorityStyle = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600';
-      case 'high': return 'text-orange-600';
-      case 'medium': return 'text-yellow-600';
-      default: return 'text-green-600';
+      case "urgent":
+        return {
+          border: "border-l-4 border-l-red-500",
+          badge: "bg-red-100 text-red-700 border-red-200",
+          icon: Flame,
+          text: "Urgent",
+        };
+      case "high":
+        return {
+          border: "border-l-4 border-l-orange-500",
+          badge: "bg-orange-100 text-orange-700 border-orange-200",
+          icon: Zap,
+          text: "High",
+        };
+      case "medium":
+        return {
+          border: "border-l-4 border-l-yellow-400",
+          badge: "bg-yellow-100 text-yellow-700 border-yellow-200",
+          icon: Flag,
+          text: "Medium",
+        };
+      default:
+        return {
+          border: "",
+          badge: "bg-gray-100 text-gray-600 border-gray-200",
+          icon: null,
+          text: "Low",
+        };
     }
   };
 
+  const priorityStyle = getPriorityStyle(todo.priority);
+  const PriorityIcon = priorityStyle.icon;
+
+  // Eisenhower matrix display
+  const getEisenhowerLabel = (eisenhower: string | null) => {
+    switch (eisenhower) {
+      case "urgent_important":
+        return {
+          label: "Urgent & Important",
+          color: "bg-red-100 text-red-700",
+        };
+      case "not_urgent_important":
+        return { label: "Important", color: "bg-blue-100 text-blue-700" };
+      case "urgent_not_important":
+        return { label: "Urgent", color: "bg-orange-100 text-orange-700" };
+      case "not_urgent_not_important":
+        return { label: "Low Priority", color: "bg-gray-100 text-gray-600" };
+      default:
+        return null;
+    }
+  };
+
+  const eisenhowerInfo = getEisenhowerLabel(todo.eisenhower);
+
   return (
-    <div className="overflow-hidden rounded-xl bg-[#F8F9FAFF] transition-all duration-300 hover:bg-white hover:shadow-sm">
-      {/* Summary Row */}
-      <div 
-        className="group flex items-center justify-between p-4 cursor-pointer"
+    <div
+      className={`group overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md hover:border-blue-200/50 ${
+        priorityStyle.border
+      } ${isOverdue ? "ring-2 ring-red-100" : ""}`}
+    >
+      {/* Main Content Area */}
+      <div
+        className="flex items-start gap-4 p-5 cursor-pointer relative"
         onClick={() => onClick && onClick(todo.id)}
       >
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          {/* Checkbox for Todo variant */}
+        {/* Left: Status/Type Indicator */}
+        <div className="pt-1 flex-shrink-0">
           {variant === "todo" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onToggle && onToggle(todo.id);
               }}
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${
+              className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-200 ${
                 todo.status === "completed"
-                  ? "border-blue-600 bg-blue-600 scale-100"
-                  : "border-gray-300 hover:border-blue-400 hover:scale-110"
+                  ? "border-green-500 bg-green-500 text-white"
+                  : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
               }`}
             >
-              {todo.status === "completed" && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
+              {todo.status === "completed" && (
+                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+              )}
             </button>
           )}
+          {variant === "completed" && (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">
+              <Check className="h-4 w-4" strokeWidth={3} />
+            </div>
+          )}
+          {variant === "queue" && (
+            <div
+              className={`mt-0.5 h-2 w-2 rounded-full ${
+                todo.status === "todo" ? "bg-orange-400" : "bg-gray-300"
+              }`}
+            />
+          )}
+        </div>
 
-          {/* Content */}
-          <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+        {/* Middle: Content */}
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* Header: Title */}
+          <div className="flex justify-between items-start gap-3">
+            <h3
+              className={`text-lg font-semibold leading-tight text-gray-900 transition-colors ${
+                todo.status === "completed" ? "text-gray-500 line-through" : ""
+              }`}
+            >
+              {todo.title}
+            </h3>
+
+            {/* Mobile: Expand Icon */}
+            <div className="sm:hidden text-gray-400">
+              {isExpanded ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </div>
+          </div>
+
+          {/* Row 2: Tags & Attributes */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Priority Badge */}
+            {(todo.priority === "urgent" || todo.priority === "high") && (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                  todo.priority === "urgent"
+                    ? "bg-red-50 text-red-700 border border-red-100"
+                    : "bg-orange-50 text-orange-700 border border-orange-100"
+                }`}
+              >
+                <Flag className="h-3 w-3" fill="currentColor" />
+                {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+              </span>
+            )}
+
+            {/* AI Generated Badge */}
+            {todo.isAiGenerated && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 border border-purple-100">
+                <Sparkles className="h-3 w-3" />
+                AI
+              </span>
+            )}
+
+            {/* Tags */}
+            {todo.tags && todo.tags.length > 0 && (
+              <>
+                {todo.tags.slice(0, 3).map((t, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                  >
+                    #{t}
+                  </span>
+                ))}
+                {todo.tags.length > 3 && (
+                  <span className="text-xs text-gray-400 font-medium">
+                    +{todo.tags.length - 3}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Row 3: Meta (Assignee, Date, Source) */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+            {/* Assignee */}
+            <div className="flex items-center gap-2">
+              <AssigneeDisplay
+                assigneeId={todo.assigneeId}
+                assigneeName={todo.assigneeName}
+                showAvatar={true}
+                maxLength={20}
+                className="scale-90 origin-left"
+              />
+            </div>
+
+            {/* Separator */}
+            <div className="hidden sm:block h-3 w-px bg-gray-300" />
+
+            {/* Date */}
+            <div className="flex items-center gap-1.5">
+              <CalendarIcon className="h-3.5 w-3.5 text-gray-400" />
+              <span
+                className={
+                  todo.dueDate && new Date(todo.dueDate) < new Date()
+                    ? "text-red-500 font-medium"
+                    : ""
+                }
+              >
+                {timeRange}
+              </span>
+            </div>
+
+            {/* Separator */}
+            <div className="hidden sm:block h-3 w-px bg-gray-300" />
+
+            {/* Source */}
+            <div className="flex items-center gap-1.5">
               <SourceLink
                 sourceType={todo.sourceType}
                 sourceSpaceId={todo.sourceSpaceId}
@@ -136,67 +356,40 @@ export default function TodoItem({
                 showIcon={true}
                 compact={true}
               />
-              <span className="text-gray-300">•</span>
-              <span>{timeRange}</span>
             </div>
-            <h3 className={`text-base font-semibold text-gray-900 transition-all duration-200 ${
-              todo.status === 'completed' ? 'line-through text-gray-400' : ''
-            }`}>
-              {todo.title}
-            </h3>
           </div>
         </div>
 
-        {/* Right Side Actions/Tags */}
-        <div className="flex items-center gap-3 shrink-0">
-          {/* Assignee */}
-          <AssigneeDisplay
-             assigneeId={todo.assigneeId}
-             assigneeName={todo.assigneeName}
-             showAvatar={true}
-             maxLength={15}
-             className="inline-flex"
-          />
-
-          {/* Tag */}
-          <span className="rounded-full bg-white border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
-            {tag}
-          </span>
-
+        {/* Right: Actions (Desktop) */}
+        <div className="hidden sm:flex flex-col items-end gap-3 flex-shrink-0">
           {/* Queue Actions */}
           {variant === "queue" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReject && onReject(todo.id);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#FF6B6B] text-[#FF6B6B] transition-all duration-200 hover:bg-[#FF6B6B] hover:text-white hover:scale-110"
+                className="group/reject flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 transition-all hover:bg-red-500 hover:text-white hover:scale-105 hover:shadow-md"
+                title="Reject"
               >
-                <X className="h-4 w-4" strokeWidth={2.5} />
+                <X className="h-5 w-5" strokeWidth={2.5} />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onAccept && onAccept(todo.id);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#00CC99] text-[#00CC99] transition-all duration-200 hover:bg-[#00CC99] hover:text-white hover:scale-110"
+                className="group/accept flex h-9 w-9 items-center justify-center rounded-full bg-green-50 text-green-600 transition-all hover:bg-green-500 hover:text-white hover:scale-105 hover:shadow-md"
+                title="Accept"
               >
-                <Check className="h-4 w-4" strokeWidth={2.5} />
+                <Check className="h-5 w-5" strokeWidth={2.5} />
               </button>
             </div>
           )}
-          
-          {/* Completed Variant Check (Visual only) */}
-          {variant === "completed" && (
-               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00CC99] text-white">
-                  <Check className="h-4 w-4" strokeWidth={2.5} />
-               </div>
-          )}
 
-          {/* Expand indicator with label */}
-          <div className="flex items-center gap-1 text-gray-400">
-            <span className="text-xs hidden sm:inline">{isExpanded ? 'Hide Details' : 'Show Details'}</span>
+          {/* Expand Toggle */}
+          <div className="text-gray-300 group-hover:text-gray-400 transition-colors mt-auto">
             {isExpanded ? (
               <ChevronUp className="h-5 w-5" />
             ) : (
@@ -252,8 +445,10 @@ export default function TodoItem({
             <div className="flex items-center gap-3 text-sm">
               <Flag className="h-4 w-4 text-gray-400" />
               <span className="text-gray-500">Priority:</span>
-              <span className={`font-medium ${getPriorityColor(todo.priority)}`}>
-                {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+              <span
+                className={`font-medium px-2 py-0.5 rounded-md text-xs ${priorityStyle.badge}`}
+              >
+                {priorityStyle.text}
               </span>
             </div>
 
@@ -272,14 +467,14 @@ export default function TodoItem({
           {/* Description */}
           {todo.description && (
             <div className="pt-3">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                Description
+              </h3>
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
                 {todo.description}
               </p>
             </div>
           )}
-
-
 
           {/* Subtasks */}
           <div className="pt-3">
@@ -288,7 +483,12 @@ export default function TodoItem({
                 Subtasks
                 {todo.subtasks && todo.subtasks.length > 0 && (
                   <span className="ml-2 text-xs font-normal text-gray-500">
-                    ({todo.subtasks.filter(s => s.status === 'completed').length}/{todo.subtasks.length})
+                    (
+                    {
+                      todo.subtasks.filter((s) => s.status === "completed")
+                        .length
+                    }
+                    /{todo.subtasks.length})
                   </span>
                 )}
               </h3>
@@ -313,7 +513,9 @@ export default function TodoItem({
             {isGenerating && (
               <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg mb-3">
                 <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />
-                <span className="text-sm text-purple-700">Generating subtasks...</span>
+                <span className="text-sm text-purple-700">
+                  Generating subtasks...
+                </span>
               </div>
             )}
 
@@ -369,7 +571,9 @@ export default function TodoItem({
                     <div
                       key={index}
                       className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                        subtask.isSelected ? "bg-purple-50" : "bg-gray-50 opacity-60"
+                        subtask.isSelected
+                          ? "bg-purple-50"
+                          : "bg-gray-50 opacity-60"
                       }`}
                     >
                       <button
@@ -384,11 +588,17 @@ export default function TodoItem({
                             : "border-gray-300"
                         }`}
                       >
-                        {subtask.isSelected && <Check className="h-2.5 w-2.5" />}
+                        {subtask.isSelected && (
+                          <Check className="h-2.5 w-2.5" />
+                        )}
                       </button>
-                      <span className={`flex-1 text-sm ${
-                        subtask.isSelected ? "text-gray-700" : "text-gray-400 line-through"
-                      }`}>
+                      <span
+                        className={`flex-1 text-sm ${
+                          subtask.isSelected
+                            ? "text-gray-700"
+                            : "text-gray-400 line-through"
+                        }`}
+                      >
                         {subtask.title}
                       </span>
                       <button
@@ -436,37 +646,45 @@ export default function TodoItem({
                       className="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
                       {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
-                      Save {selectedCount} subtask{selectedCount !== 1 ? "s" : ""}
+                      Save {selectedCount} subtask
+                      {selectedCount !== 1 ? "s" : ""}
                     </button>
                   </div>
                 </div>
               </div>
             )}
-            
+
             {/* Existing Subtasks */}
             {todo.subtasks && todo.subtasks.length > 0 ? (
               <ul className="space-y-2">
                 {todo.subtasks.map((subtask) => (
                   <li key={subtask.id} className="flex items-start gap-3">
-                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5 ${
-                      subtask.status === 'completed'
-                        ? 'border-green-500 bg-green-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {subtask.status === 'completed' && (
+                    <div
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5 ${
+                        subtask.status === "completed"
+                          ? "border-green-500 bg-green-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {subtask.status === "completed" && (
                         <Check className="h-3 w-3 text-white" />
                       )}
                     </div>
-                    <span className={`text-sm ${
-                      subtask.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-700'
-                    }`}>
+                    <span
+                      className={`text-sm ${
+                        subtask.status === "completed"
+                          ? "text-gray-400 line-through"
+                          : "text-gray-700"
+                      }`}
+                    >
                       {subtask.title}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              !isPreviewMode && !isGenerating && (
+              !isPreviewMode &&
+              !isGenerating && (
                 <p className="text-xs text-gray-400 italic">No subtasks yet.</p>
               )
             )}

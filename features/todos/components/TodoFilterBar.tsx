@@ -1,14 +1,10 @@
 "use client";
 
-import TodoTabs, { TodoTabType } from "./TodoTabs";
 import { ThreadFilterDropdown } from "./ThreadFilterDropdown";
 import { SyncTodoButton } from "./SyncTodoButton";
 import type { ConnectedThread } from "../types/thread";
 
 interface TodoFilterBarProps {
-  activeTab: TodoTabType;
-  onTabChange: (tab: TodoTabType) => void;
-  counts: Record<TodoTabType, number>;
   threads: ConnectedThread[];
   selectedThreadIds: string[];
   onThreadToggle: (threadId: string) => void;
@@ -20,9 +16,6 @@ interface TodoFilterBarProps {
 }
 
 export const TodoFilterBar = ({
-  activeTab,
-  onTabChange,
-  counts,
   threads,
   selectedThreadIds,
   onThreadToggle,
@@ -33,9 +26,9 @@ export const TodoFilterBar = ({
   onSyncComplete,
 }: TodoFilterBarProps) => {
   return (
-    <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <TodoTabs activeTab={activeTab} onTabChange={onTabChange} counts={counts} />
-      <div className="flex items-center gap-2 flex-shrink-0">
+    <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Left: Filter */}
+      <div className="flex-1 min-w-0">
         <ThreadFilterDropdown
           threads={threads}
           selectedThreadIds={selectedThreadIds}
@@ -45,6 +38,14 @@ export const TodoFilterBar = ({
           totalCount={totalTodoCount}
           loading={spacesLoading}
         />
+      </div>
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-3">
+        {/* Placeholder for future actions or help text if needed */}
+        {/* <div className="hidden sm:block text-xs text-gray-400">
+          Last sync: Just now
+        </div> */}
         <SyncTodoButton onSyncComplete={onSyncComplete} />
       </div>
     </div>
