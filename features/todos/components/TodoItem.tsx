@@ -17,6 +17,7 @@ import {
   Zap,
   Clock,
   AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 import {
   format,
@@ -101,295 +102,293 @@ export default function TodoItem({
 
   const selectedCount = generatedSubtasks.filter((s) => s.isSelected).length;
 
-  // Format time range
-  const formatTime = (
-    dateString: string | null,
-    estimatedMinutes: number | null
-  ) => {
-    if (!dateString) return "All Day";
-    const start = new Date(dateString);
-    const end = new Date(start.getTime() + (estimatedMinutes || 30) * 60000);
-
-    return `${start.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-  };
-
-  const timeRange = formatTime(todo.dueDate, todo.estimatedTime);
-
-  // Get first tag or default
-  const tag = todo.tags && todo.tags.length > 0 ? todo.tags[0] : "Family";
-
   // Check if task is overdue
   const isOverdue = useMemo(() => {
     if (!todo.dueDate || todo.status === "completed") return false;
     return isBefore(new Date(todo.dueDate), new Date());
   }, [todo.dueDate, todo.status]);
 
-  // Format time until due
+  // Format time until due - Enhanced for urgency display
   const timeUntilDue = useMemo(() => {
-    if (!todo.dueDate) return null;
+    if (!todo.dueDate)
+      return { text: "All day", urgent: false, isAllDay: true };
     const due = new Date(todo.dueDate);
     const now = new Date();
     const minutes = differenceInMinutes(due, now);
     const hours = differenceInHours(due, now);
 
-    if (minutes < 0) return { text: "Overdue", urgent: true };
-    if (minutes < 60) return { text: `Due in ${minutes}m`, urgent: true };
-    if (hours < 24) return { text: `Due in ${hours}h`, urgent: hours < 3 };
-    return { text: format(due, "MMM d"), urgent: false };
+    if (minutes < 0) return { text: "Overdue", urgent: true, isAllDay: false };
+    if (minutes < 60)
+      return { text: `${minutes}m`, urgent: true, isAllDay: false };
+    if (hours < 3) return { text: `${hours}h`, urgent: true, isAllDay: false };
+    if (hours < 24)
+      return { text: `${hours}h`, urgent: false, isAllDay: false };
+    return { text: format(due, "MMM d"), urgent: false, isAllDay: false };
   }, [todo.dueDate]);
 
-  // Priority styling
-  const getPriorityStyle = (priority: string) => {
+  // Priority styling - Enhanced with semantic hierarchy
+  const getPriorityConfig = (priority: string) => {
     switch (priority) {
       case "urgent":
         return {
-          border: "border-l-4 border-l-red-500",
-          badge: "bg-red-100 text-red-700 border-red-200",
+          accentColor: "border-l-red-500",
+          badgeClass: "bg-red-500 text-white",
+          badgeClassSoft: "bg-red-50 text-red-700 border border-red-200",
           icon: Flame,
-          text: "Urgent",
+          label: "Urgent",
+          showBadge: true,
         };
       case "high":
         return {
-          border: "border-l-4 border-l-orange-500",
-          badge: "bg-orange-100 text-orange-700 border-orange-200",
+          accentColor: "border-l-orange-500",
+          badgeClass: "bg-orange-500 text-white",
+          badgeClassSoft:
+            "bg-orange-50 text-orange-700 border border-orange-200",
           icon: Zap,
-          text: "High",
+          label: "High",
+          showBadge: true,
         };
       case "medium":
         return {
-          border: "border-l-4 border-l-yellow-400",
-          badge: "bg-yellow-100 text-yellow-700 border-yellow-200",
+          accentColor: "border-l-amber-400",
+          badgeClass: "bg-amber-100 text-amber-700",
+          badgeClassSoft: "bg-amber-50 text-amber-600 border border-amber-200",
           icon: Flag,
-          text: "Medium",
+          label: "Medium",
+          showBadge: false, // Medium priority doesn't need prominent badge
         };
       default:
         return {
-          border: "",
-          badge: "bg-gray-100 text-gray-600 border-gray-200",
+          accentColor: "",
+          badgeClass: "bg-gray-100 text-gray-600",
+          badgeClassSoft: "bg-gray-50 text-gray-500 border border-gray-200",
           icon: null,
-          text: "Low",
+          label: "Low",
+          showBadge: false,
         };
     }
   };
 
-  const priorityStyle = getPriorityStyle(todo.priority);
-  const PriorityIcon = priorityStyle.icon;
+  const priorityConfig = getPriorityConfig(todo.priority);
+  const PriorityIcon = priorityConfig.icon;
 
-  // Eisenhower matrix display
-  const getEisenhowerLabel = (eisenhower: string | null) => {
-    switch (eisenhower) {
-      case "urgent_important":
-        return {
-          label: "Urgent & Important",
-          color: "bg-red-100 text-red-700",
-        };
-      case "not_urgent_important":
-        return { label: "Important", color: "bg-blue-100 text-blue-700" };
-      case "urgent_not_important":
-        return { label: "Urgent", color: "bg-orange-100 text-orange-700" };
-      case "not_urgent_not_important":
-        return { label: "Low Priority", color: "bg-gray-100 text-gray-600" };
-      default:
-        return null;
-    }
-  };
-
-  const eisenhowerInfo = getEisenhowerLabel(todo.eisenhower);
+  // Determine if this is a "focus" task (high priority + overdue or due soon)
+  const isFocusTask = useMemo(() => {
+    return (
+      (todo.priority === "urgent" || todo.priority === "high") &&
+      (isOverdue || timeUntilDue.urgent)
+    );
+  }, [todo.priority, isOverdue, timeUntilDue.urgent]);
 
   return (
     <div
-      className={`group overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md hover:border-blue-200/50 ${
-        priorityStyle.border
-      } ${isOverdue ? "ring-2 ring-red-100" : ""}`}
+      className={`
+        group relative overflow-hidden rounded-xl bg-white 
+        border transition-all duration-200 ease-out
+        ${
+          priorityConfig.accentColor
+            ? `border-l-4 ${priorityConfig.accentColor}`
+            : "border-l-0"
+        }
+        ${
+          isOverdue
+            ? "border-red-200 ring-1 ring-red-100 bg-red-50/30"
+            : isFocusTask
+            ? "border-orange-200 ring-1 ring-orange-50"
+            : "border-gray-200 hover:border-gray-300"
+        }
+        ${
+          isExpanded
+            ? "shadow-lg ring-1 ring-blue-100"
+            : "shadow-sm hover:shadow-md"
+        }
+      `}
     >
-      {/* Main Content Area */}
+      {/* Focus Task Indicator - Subtle glow for high priority items */}
+      {isFocusTask && !isOverdue && (
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-orange-100/50 to-transparent pointer-events-none" />
+      )}
+
+      {/* ========== COMPACT VIEW (Default) ========== */}
       <div
-        className="flex items-start gap-4 p-5 cursor-pointer relative"
+        className={`
+          flex items-center gap-3 cursor-pointer
+          ${isExpanded ? "px-4 py-3" : "px-4 py-3"}
+        `}
         onClick={() => onClick && onClick(todo.id)}
       >
-        {/* Left: Status/Type Indicator */}
-        <div className="pt-1 flex-shrink-0">
+        {/* TIER 1: Checkbox (Primary Action) - 44px hit area for accessibility */}
+        <div className="flex-shrink-0">
           {variant === "todo" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onToggle && onToggle(todo.id);
               }}
-              className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-200 ${
-                todo.status === "completed"
-                  ? "border-green-500 bg-green-500 text-white"
-                  : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
-              }`}
+              className={`
+                flex h-7 w-7 items-center justify-center rounded-full border-2 
+                transition-all duration-200 hover:scale-110
+                ${
+                  todo.status === "completed"
+                    ? "border-green-500 bg-green-500 text-white shadow-sm"
+                    : "border-gray-300 hover:border-blue-500 hover:bg-blue-50 hover:shadow-sm"
+                }
+              `}
+              style={{ minWidth: "28px", minHeight: "28px" }} // Ensure 44px with padding
             >
               {todo.status === "completed" && (
-                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={3} />
               )}
             </button>
           )}
           {variant === "completed" && (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-100 text-green-600">
               <Check className="h-4 w-4" strokeWidth={3} />
             </div>
           )}
           {variant === "queue" && (
             <div
-              className={`mt-0.5 h-2 w-2 rounded-full ${
+              className={`h-3 w-3 rounded-full ${
                 todo.status === "todo" ? "bg-orange-400" : "bg-gray-300"
               }`}
             />
           )}
         </div>
 
-        {/* Middle: Content */}
-        <div className="flex-1 min-w-0 space-y-2">
-          {/* Header: Title */}
-          <div className="flex justify-between items-start gap-3">
-            <h3
-              className={`text-lg font-semibold leading-tight text-gray-900 transition-colors ${
-                todo.status === "completed" ? "text-gray-500 line-through" : ""
-              }`}
-            >
-              {todo.title}
-            </h3>
+        {/* TIER 1: Title (Primary Focus - 70%) */}
+        <div className="flex-1 min-w-0">
+          <h3
+            className={`
+              text-[15px] font-semibold leading-snug tracking-tight
+              ${
+                todo.status === "completed"
+                  ? "text-gray-400 line-through"
+                  : isOverdue
+                  ? "text-gray-900"
+                  : "text-gray-900"
+              }
+            `}
+          >
+            {todo.title}
+          </h3>
 
-            {/* Mobile: Expand Icon */}
-            <div className="sm:hidden text-gray-400">
-              {isExpanded ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
-            </div>
-          </div>
-
-          {/* Row 2: Tags & Attributes */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Priority Badge */}
-            {(todo.priority === "urgent" || todo.priority === "high") && (
+          {/* TIER 2: Secondary Info (20%) - Priority + Due in single line */}
+          <div className="flex items-center gap-2 mt-1">
+            {/* Priority Badge - Only for High/Urgent, solid style */}
+            {priorityConfig.showBadge && (
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                className={`
+                inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide
+                ${
                   todo.priority === "urgent"
-                    ? "bg-red-50 text-red-700 border border-red-100"
-                    : "bg-orange-50 text-orange-700 border border-orange-100"
-                }`}
+                    ? "bg-red-500 text-white"
+                    : "bg-orange-500 text-white"
+                }
+              `}
               >
-                <Flag className="h-3 w-3" fill="currentColor" />
-                {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                {PriorityIcon && <PriorityIcon className="h-3 w-3" />}
+                {priorityConfig.label}
               </span>
             )}
 
-            {/* AI Generated Badge */}
+            {/* Due Time - With urgency styling */}
+            <span
+              className={`
+              inline-flex items-center gap-1 text-xs
+              ${
+                isOverdue
+                  ? "text-red-600 font-semibold"
+                  : timeUntilDue.urgent
+                  ? "text-orange-600 font-medium"
+                  : "text-gray-500"
+              }
+            `}
+            >
+              {isOverdue ? (
+                <AlertTriangle className="h-3 w-3" />
+              ) : (
+                <CalendarIcon className="h-3 w-3" />
+              )}
+              {timeUntilDue.text}
+            </span>
+
+            {/* Separator dot */}
+            {(todo.isAiGenerated || (todo.tags && todo.tags.length > 0)) && (
+              <span className="text-gray-300">·</span>
+            )}
+
+            {/* TIER 3: Tertiary Info (10%) - AI, Tags - Reduced visual weight */}
             {todo.isAiGenerated && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 border border-purple-100">
+              <span className="inline-flex items-center gap-0.5 text-[11px] text-purple-500 font-medium opacity-75">
                 <Sparkles className="h-3 w-3" />
                 AI
               </span>
             )}
 
-            {/* Tags */}
-            {todo.tags && todo.tags.length > 0 && (
-              <>
-                {todo.tags.slice(0, 3).map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
-                  >
-                    #{t}
-                  </span>
-                ))}
-                {todo.tags.length > 3 && (
-                  <span className="text-xs text-gray-400 font-medium">
-                    +{todo.tags.length - 3}
+            {/* Tags - Outline style, reduced prominence */}
+            {!isExpanded && todo.tags && todo.tags.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1">
+                <span className="text-[11px] text-gray-400 font-medium border border-gray-200 rounded px-1.5 py-0.5">
+                  #{todo.tags[0]}
+                </span>
+                {todo.tags.length > 1 && (
+                  <span className="text-[11px] text-gray-400">
+                    +{todo.tags.length - 1}
                   </span>
                 )}
-              </>
+              </div>
             )}
-          </div>
-
-          {/* Row 3: Meta (Assignee, Date, Source) */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
-            {/* Assignee */}
-            <div className="flex items-center gap-2">
-              <AssigneeDisplay
-                assigneeId={todo.assigneeId}
-                assigneeName={todo.assigneeName}
-                showAvatar={true}
-                maxLength={20}
-                className="scale-90 origin-left"
-              />
-            </div>
-
-            {/* Separator */}
-            <div className="hidden sm:block h-3 w-px bg-gray-300" />
-
-            {/* Date */}
-            <div className="flex items-center gap-1.5">
-              <CalendarIcon className="h-3.5 w-3.5 text-gray-400" />
-              <span
-                className={
-                  todo.dueDate && new Date(todo.dueDate) < new Date()
-                    ? "text-red-500 font-medium"
-                    : ""
-                }
-              >
-                {timeRange}
-              </span>
-            </div>
-
-            {/* Separator */}
-            <div className="hidden sm:block h-3 w-px bg-gray-300" />
-
-            {/* Source */}
-            <div className="flex items-center gap-1.5">
-              <SourceLink
-                sourceType={todo.sourceType}
-                sourceSpaceId={todo.sourceSpaceId}
-                sourceMessageId={todo.sourceMessageId}
-                sourceSpaceName={todo.sourceSpaceName}
-                sourceThreadNames={todo.sourceThreadName}
-                showIcon={true}
-                compact={true}
-              />
-            </div>
           </div>
         </div>
 
-        {/* Right: Actions (Desktop) */}
-        <div className="hidden sm:flex flex-col items-end gap-3 flex-shrink-0">
-          {/* Queue Actions */}
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Queue Actions - Accept/Reject */}
           {variant === "queue" && (
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReject && onReject(todo.id);
                 }}
-                className="group/reject flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 transition-all hover:bg-red-500 hover:text-white hover:scale-105 hover:shadow-md"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-500 
+                  transition-all hover:bg-red-500 hover:text-white hover:scale-105 hover:shadow-md"
                 title="Reject"
               >
-                <X className="h-5 w-5" strokeWidth={2.5} />
+                <X className="h-4 w-4" strokeWidth={2.5} />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onAccept && onAccept(todo.id);
                 }}
-                className="group/accept flex h-9 w-9 items-center justify-center rounded-full bg-green-50 text-green-600 transition-all hover:bg-green-500 hover:text-white hover:scale-105 hover:shadow-md"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-500 
+                  transition-all hover:bg-green-500 hover:text-white hover:scale-105 hover:shadow-md"
                 title="Accept"
               >
-                <Check className="h-5 w-5" strokeWidth={2.5} />
+                <Check className="h-4 w-4" strokeWidth={2.5} />
               </button>
             </div>
           )}
 
+          {/* Subtask Count Indicator (compact) */}
+          {!isExpanded && todo.subtasks && todo.subtasks.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
+              <Check className="h-3 w-3" />
+              <span>
+                {todo.subtasks.filter((s) => s.status === "completed").length}/
+                {todo.subtasks.length}
+              </span>
+            </div>
+          )}
+
           {/* Expand Toggle */}
-          <div className="text-gray-300 group-hover:text-gray-400 transition-colors mt-auto">
+          <div
+            className={`
+            text-gray-300 transition-colors
+            ${isExpanded ? "text-blue-500" : "group-hover:text-gray-400"}
+          `}
+          >
             {isExpanded ? (
               <ChevronUp className="h-5 w-5" />
             ) : (
@@ -409,68 +408,122 @@ export default function TodoItem({
         leaveFrom="opacity-100 max-h-[1000px]"
         leaveTo="opacity-0 max-h-0"
       >
-        <div className="border-t border-gray-200 bg-white p-6 space-y-4">
-          {/* Source Header */}
-          <div className="pb-3 border-b border-gray-100">
-            <SourceLink
-              sourceType={todo.sourceType}
-              sourceSpaceId={todo.sourceSpaceId}
-              sourceMessageId={todo.sourceMessageId}
-              sourceSpaceName={todo.sourceSpaceName}
-              sourceThreadNames={todo.sourceThreadName}
-              showIcon={true}
-              compact={false}
-            />
-          </div>
+        <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-4 space-y-4">
+          {/* AI Generated Indicator with Explanation */}
+          {todo.isAiGenerated && (
+            <div className="flex items-start gap-3 p-3 bg-purple-50/50 rounded-lg border border-purple-100">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-purple-900">
+                  AI Generated Task
+                </p>
+                <p className="text-xs text-purple-600 mt-0.5">
+                  {todo.sourceType === "chat"
+                    ? "Extracted from Google Chat message"
+                    : "Generated based on your conversation"}
+                </p>
+              </div>
+            </div>
+          )}
 
-          {/* Title */}
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">{todo.title}</h2>
-          </div>
+          {/* Source & Context */}
+          {todo.sourceType && (
+            <div className="flex items-center gap-2 text-sm">
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+              <SourceLink
+                sourceType={todo.sourceType}
+                sourceSpaceId={todo.sourceSpaceId}
+                sourceMessageId={todo.sourceMessageId}
+                sourceSpaceName={todo.sourceSpaceName}
+                sourceThreadNames={todo.sourceThreadName}
+                showIcon={false}
+                compact={false}
+              />
+            </div>
+          )}
 
-          {/* Meta Info Grid */}
-          <div className="space-y-3">
+          {/* Meta Info - Compact Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {/* Assignee */}
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-gray-500">Assignee:</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
+                Assignee
+              </span>
               <AssigneeDisplay
                 assigneeId={todo.assigneeId}
                 assigneeName={todo.assigneeName}
                 showAvatar={true}
-                maxLength={25}
+                maxLength={20}
               />
             </div>
 
             {/* Priority */}
-            <div className="flex items-center gap-3 text-sm">
-              <Flag className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-500">Priority:</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
+                Priority
+              </span>
               <span
-                className={`font-medium px-2 py-0.5 rounded-md text-xs ${priorityStyle.badge}`}
+                className={`inline-flex items-center gap-1 text-sm font-medium ${
+                  todo.priority === "urgent"
+                    ? "text-red-600"
+                    : todo.priority === "high"
+                    ? "text-orange-600"
+                    : todo.priority === "medium"
+                    ? "text-amber-600"
+                    : "text-gray-600"
+                }`}
               >
-                {priorityStyle.text}
+                {PriorityIcon && <PriorityIcon className="h-4 w-4" />}
+                {priorityConfig.label}
               </span>
             </div>
 
             {/* Due Date */}
-            {todo.dueDate && (
-              <div className="flex items-center gap-3 text-sm">
-                <CalendarIcon className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-500">Due Date:</span>
-                <span className="font-medium text-gray-900">
-                  {format(new Date(todo.dueDate), "EEE dd MMM hh:mma")}
-                </span>
-              </div>
-            )}
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
+                Due Date
+              </span>
+              <span
+                className={`text-sm font-medium ${
+                  isOverdue ? "text-red-600" : "text-gray-900"
+                }`}
+              >
+                {todo.dueDate
+                  ? format(new Date(todo.dueDate), "EEE, MMM d 'at' h:mma")
+                  : "No due date"}
+              </span>
+            </div>
           </div>
+
+          {/* Tags - Full Display in Expanded */}
+          {todo.tags && todo.tags.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
+                Tags
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {todo.tags.map((t, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium 
+                      text-gray-600 bg-white border border-gray-200 hover:border-gray-300 transition-colors"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           {todo.description && (
-            <div className="pt-3">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
                 Description
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+              </span>
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap bg-white rounded-lg p-3 border border-gray-100">
                 {todo.description}
               </p>
             </div>

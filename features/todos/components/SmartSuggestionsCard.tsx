@@ -114,7 +114,7 @@ export function SmartSuggestionsCard({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border border-purple-100 shadow-sm mb-6">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border border-purple-100/80 shadow-sm mb-6">
       {/* Shimmer effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
 
@@ -125,14 +125,35 @@ export function SmartSuggestionsCard({
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Smart Suggestions</h3>
-            <p className="text-xs text-gray-500">
-              {stats.suggested.length} tasks need your attention
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-gray-900">Smart Suggestions</h3>
+              <span className="text-[10px] font-medium bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded uppercase tracking-wide">
+                AI
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {stats.hasUrgentItems
+                ? `${stats.suggested.length} tasks need immediate attention`
+                : `${stats.suggested.length} tasks recommended for today`}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Why am I seeing this? */}
+          <button
+            onClick={() => {
+              // Could show a tooltip or modal explaining AI logic
+              alert(
+                "Tasks are suggested based on: priority level, due date urgency, and time remaining. Overdue tasks appear first, followed by high-priority items due soon."
+              );
+            }}
+            className="hidden sm:flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
+            title="Why am I seeing this?"
+          >
+            <AlertTriangle className="h-3 w-3" />
+            <span>Why?</span>
+          </button>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-lg transition-colors"
@@ -187,61 +208,93 @@ export function SmartSuggestionsCard({
       {/* Suggested Tasks */}
       {!isCollapsed && (
         <div className="p-4 space-y-2">
-          {stats.suggested.map((task, index) => (
-            <div
-              key={task.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/60 hover:bg-white transition-colors cursor-pointer group"
-            >
-              {/* Priority Indicator */}
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                  task.priority === "urgent" || task.priority === "high"
-                    ? "bg-red-100"
-                    : task.priority === "medium"
-                    ? "bg-orange-100"
-                    : "bg-gray-100"
-                }`}
-              >
-                {getPriorityIcon(task.priority) || (
-                  <span className="text-sm font-bold text-gray-500">
-                    {index + 1}
-                  </span>
-                )}
-              </div>
+          {stats.suggested.map((task, index) => {
+            // Determine why this task is suggested
+            const isTaskOverdue =
+              task.dueDate && isBefore(new Date(task.dueDate), new Date());
+            const isHighPriority =
+              task.priority === "urgent" || task.priority === "high";
+            const isDueSoon =
+              task.dueDate &&
+              differenceInHours(new Date(task.dueDate), new Date()) <= 2 &&
+              differenceInHours(new Date(task.dueDate), new Date()) >= 0;
 
-              {/* Task Info */}
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate text-sm">
-                  {task.title}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {task.dueDate && (
-                    <span
-                      className={`flex items-center gap-1 text-xs ${
-                        isBefore(new Date(task.dueDate), new Date())
-                          ? "text-red-600 font-medium"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      <Clock className="h-3 w-3" />
-                      {formatTimeUntilDue(task.dueDate)}
-                    </span>
-                  )}
-                  {task.isAiGenerated && task.aiConfidence && (
-                    <span className="flex items-center gap-1 text-xs text-purple-600">
-                      <Sparkles className="h-3 w-3" />
-                      AI {Math.round(task.aiConfidence * 100)}%
+            const suggestionReason = isTaskOverdue
+              ? "Overdue - needs attention"
+              : isHighPriority && isDueSoon
+              ? "High priority & due soon"
+              : isHighPriority
+              ? "High priority task"
+              : isDueSoon
+              ? "Due within 2 hours"
+              : "Recommended for today";
+
+            return (
+              <div
+                key={task.id}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/70 hover:bg-white hover:shadow-sm transition-all cursor-pointer group border border-transparent hover:border-purple-100"
+              >
+                {/* Priority Indicator */}
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg shrink-0 ${
+                    task.priority === "urgent" || task.priority === "high"
+                      ? "bg-gradient-to-br from-red-100 to-orange-100"
+                      : task.priority === "medium"
+                      ? "bg-gradient-to-br from-amber-100 to-yellow-100"
+                      : "bg-gradient-to-br from-gray-100 to-gray-50"
+                  }`}
+                >
+                  {getPriorityIcon(task.priority) || (
+                    <span className="text-sm font-bold text-gray-500">
+                      {index + 1}
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Action hint */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400">
-                Click to view →
+                {/* Task Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate text-sm leading-tight">
+                    {task.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {/* Suggestion Reason (AI Explanation) */}
+                    <span
+                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${
+                        isTaskOverdue
+                          ? "bg-red-100 text-red-700"
+                          : isHighPriority
+                          ? "bg-orange-100 text-orange-700"
+                          : isDueSoon
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-purple-50 text-purple-600"
+                      }`}
+                    >
+                      {suggestionReason}
+                    </span>
+
+                    {/* Time indicator */}
+                    {task.dueDate && (
+                      <span
+                        className={`flex items-center gap-1 text-[11px] ${
+                          isTaskOverdue
+                            ? "text-red-600 font-medium"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        <Clock className="h-3 w-3" />
+                        {formatTimeUntilDue(task.dueDate)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action hint */}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-purple-500 font-medium shrink-0">
+                  View →
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
