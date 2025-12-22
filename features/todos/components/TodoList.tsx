@@ -14,7 +14,7 @@ import type { ConnectedThread } from "../types/thread";
 import { useTodoAnimations } from "../hooks/useTodoAnimations";
 import { TodoFilterBar } from "./TodoFilterBar";
 import { TodoListView } from "./TodoListView";
-import { SwipeView } from "./SwipeView";
+import { SimpleSwipeView } from "./SimpleSwipeView";
 import { Pagination } from "./Pagination";
 import { SmartSuggestionsCard } from "./SmartSuggestionsCard";
 import { CompletedTasksSection } from "./CompletedTasksSection";
@@ -292,13 +292,17 @@ export default function TodoList() {
           )}
         </>
       ) : (
-        /* Swipe View */
-        <SwipeView
+        /* Simple Swipe View for debugging */
+        <SimpleSwipeView
           todos={filteredTodos}
           onAccept={handleAcceptQueue}
           onReject={handleRejectQueue}
           onComplete={() => {
             // Switch back to list view when done
+            setViewMode("list");
+          }}
+          onBackToTodo={() => {
+            // Switch back to list view
             setViewMode("list");
           }}
         />

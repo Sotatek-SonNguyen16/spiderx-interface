@@ -93,8 +93,8 @@ export default function SignIn() {
 
   return (
     <div className="flex min-h-screen w-full">
-      {/* Left Panel - Image & Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-white text-white p-12 flex-col justify-between">
+      {/* Left Panel - Image & Branding (Giữ nguyên ảnh gốc) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-50 text-white p-12 flex-col justify-between">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/login-thumb.png"
@@ -108,109 +108,111 @@ export default function SignIn() {
 
         <div className="relative z-10">
           <div className="mb-6">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M9.31994 13.28H12.4099V20.48C12.4099 21.54 13.7299 22.04 14.4299 21.24L21.9999 12.64C22.6599 11.89 22.1299 10.72 21.1299 10.72H18.0399V3.51997C18.0399 2.45997 16.7199 1.95997 16.0199 2.75997L8.44994 11.36C7.79994 12.11 8.32994 13.28 9.31994 13.28Z"
-                fill="#FFF"
-              />
-              <path
-                opacity="0.4"
-                d="M8.5 4.75H1.5C1.09 4.75 0.75 4.41 0.75 4C0.75 3.59 1.09 3.25 1.5 3.25H8.5C8.91 3.25 9.25 3.59 9.25 4C9.25 4.41 8.91 4.75 8.5 4.75Z"
-                fill="#FFF"
-              />
-              <path
-                opacity="0.4"
-                d="M7.5 20.75H1.5C1.09 20.75 0.75 20.41 0.75 20C0.75 19.59 1.09 19.25 1.5 19.25H7.5C7.91 19.25 8.25 19.59 8.25 20C8.25 20.41 7.91 20.75 7.5 20.75Z"
-                fill="#FFF"
-              />
-              <path
-                opacity="0.4"
-                d="M4.5 12.75H1.5C1.09 12.75 0.75 12.41 0.75 12C0.75 11.59 1.09 11.25 1.5 11.25H4.5C4.91 11.25 5.25 11.59 5.25 12C5.25 12.41 4.91 12.75 4.5 12.75Z"
-                fill="#FFF"
-              />
-            </svg>
+            <Logo />
           </div>
-          <h1 className="text-4xl font-bold leading-tight max-w-md">
-            Your pathway to results begins here
+          <h1 className="text-4xl font-bold leading-tight max-w-md mb-4">
+            Capture tasks from email & chat, automatically
           </h1>
+          <p className="text-lg text-white/90 max-w-md">
+            Connect Gmail, Google Chat, and Slack to never miss a task again
+          </p>
+        </div>
+
+        {/* Trust Badge */}
+        <div className="relative z-10 flex items-center gap-2 text-sm text-white/80">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>Secure sign-in with encryption</span>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-white px-6 py-12 lg:px-12">
-        <div className="w-full max-w-[400px]">
-          <div className="mb-10 text-center lg:text-left flex flex-col items-center lg:items-start">
-            <div className="flex items-center gap-2 mb-2">
-              <Logo />
-              <span className="text-xl font-bold text-gray-900">SpiderX</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-800">
-                {error}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-50 px-6 py-12 lg:px-12">
+        <div className="w-full max-w-[440px]">
+          {/* Card Container */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            {/* Header */}
+            <div className="mb-8 text-center lg:text-left">
+              <div className="flex items-center gap-2 mb-6 justify-center lg:justify-start">
+                <Logo />
+                <span className="text-xl font-bold text-gray-900">SpiderX</span>
               </div>
-            )}
-
-            <div>
-              <label
-                className="mb-1.5 block text-sm font-medium text-gray-700"
-                htmlFor="username"
-              >
-                Email
-              </label>
-              <input
-                id="username"
-                type="text"
-                className="form-input w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-brand-500"
-                placeholder="NathanBM@gmail.com"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Welcome back
+              </h2>
+              <p className="text-sm text-gray-600">
+                Sign in to SpiderX to continue
+              </p>
             </div>
 
-            <div>
-              <label
-                className="mb-1.5 block text-sm font-medium text-gray-700"
-                htmlFor="password"
-              >
-                Password
-              </label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 flex items-start gap-2">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div>
+                <label
+                  className="mb-2 block text-sm font-medium text-gray-700"
+                  htmlFor="username"
+                >
+                  Work email
+                </label>
                 <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  className="form-input w-full rounded-lg border-gray-300 px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-brand-500 pr-10"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="username"
+                  type="text"
+                  className="form-input w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-brand-500 focus:ring-brand-500 transition-colors"
+                  placeholder="name@company.com"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    className="block text-sm font-medium text-gray-700"
+                    htmlFor="password"
+                  >
+                    Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="form-input w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-brand-500 focus:ring-brand-500 pr-11 transition-colors"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -223,32 +225,58 @@ export default function SignIn() {
                   htmlFor="remember-me"
                   className="ml-2 block text-sm text-gray-600"
                 >
-                  Remember Me
+                  Keep me signed in <span className="text-gray-400">(on this device)</span>
                 </label>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg border border-brand-600 bg-white px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? "Signing in..." : "Log in"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading || !username || !password}
+                className="w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white 
+                         hover:bg-brand-700 active:bg-brand-800
+                         focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 
+                         disabled:opacity-50 disabled:cursor-not-allowed 
+                         transition-all duration-200 shadow-sm"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Signing in...
+                  </span>
+                ) : (
+                  "Log in"
+                )}
+              </button>
 
-          {/* Note: The design has "Sign Up" on the button but it's a login form. 
-              I kept "Sign Up" as per design request but functionality is Login. 
-              Also added the bottom link as per design? No, design doesn't show bottom link clearly but usually there is one.
-              Wait, the design image DOES NOT show a "Don't have an account" link at the bottom. 
-              But the original code had it. I will leave it out to match the design strictly, 
-              OR keep it if it's better UX. The user asked to "update ui signin theo ảnh sau".
-              The image shows a clean bottom. I will remove the bottom link to match the image exactly.
-          */}
+              {/* Trust Message */}
+              <p className="text-xs text-center text-gray-500">
+                Secure sign-in. We never post without permission.
+              </p>
+            </form>
+          </div>
+
+          {/* Sign Up Link */}
           <div className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link className="font-medium text-brand-600 hover:text-brand-500 transition-colors" href="/signup">
-              Sign up
+            <Link 
+              className="font-semibold text-brand-600 hover:text-brand-700 transition-colors hover:underline" 
+              href="/signup"
+            >
+              Create an account
+            </Link>
+          </div>
+
+          {/* Footer Links */}
+          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-gray-500">
+            <Link href="/privacy" className="hover:text-gray-700 transition-colors">
+              Privacy
+            </Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-gray-700 transition-colors">
+              Terms
             </Link>
           </div>
         </div>
