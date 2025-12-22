@@ -23,10 +23,9 @@ export default function DefaultLayout({
   });
 
   return (
-    <AuthGuard>
+    <>
       <main className="relative flex grow flex-col">{children}</main>
-
       <Footer />
-    </AuthGuard>
+    </>
   );
 }

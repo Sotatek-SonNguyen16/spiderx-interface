@@ -7,5 +7,8 @@ export { default as HeroSection } from './hero-section';
 export { default as IntegrationSection } from './integration-section';
 export { default as Navigation } from './navigation';
 export { default as ProblemStatement } from './problem-statement';
+export { default as ProductShowcase } from './product-showcase';
 export { default as RoadmapSection } from './roadmap-section';
+export { default as StickyCTA } from './sticky-cta';
+export { default as ValueExpansion } from './value-expansion';
 

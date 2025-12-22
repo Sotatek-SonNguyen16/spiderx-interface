@@ -2,17 +2,17 @@
 
 import { useState } from 'react';
 import {
-  VersionBadge,
-  Navigation,
   HeroSection,
+  ProductShowcase,
   ProblemStatement,
-  DemoSection,
+  ValueExpansion,
   IntegrationSection,
   RoadmapSection,
   CTASection,
   Footer,
   EmailModal,
   FeatureRequestModal,
+  StickyCTA,
 } from '@/components/landing-v2';
 import Header from '@/components/ui/header';
 
@@ -68,17 +68,36 @@ export default function HomeV2() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Header />
-      {/* <VersionBadge version="v2" /> */}
-      {/* <Navigation /> */}
+      {/* 1. HERO - What is this? */}
       <HeroSection onEmailSubmit={handleEmailSubmit} />
+      
+      {/* 2. SHOWCASE - How does it work? (Trust builder) */}
+      <ProductShowcase />
+      
+      {/* 3. PROBLEMS - Why it matters (Validated by showcase) */}
       <ProblemStatement />
-      <DemoSection />
+      
+      {/* 4. VALUE EXPANSION - Why it's better (Multi-project focus) */}
+      <ValueExpansion />
+      
+      {/* 5. INTEGRATIONS - Will it fit my workflow? */}
       <IntegrationSection onRequestIntegrationAction={() => setShowFeatureRequest(true)} />
+      
+      {/* 6. ROADMAP - Can I trust you? (Near footer) */}
       <RoadmapSection onRequestFeature={() => setShowFeatureRequest(true)} />
+      
+      {/* 7. CTA - What do I do now? */}
       <CTASection onEmailSubmit={handleEmailSubmit} />
+      
       <Footer />
+
+      {/* Mobile sticky CTA */}
+      <StickyCTA onCtaClick={() => {
+        // Scroll to CTA section
+        document.querySelector('section:last-of-type')?.scrollIntoView({ behavior: 'smooth' });
+      }} />
 
       <EmailModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} showConfetti={showEmailConfetti} />
       <FeatureRequestModal

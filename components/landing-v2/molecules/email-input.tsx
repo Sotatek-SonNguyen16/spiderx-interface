@@ -14,8 +14,8 @@ interface EmailInputProps {
 export default function EmailInput({
   onSubmit,
   placeholder = 'Enter your email',
-  buttonText = 'Join Waitlist',
-  showHelper = true,
+  buttonText = 'Get early access',
+  showHelper = false,
 }: EmailInputProps) {
   const [email, setEmail] = useState('');
 

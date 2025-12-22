@@ -31,8 +31,13 @@ export default function RoadmapSection({ onRequestFeature }: RoadmapSectionProps
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-16">
           <div>
-            <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-4 tracking-tight">Roadmap</h2>
-            <p className="text-xl text-gray-600">See what we're building and suggest new features</p>
+            <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-4 tracking-tight">
+              Built in public, improved with feedback
+            </h2>
+            <p className="text-xl text-gray-600">
+              We're focused on making task capture accurate, reliable, and effortless —
+              across more platforms every month.
+            </p>
           </div>
           <Button onClick={onRequestFeature}>Request Feature</Button>
         </div>
