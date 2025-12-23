@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, isToday, isBefore, startOfDay, endOfDay } from "date-fns";
 import { useTodos } from "../index";
 import { useWhitelistManagement } from "@/features/googleChat/hooks/useWhitelistManagement";
 import CalendarStrip from "./CalendarStrip";
@@ -10,6 +10,7 @@ import TodoTabs, { type TodoTabType } from "./TodoTabs";
 import { PasteExtractModal } from "./PasteExtractModal";
 import { useThreadFilter } from "../hooks/useThreadFilter";
 import type { ConnectedThread } from "../types/thread";
+import type { Todo } from "../types";
 
 import { useTodoAnimations } from "../hooks/useTodoAnimations";
 import { TodoFilterBar } from "./TodoFilterBar";
@@ -18,9 +19,11 @@ import { SimpleSwipeView } from "./SimpleSwipeView";
 import { Pagination } from "./Pagination";
 import { SmartSuggestionsCard } from "./SmartSuggestionsCard";
 import { CompletedTasksSection } from "./CompletedTasksSection";
-import { LayoutGrid, Layers, Calendar, Search } from "lucide-react";
+import { LayoutGrid, Layers, Calendar, Search, X } from "lucide-react";
 
 const ITEMS_PER_PAGE = 20;
+
+type SmartFilter = "overdue" | "highPriority" | "dueToday" | null;
 
 export default function TodoList() {
   const router = useRouter();
@@ -45,6 +48,9 @@ export default function TodoList() {
   const [showPasteExtract, setShowPasteExtract] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"list" | "swipe">("list");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchInput, setShowSearchInput] = useState(false);
+  const [smartFilter, setSmartFilter] = useState<SmartFilter>(null);
 
   // Animation hook
   const {
@@ -81,7 +87,7 @@ export default function TodoList() {
     fetchTodos();
   }, [filters, page, limit, fetchTodos]);
 
-  // Filter todos based on active tab AND thread filter - OPTIMIZED
+  // Filter todos based on active tab, thread filter, date, search, and smart filters - OPTIMIZED
   const filteredTodos = useMemo(() => {
     const statusMap: Record<TodoTabType, string> = {
       queue: "todo",
@@ -91,8 +97,57 @@ export default function TodoList() {
     };
 
     const targetStatus = statusMap[activeTab];
-    return threadFilteredTodos.filter((todo) => todo.status === targetStatus);
-  }, [threadFilteredTodos, activeTab]);
+    let filtered = threadFilteredTodos.filter((todo) => todo.status === targetStatus);
+
+    // Apply date filter
+    const selectedDayStart = startOfDay(selectedDate);
+    const selectedDayEnd = endOfDay(selectedDate);
+    
+    filtered = filtered.filter((todo) => {
+      if (!todo.dueDate) {
+        // Include todos without due date only if today is selected
+        return isToday(selectedDate);
+      }
+      const dueDate = new Date(todo.dueDate);
+      return dueDate >= selectedDayStart && dueDate <= selectedDayEnd;
+    });
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((todo) => {
+        return (
+          todo.title.toLowerCase().includes(query) ||
+          todo.description?.toLowerCase().includes(query) ||
+          todo.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+          todo.sourceSpaceName?.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    // Apply smart filters
+    if (smartFilter) {
+      const now = new Date();
+      
+      if (smartFilter === "overdue") {
+        filtered = filtered.filter((todo) => {
+          if (!todo.dueDate) return false;
+          return isBefore(new Date(todo.dueDate), now);
+        });
+      } else if (smartFilter === "highPriority") {
+        filtered = filtered.filter(
+          (todo) => todo.priority === "high" || todo.priority === "urgent"
+        );
+      } else if (smartFilter === "dueToday") {
+        filtered = filtered.filter((todo) => {
+          if (!todo.dueDate) return false;
+          return isToday(new Date(todo.dueDate));
+        });
+      }
+    }
+
+    return filtered;
+  }, [threadFilteredTodos, activeTab, selectedDate, searchQuery, smartFilter]);
 
   // Pagination - OPTIMIZED
   const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
@@ -101,10 +156,10 @@ export default function TodoList() {
     return filteredTodos.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredTodos, currentPage]);
 
-  // Reset to page 1 when tab or filter changes
+  // Reset to page 1 when tab, filter, date, or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, selectedThreadIds]);
+  }, [activeTab, selectedThreadIds, selectedDate, searchQuery, smartFilter]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -151,6 +206,35 @@ export default function TodoList() {
     [addSubtasksApi]
   );
 
+  // Smart filter handlers
+  const handleFilterOverdue = useCallback(() => {
+    setSmartFilter((prev) => (prev === "overdue" ? null : "overdue"));
+  }, []);
+
+  const handleFilterHighPriority = useCallback(() => {
+    setSmartFilter((prev) => (prev === "highPriority" ? null : "highPriority"));
+  }, []);
+
+  const handleFilterDueToday = useCallback(() => {
+    setSmartFilter((prev) => (prev === "dueToday" ? null : "dueToday"));
+  }, []);
+
+  // Search handlers
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    setShowSearchInput(false);
+  }, []);
+
+  const handleDateSelect = useCallback((date: Date) => {
+    setSelectedDate(date);
+    // Clear smart filters when changing date
+    setSmartFilter(null);
+  }, []);
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-gradient-to-b from-gray-50/50 to-white">
       {/* Fixed Header Section - Only show in list mode */}
@@ -161,28 +245,113 @@ export default function TodoList() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-                  Today
+                  {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
                 </h1>
                 <span className="text-lg text-gray-400 font-medium">
                   {format(selectedDate, "MMM d, yyyy")}
                 </span>
               </div>
 
-              {/* Search placeholder */}
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-400 text-sm hover:bg-gray-200 transition-colors cursor-pointer">
-                <Search className="h-4 w-4" />
-                <span>Search tasks...</span>
+              {/* Search */}
+              <div className="flex items-center gap-2">
+                {showSearchInput ? (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 shadow-sm">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search tasks..."
+                      className="text-sm outline-none bg-transparent w-48"
+                      autoFocus
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={handleClearSearch}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowSearchInput(true)}
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-400 text-sm hover:bg-gray-200 transition-colors"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>Search tasks...</span>
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Smart AI Suggestions */}
-            <SmartSuggestionsCard todos={todos} />
+            <SmartSuggestionsCard
+              todos={todos}
+              onFilterOverdue={handleFilterOverdue}
+              onFilterHighPriority={handleFilterHighPriority}
+              onFilterDueToday={handleFilterDueToday}
+              activeFilter={smartFilter}
+            />
+
+            {/* Active Filters Display */}
+            {(searchQuery || smartFilter) && (
+              <div className="mb-4 flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-gray-500">Active filters:</span>
+                {searchQuery && (
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                    <Search className="h-3 w-3" />
+                    <span>"{searchQuery}"</span>
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="ml-1 hover:text-blue-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                {smartFilter === "overdue" && (
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                    <span>Overdue</span>
+                    <button
+                      onClick={() => setSmartFilter(null)}
+                      className="ml-1 hover:text-red-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                {smartFilter === "highPriority" && (
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
+                    <span>High Priority</span>
+                    <button
+                      onClick={() => setSmartFilter(null)}
+                      className="ml-1 hover:text-orange-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                {smartFilter === "dueToday" && (
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                    <span>Due Today</span>
+                    <button
+                      onClick={() => setSmartFilter(null)}
+                      className="ml-1 hover:text-blue-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Calendar Strip */}
             <div className="mb-4">
               <CalendarStrip
                 selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
+                onDateSelect={handleDateSelect}
               />
             </div>
 
@@ -274,6 +443,7 @@ export default function TodoList() {
             onItemClick={handleItemClick}
             onNavigateToDetail={handleNavigateToDetail}
             onAddSubtasks={handleAddSubtasks}
+            hasActiveFilters={!!searchQuery || !!smartFilter || selectedThreadIds.length > 0}
           />
 
           {/* Pagination */}

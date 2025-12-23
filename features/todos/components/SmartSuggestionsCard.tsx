@@ -25,6 +25,7 @@ interface SmartSuggestionsCardProps {
   onFilterOverdue?: () => void;
   onFilterHighPriority?: () => void;
   onFilterDueToday?: () => void;
+  activeFilter?: "overdue" | "highPriority" | "dueToday" | null;
 }
 
 export function SmartSuggestionsCard({
@@ -32,6 +33,7 @@ export function SmartSuggestionsCard({
   onFilterOverdue,
   onFilterHighPriority,
   onFilterDueToday,
+  activeFilter,
 }: SmartSuggestionsCardProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -179,7 +181,11 @@ export function SmartSuggestionsCard({
         {stats.overdue.length > 0 && (
           <button
             onClick={onFilterOverdue}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold hover:bg-red-200 transition-colors"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              activeFilter === "overdue"
+                ? "bg-red-600 text-white shadow-md ring-2 ring-red-200"
+                : "bg-red-100 text-red-700 hover:bg-red-200"
+            }`}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
             {stats.overdue.length} Overdue
@@ -188,7 +194,11 @@ export function SmartSuggestionsCard({
         {stats.highPriority.length > 0 && (
           <button
             onClick={onFilterHighPriority}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold hover:bg-orange-200 transition-colors"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              activeFilter === "highPriority"
+                ? "bg-orange-600 text-white shadow-md ring-2 ring-orange-200"
+                : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+            }`}
           >
             <Flame className="h-3.5 w-3.5" />
             {stats.highPriority.length} High Priority
@@ -197,7 +207,11 @@ export function SmartSuggestionsCard({
         {stats.dueToday.length > 0 && (
           <button
             onClick={onFilterDueToday}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold hover:bg-blue-200 transition-colors"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              activeFilter === "dueToday"
+                ? "bg-blue-600 text-white shadow-md ring-2 ring-blue-200"
+                : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+            }`}
           >
             <CalendarClock className="h-3.5 w-3.5" />
             {stats.dueToday.length} Due Today
