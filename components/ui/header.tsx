@@ -19,8 +19,18 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* CTA + Auth links */}
+          {/* Navigation + CTA + Auth links */}
           <ul className="flex flex-1 items-center justify-end gap-3">
+            {/* Pricing Link */}
+            <li>
+              <Link
+                href="/pricing"
+                className="text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors"
+              >
+                Pricing
+              </Link>
+            </li>
+            
             {/* CTA Button - Get Started */}
             <li>
               <Link

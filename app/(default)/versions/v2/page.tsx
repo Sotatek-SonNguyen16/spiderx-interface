@@ -68,7 +68,7 @@ export default function HomeV2() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <Header />
       {/* 1. HERO - What is this? */}
       <HeroSection onEmailSubmit={handleEmailSubmit} />
