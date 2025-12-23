@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { EnhancedSwipeCard } from "./EnhancedSwipeCard";
 import { CARD_STACK_CONFIG } from "../../utils/swipe.config";
 import type { Todo } from "../../types";
@@ -48,12 +48,16 @@ export const CardStack = ({
 
   const getCardStyle = (position: CardPosition) => {
     const config = CARD_STACK_CONFIG[position];
+    
+    // Type-safe blur access
+    const blurValue = position === 'blur' && 'blur' in config ? config.blur : undefined;
+    
     return {
       transform: `scale(${config.scale}) translateY(${config.translateY}px)`,
       opacity: config.opacity,
       zIndex: config.zIndex,
       boxShadow: config.shadow,
-      filter: position === 'blur' && config.blur ? `blur(${config.blur}px)` : undefined,
+      filter: blurValue ? `blur(${blurValue}px)` : undefined,
     };
   };
 

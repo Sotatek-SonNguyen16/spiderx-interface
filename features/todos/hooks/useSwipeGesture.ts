@@ -44,7 +44,7 @@ interface UseSwipeGestureReturn {
     onTouchMove: (e: React.TouchEvent) => void;
     onTouchEnd: () => void;
   };
-  cardRef: React.RefObject<HTMLDivElement>;
+  cardRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export const useSwipeGesture = ({
