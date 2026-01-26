@@ -9,18 +9,18 @@ Tài liệu này mô tả contract giữa Backend (FastAPI) và Frontend (Next.j
 - AI-powered todo extraction từ text
 - Kết nối Google Chat và tự động extract todos từ messages
 
-**Phiên bản:** v1.3  
+**Phiên bản:** v1.1  
 **Owner:** BE team (cập nhật nếu có breaking changes)
 
 ---
 
 ## 1. Environments & Base URL
 
-| Env   | Base URL                   | Ghi chú          |
-|-------|----------------------------|------------------|
-| local | http://localhost:8002      | Dev local BE     |
-| dev   | https://api-dev.spiderx.io | Dev shared env   |
-| prod  | https://api.spiderx.io     | Production       |
+| Env   | Base URL                   | Ghi chú        |
+| ----- | -------------------------- | -------------- |
+| local | http://localhost:8002      | Dev local BE   |
+| dev   | https://api-dev.spiderx.io | Dev shared env |
+| prod  | https://api.spiderx.io     | Production     |
 
 Tất cả endpoint dưới đây đều prepend bằng `/api/v1`, ví dụ:
 
@@ -38,6 +38,7 @@ Authorization: Bearer <access_token>
 ```
 
 - Các endpoint trừ `/auth/*` yêu cầu header này, nếu không BE trả:
+
   - `401 Unauthorized` – chưa login / token sai / token expired
   - `403 Forbidden` – có login nhưng không đủ quyền
 
@@ -49,26 +50,31 @@ Authorization: Bearer <access_token>
 ## 3. Conventions
 
 ### 3.1. Request/Response Format
+
 - Request/Response body: **JSON**
 - Content-Type: `application/json`
 
 ### 3.2. Naming Convention
+
 - **JSON fields**: `snake_case` (ví dụ: `created_at`, `space_id`, `user_id`)
 - **Path parameters**: `snake_case` (ví dụ: `/todos/{todo_id}`)
 - **Query parameters**: `snake_case` (ví dụ: `status_filter`, `context_id`)
 
 ### 3.3. Datetime Format
+
 - **ISO8601 UTC format**: `"2024-12-19T10:23:45Z"` hoặc `"2024-12-19T10:23:45.123Z"`
 - Tất cả datetime từ BE đều là UTC
 - FE cần convert sang timezone của user nếu cần
 
 ### 3.4. Pagination
-- Query params: `skip` (offset), `limit` (page size)
-- Default: `skip=0`, `limit=100`
-- Response: Trả về array trực tiếp (không có wrapper)
+
+- Query params: `offset` (skip), `limit` (page size)
+- Default: `offset=0`, `limit=50`
+- Response: Trả về object wrapper `PaginatedResponse` gồm `data` và `meta`
 - FE có thể implement infinite scroll hoặc page-based pagination
 
 ### 3.5. UUIDs
+
 - Tất cả IDs đều là **UUID v4** (string 36 chars)
 - Format: `"550e8400-e29b-41d4-a716-446655440000"`
 
@@ -78,21 +84,30 @@ Authorization: Bearer <access_token>
 
 ### 4.1. Success Response (2xx)
 
-**Format:** Response trực tiếp là data object hoặc array (không có wrapper).
+**Format:** Response trực tiếp là data object. Với list endpoint, trả về `PaginatedResponse`.
 
 **Ví dụ:**
-```json
-// GET /api/v1/todos - Trả về array trực tiếp
-[
-  {
-    "todo_id": "550e8400-e29b-41d4-a716-446655440000",
-    "title": "Complete project",
-    "status": "todo",
-    ...
-  }
-]
 
-// POST /api/v1/todos - Trả về object
+```json
+// GET /api/v1/todos
+{
+  "data": [
+    {
+      "todo_id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Complete project",
+      "status": "todo",
+      ...
+    }
+  ],
+  "meta": {
+    "total": null,
+    "limit": 50,
+    "offset": 0,
+    "has_more": true
+  }
+}
+
+// POST /api/v1/todos
 {
   "todo_id": "550e8400-e29b-41d4-a716-446655440000",
   "title": "Complete project",
@@ -103,6 +118,7 @@ Authorization: Bearer <access_token>
 ### 4.2. Error Response (4xx/5xx)
 
 **Format:**
+
 ```json
 {
   "detail": "Error message string"
@@ -110,6 +126,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Status Codes:**
+
 - `400 Bad Request` – Invalid request body/params
 - `401 Unauthorized` – Missing/invalid token
 - `403 Forbidden` – Not authorized to access resource
@@ -118,6 +135,7 @@ Authorization: Bearer <access_token>
 - `500 Internal Server Error` – Server error
 
 **Ví dụ:**
+
 ```json
 // 401 Unauthorized
 {
@@ -156,29 +174,31 @@ Authorization: Bearer <access_token>
 1. User đã login vào SpiderX (có JWT token)
 2. FE redirect user sang Google OAuth (next-auth hoặc Google OAuth flow)
 3. User authorize, Google redirect về FE với `code`
-4. FE exchange `code` lấy `refreshToken` (qua next-auth hoặc Google API)
-5. FE gọi `POST /api/v1/integration/connect` với `refreshToken` + JWT header
-6. BE lưu encrypted refreshToken, trả về status "connected"
+4. FE exchange `code` lấy `refresh_token` (qua next-auth (hoặc Google API)
+5. FE gọi `POST /api/v1/integration/connect` với `refresh_token` + JWT header
+6. BE lưu encrypted refresh_token, trả về status "connected"
 7. FE gọi `GET /api/v1/integration/spaces` để lấy danh sách Google Chat spaces
 8. User tick chọn spaces muốn bật SpiderX scanning
-9. FE gọi `PUT /api/v1/integration/spaces/whitelist` với danh sách `spaceIds`
+9. FE gọi `PUT /api/v1/integration/spaces/whitelist` với danh sách `space_ids`
 10. FE có thể gọi `GET /api/v1/integration/spaces/whitelist` để lấy danh sách spaces đã whitelist
 11. FE hiển thị trạng thái đã bật / chưa bật cho từng space
 
 ### 5.3. Flow "Tạo Todo từ Google Chat Message"
 
 **Option 1: Generate từ một space cụ thể**
+
 1. User đã connect Google Chat và whitelist spaces
 2. FE gọi `POST /api/v1/integration/spaces/{space_id}/messages` để lấy messages (mặc định 1000 tin nhắn mới nhất)
 3. User chọn messages muốn extract todos
-4. FE gọi `POST /api/v1/integration/spaces/{space_id}/generate-todos` với `messageIds`
+4. FE gọi `POST /api/v1/integration/spaces/{space_id}/generate-todos` với `message_ids`
 5. BE dùng AI agent extract todos từ messages
 6. BE trả về statistics: số messages processed, số todos generated, số todos saved
 7. FE refresh todo list để hiển thị todos mới
 
 **Option 2: Generate từ tất cả whitelisted spaces**
+
 1. User đã connect Google Chat và whitelist spaces
-2. FE gọi `POST /api/v1/integration/spaces/whitelist/generate-todos` với `autoSave` và `limitPerSpace`
+2. FE gọi `POST /api/v1/integration/spaces/whitelist/generate-todos` với `auto_save` và `limit_per_space`
 3. BE tự động lấy messages từ tất cả whitelisted spaces (mặc định 1000 tin nhắn mới nhất mỗi space)
 4. BE dùng AI agent extract todos từ tất cả messages
 5. BE trả về statistics tổng hợp: số messages processed, số todos generated, số todos saved
@@ -192,6 +212,17 @@ Authorization: Bearer <access_token>
 4. BE trả về list todos với confidence score
 5. Nếu `auto_save=true`, todos được lưu vào DB
 6. FE hiển thị preview todos, user có thể edit trước khi save
+
+### 5.5. Flow "AI Inbox Review" (Khuyến nghị cho trải nghiệm cao cấp)
+
+1. FE gọi `POST /api/v1/ai/inbox/extract` (hoặc `extract-batch`) thay vì endpoint cũ.
+2. BE tạo một **Extraction Run** để log thông tin và trả về danh sách **Suggestions** (Đề xuất) đang ở trạng thái `pending`.
+3. FE hiển thị màn hình **Inbox** liệt kê các suggestions này kèm theo `evidence` (bằng chứng từ tin nhắn/văn bản gốc) và `quality_flags` (cảnh báo chất lượng).
+4. User có thể thực hiện 3 hành động:
+   - **Accept**: Chấp nhận đề xuất. BE sẽ tạo `TodoItem` thật và đánh dấu suggestion là `accepted`.
+   - **Reject**: Từ chối đề xuất. BE đánh dấu suggestion là `rejected`.
+   - **Edit**: Sửa lại thông tin đề xuất trước khi Accept hoặc chỉ lưu lại bản sửa.
+5. Mọi thao tác review của user đều được log lại vào `ai_feedback_events` để BE cải tiến model AI sau này.
 
 ---
 
@@ -207,6 +238,7 @@ Authorization: Bearer <access_token>
 **Auth:** `not required`
 
 **Request Body:**
+
 ```json
 {
   "username": "john_doe",
@@ -223,17 +255,18 @@ Authorization: Bearer <access_token>
 ```
 
 **Fields:**
-| Field         | Type   | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |---------------|--------|----------|---------|--------------------------|
-| username      | string | yes      |         | 3-50 chars, unique       |
-| email         | string | yes      |         | Valid email, unique      |
-| password      | string | yes      |         | Min 8 chars              |
-| full_name     | string | no       | null    | Max 100 chars            |
-| avatar        | string | no       | null    | URL to avatar image      |
-| timezone      | string | no       | "UTC"   | Timezone string          |
-| working_hours | object | no       | null    | Working hours object     |
+| username | string | yes | | 3-50 chars, unique |
+| email | string | yes | | Valid email, unique |
+| password | string | yes | | Min 8 chars |
+| full_name | string | no | null | Max 100 chars |
+| avatar | string | no | null | URL to avatar image |
+| timezone | string | no | "UTC" | Timezone string |
+| working_hours | object | no | null | Working hours object |
 
 **Response 201:**
+
 ```json
 {
   "user_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -250,6 +283,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Errors:**
+
 - `400` – Username hoặc email đã tồn tại
 - `422` – Validation error (password quá ngắn, email không hợp lệ)
 
@@ -263,6 +297,7 @@ Authorization: Bearer <access_token>
 **Auth:** `not required`
 
 **Request Body:**
+
 ```json
 {
   "username": "john_doe",
@@ -271,6 +306,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Response 200:**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -279,6 +315,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Errors:**
+
 - `401` – Username hoặc password sai
 
 ---
@@ -293,6 +330,7 @@ Lấy thông tin user hiện tại
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "user_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -309,6 +347,7 @@ Lấy thông tin user hiện tại
 ```
 
 **Errors:**
+
 - `401` – Chưa login
 
 ---
@@ -321,6 +360,7 @@ Cập nhật profile user hiện tại
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
   "email": "newemail@example.com",
@@ -334,6 +374,7 @@ Cập nhật profile user hiện tại
 **Fields:** Tất cả optional, chỉ gửi fields muốn update
 
 **Response 200:**
+
 ```json
 {
   "user_id": "...",
@@ -344,6 +385,7 @@ Cập nhật profile user hiện tại
 ```
 
 **Errors:**
+
 - `400` – Email đã được user khác sử dụng
 - `401` – Chưa login
 
@@ -359,40 +401,50 @@ Lấy danh sách todos của user hiện tại
 **Auth:** `required`
 
 **Query Params:**
-| Name          | Type   | Required | Default | Mô tả                          |
+| Name | Type | Required | Default | Mô tả |
 |---------------|--------|----------|---------|--------------------------------|
-| status_filter | string | no       | null    | Filter: `todo`, `in_progress`, `completed`, `cancelled` |
-| context_id    | string | no       | null    | Filter by context ID           |
-| skip          | number | no       | 0       | Skip (pagination offset)       |
-| limit         | number | no       | 100     | Limit (max items per page)     |
+| status_filter | string | no | null | Filter: `todo`, `in_progress`, `completed`, `cancelled` |
+| context_id | string | no | null | Filter by context ID |
+| offset | number | no | 0 | Offset (pagination) |
+| limit | number | no | 50 | Limit (max 50) | (Note: Code uses limit + 1 check, default 50)
 
 **Response 200:**
+**Response 200:**
+
 ```json
-[
-  {
-    "todo_id": "550e8400-e29b-41d4-a716-446655440000",
-    "user_id": "...",
-    "context_id": "...",
-    "title": "Complete project",
-    "description": "Finish the project documentation",
-    "status": "todo",
-    "priority": "high",
-    "due_date": "2024-12-31T23:59:59Z",
-    "estimated_time": 120,
-    "actual_time": null,
-    "source_type": "manual",
-    "source_id": null,
-    "source_space_id": null,
-    "source_message_id": null,
-    "template_id": null,
-    "tags": ["work", "urgent"],
-    "eisenhower": "urgent_important",
-    "completed_at": null,
-    "created_at": "2024-12-19T10:00:00Z",
-    "updated_at": "2024-12-19T10:00:00Z",
-    "subtasks": []
+{
+  "data": [
+    {
+      "todo_id": "550e8400-e29b-41d4-a716-446655440000",
+      "user_id": "...",
+      "context_id": "...",
+      "title": "Complete project",
+      "description": "Finish the project documentation",
+      "status": "todo",
+      "priority": "high",
+      "due_date": "2024-12-31T23:59:59Z",
+      "estimated_time": 120,
+      "actual_time": null,
+      "source_type": "manual",
+      "source_id": null,
+      "source_space_id": null,
+      "source_message_id": null,
+      "template_id": null,
+      "tags": ["work", "urgent"],
+      "eisenhower": "urgent_important",
+      "completed_at": null,
+      "created_at": "2024-12-19T10:00:00Z",
+      "updated_at": "2024-12-19T10:00:00Z",
+      "subtasks": []
+    }
+  ],
+  "meta": {
+    "total": null,
+    "limit": 50,
+    "offset": 0,
+    "has_more": false
   }
-]
+}
 ```
 
 **Status Enum:** `todo`, `in_progress`, `completed`, `cancelled`  
@@ -410,6 +462,7 @@ Tạo todo mới
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
   "title": "Complete project",
@@ -426,22 +479,23 @@ Tạo todo mới
 ```
 
 **Fields:**
-| Field          | Type    | Required | Default      | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |----------------|---------|----------|--------------|--------------------------|
-| title          | string  | yes      |              | 1-255 chars              |
-| description    | string  | no       | null         |                          |
-| status         | string  | no       | "todo"       | Enum: todo, in_progress, completed, cancelled |
-| priority       | string  | no       | "medium"     | Enum: low, medium, high, urgent |
-| due_date       | string  | no       | null         | ISO8601 datetime         |
-| estimated_time | number  | no       | null         | Minutes (integer)        |
-| context_id     | string  | no       | null         | UUID                     |
-| source_type    | string  | no       | "manual"     | Enum                     |
-| source_id      | string  | no       | null         |                          |
-| template_id    | string  | no       | null         |                          |
-| tags           | array   | no       | null         | Array of strings         |
-| eisenhower     | string  | no       | null         | Enum                     |
+| title | string | yes | | 1-255 chars |
+| description | string | no | null | |
+| status | string | no | "todo" | Enum: todo, in_progress, completed, cancelled |
+| priority | string | no | "medium" | Enum: low, medium, high, urgent |
+| due_date | string | no | null | ISO8601 datetime |
+| estimated_time | number | no | null | Minutes (integer) |
+| context_id | string | no | null | UUID |
+| source_type | string | no | "manual" | Enum |
+| source_id | string | no | null | |
+| template_id | string | no | null | |
+| tags | array | no | null | Array of strings |
+| eisenhower | string | no | null | Enum |
 
 **Response 201:**
+
 ```json
 {
   "todo_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -461,11 +515,12 @@ Lấy chi tiết một todo
 **Auth:** `required`
 
 **Path Params:**
-| Name    | Type   | Required | Mô tả |
+| Name | Type | Required | Mô tả |
 |---------|--------|----------|-------|
-| todo_id | string | yes      | UUID  |
+| todo_id | string | yes | UUID |
 
 **Response 200:**
+
 ```json
 {
   "todo_id": "...",
@@ -475,6 +530,7 @@ Lấy chi tiết một todo
 ```
 
 **Errors:**
+
 - `404` – Todo not found
 - `403` – Todo không thuộc về user hiện tại
 
@@ -488,6 +544,7 @@ Cập nhật todo
 **Auth:** `required`
 
 **Request Body:** Tất cả fields optional (chỉ gửi fields muốn update)
+
 ```json
 {
   "title": "Updated title",
@@ -497,6 +554,7 @@ Cập nhật todo
 ```
 
 **Response 200:**
+
 ```json
 {
   "todo_id": "...",
@@ -520,6 +578,7 @@ Xóa todo
 **Response 204:** No content
 
 **Errors:**
+
 - `404` – Todo not found
 - `403` – Not authorized
 
@@ -533,6 +592,7 @@ Tạo subtask cho todo
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
   "title": "Subtask 1",
@@ -542,6 +602,7 @@ Tạo subtask cho todo
 ```
 
 **Response 201:**
+
 ```json
 {
   "subtask_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -564,6 +625,7 @@ Lấy danh sách subtasks của todo
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 [
   {
@@ -587,6 +649,7 @@ Cập nhật subtask
 **Auth:** `required`
 
 **Request Body:** Tất cả optional
+
 ```json
 {
   "title": "Updated subtask",
@@ -618,25 +681,34 @@ Lấy danh sách contexts (projects/categories) của user
 **Auth:** `required`
 
 **Query Params:**
-| Name       | Type    | Required | Default | Mô tả                    |
+| Name | Type | Required | Default | Mô tả |
 |------------|---------|----------|---------|--------------------------|
-| active_only | boolean | no       | true    | Chỉ lấy contexts active  |
-| skip       | number  | no       | 0       | Skip (pagination offset) |
-| limit      | number  | no       | 100     | Limit                    |
+| active_only | boolean | no | true | Chỉ lấy contexts active |
+| offset | number | no | 0 | Offset |
+| limit | number | no | 50 | Limit |
 
 **Response 200:**
+
 ```json
-[
-  {
-    "context_id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Work Projects",
-    "description": "All work-related tasks",
-    "color": "#FF5733",
-    "icon": "briefcase",
-    "is_active": true,
-    "created_at": "2024-12-19T10:00:00Z"
+{
+  "data": [
+    {
+      "context_id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Work Projects",
+      "description": "All work-related tasks",
+      "color": "#FF5733",
+      "icon": "briefcase",
+      "is_active": true,
+      "created_at": "2024-12-19T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": null,
+    "limit": 50,
+    "offset": 0,
+    "has_more": false
   }
-]
+}
 ```
 
 ---
@@ -649,6 +721,7 @@ Tạo context mới
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
   "name": "Work Projects",
@@ -659,14 +732,15 @@ Tạo context mới
 ```
 
 **Fields:**
-| Field       | Type   | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |-------------|--------|----------|---------|--------------------------|
-| name        | string | yes      |         | 1-100 chars              |
-| description | string | no       | null    |                          |
-| color       | string | no       | null    | Hex color (#RRGGBB)      |
-| icon        | string | no       | null    | Icon name/identifier     |
+| name | string | yes | | 1-100 chars |
+| description | string | no | null | |
+| color | string | no | null | Hex color (#RRGGBB) |
+| icon | string | no | null | Icon name/identifier |
 
 **Response 201:**
+
 ```json
 {
   "context_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -687,6 +761,7 @@ Lấy chi tiết context
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "context_id": "...",
@@ -696,6 +771,7 @@ Lấy chi tiết context
 ```
 
 **Errors:**
+
 - `404` – Context not found
 - `403` – User không có quyền truy cập context này
 
@@ -709,6 +785,7 @@ Cập nhật context (chỉ OWNER hoặc ADMIN)
 **Auth:** `required`
 
 **Request Body:** Tất cả optional
+
 ```json
 {
   "name": "Updated name",
@@ -743,6 +820,7 @@ Extract todos từ text sử dụng AI (Gemini)
 **Auth:** `required`
 
 **Request Body:** Form data (`application/x-www-form-urlencoded` hoặc `multipart/form-data`)
+
 ```
 text: "Hôm nay vào họp lúc 2h30 nhé, deadline báo cáo là thứ 6"
 auto_save: false
@@ -751,14 +829,15 @@ source_id: "optional-source-id"
 ```
 
 **Fields:**
-| Field       | Type    | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |-------------|---------|----------|---------|--------------------------|
-| text        | string  | yes      |         | Text to analyze          |
-| auto_save   | boolean | no       | false   | Tự động lưu todos vào DB |
-| source_type | string  | no       | "chat"  | Enum: chat, email, meeting |
-| source_id   | string  | no       | null    | Optional source ID       |
+| text | string | yes | | Text to analyze |
+| auto_save | boolean | no | false | Tự động lưu todos vào DB |
+| source_type | string | no | "chat" | Enum: chat, email, meeting |
+| source_id | string | no | null | Optional source ID |
 
 **Response 200:**
+
 ```json
 {
   "todos": [
@@ -799,6 +878,7 @@ Extract todos từ nhiều messages cùng lúc
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
   "messages": [
@@ -821,6 +901,7 @@ Extract todos từ nhiều messages cùng lúc
 ```
 
 **Response 200:**
+
 ```json
 {
   "total_messages": 2,
@@ -854,6 +935,7 @@ Check AI service status
 **Auth:** `not required`
 
 **Response 200:**
+
 ```json
 {
   "status": "ready",
@@ -875,25 +957,28 @@ Kết nối Google Chat account, lưu refresh token
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
-  "refreshToken": "ya29.a0AfB_byC1234567890..."
+  "refresh_token": "ya29.a0AfB_byC1234567890..."
 }
 ```
 
 **Response 200:**
+
 ```json
 {
   "status": "connected",
   "provider": "google_chat",
-  "lastSyncAt": null,
-  "lastError": null
+  "last_sync_at": null,
+  "last_error": null
 }
 ```
 
 **Status Enum:** `connected`, `not_connected`, `error`
 
 **Errors:**
+
 - `500` – Failed to connect (encryption error, DB error)
 
 ---
@@ -906,22 +991,24 @@ Kiểm tra trạng thái kết nối Google Chat
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "status": "connected",
   "provider": "google_chat",
-  "lastSyncAt": "2024-12-19T15:30:00Z",
-  "lastError": null
+  "last_sync_at": "2024-12-19T15:30:00Z",
+  "last_error": null
 }
 ```
 
 Hoặc nếu chưa connect:
+
 ```json
 {
   "status": "not_connected",
   "provider": null,
-  "lastSyncAt": null,
-  "lastError": null
+  "last_sync_at": null,
+  "last_error": null
 }
 ```
 
@@ -935,6 +1022,7 @@ Lấy danh sách Google Chat spaces với whitelist status
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "spaces": [
@@ -942,23 +1030,24 @@ Lấy danh sách Google Chat spaces với whitelist status
       "id": "AAAAAAAAAAA",
       "name": "Team Engineering",
       "description": "Engineering team space",
-      "isWhitelisted": false,
-      "displayName": "Team Engineering",
-      "spaceType": "SPACE"
+      "is_whitelisted": false,
+      "display_name": "Team Engineering",
+      "space_type": "SPACE"
     },
     {
       "id": "BBBBBBBBBBB",
       "name": "General Chat",
       "description": null,
-      "isWhitelisted": true,
-      "displayName": "General Chat",
-      "spaceType": "SPACE"
+      "is_whitelisted": true,
+      "display_name": "General Chat",
+      "space_type": "SPACE"
     }
   ]
 }
 ```
 
 **Errors:**
+
 - `403` – User chưa connect Google Chat
 - `500` – Google Chat API error
 
@@ -972,6 +1061,7 @@ Lấy danh sách spaces đã được whitelist của user
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "spaces": [
@@ -979,28 +1069,30 @@ Lấy danh sách spaces đã được whitelist của user
       "id": "AAAAAAAAAAA",
       "name": "Team Engineering",
       "description": "Engineering team space",
-      "isWhitelisted": true,
-      "displayName": "Team Engineering",
-      "spaceType": "SPACE"
+      "is_whitelisted": true,
+      "display_name": "Team Engineering",
+      "space_type": "SPACE"
     },
     {
       "id": "BBBBBBBBBBB",
       "name": "General Chat",
       "description": null,
-      "isWhitelisted": true,
-      "displayName": "General Chat",
-      "spaceType": "SPACE"
+      "is_whitelisted": true,
+      "display_name": "General Chat",
+      "space_type": "SPACE"
     }
   ]
 }
 ```
 
-**Note:** 
+**Note:**
+
 - Chỉ trả về các spaces đã được whitelist
 - Nếu không có space nào trong whitelist, trả về `spaces: []`
-- Tất cả spaces trong response đều có `isWhitelisted: true`
+- Tất cả spaces trong response đều có `is_whitelisted: true`
 
 **Errors:**
+
 - `403` – User chưa connect Google Chat
 - `500` – Google Chat API error
 
@@ -1014,21 +1106,24 @@ Cập nhật danh sách spaces được phép quét
 **Auth:** `required`
 
 **Request Body:**
+
 ```json
 {
-  "spaceIds": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
+  "space_ids": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
 }
 ```
 
 **Response 200:**
+
 ```json
 {
   "status": "ok",
-  "updatedSpaces": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
+  "updated_spaces": ["AAAAAAAAAAA", "BBBBBBBBBBB"]
 }
 ```
 
 **Errors:**
+
 - `403` – User chưa connect Google Chat
 
 ---
@@ -1041,6 +1136,7 @@ Ngắt kết nối Google Chat, xóa token
 **Auth:** `required`
 
 **Response 200:**
+
 ```json
 {
   "status": "disconnected"
@@ -1048,6 +1144,7 @@ Ngắt kết nối Google Chat, xóa token
 ```
 
 **Errors:**
+
 - `404` – Không tìm thấy connection
 
 ---
@@ -1060,11 +1157,12 @@ Lấy messages từ Google Chat space với filter
 **Auth:** `required`
 
 **Path Params:**
-| Name     | Type   | Required | Mô tả         |
+| Name | Type | Required | Mô tả |
 |----------|--------|----------|---------------|
-| space_id | string | yes      | Google Chat space ID |
+| space_id | string | yes | Google Chat space ID |
 
 **Request Body:**
+
 ```json
 {
   "space_id": "AAAAAAAAAAA",
@@ -1079,35 +1177,37 @@ Lấy messages từ Google Chat space với filter
 **Note:** Messages được trả về theo thứ tự mới nhất trước (newest first). Mặc định lấy 1000 tin nhắn mới nhất.
 
 **Fields:**
-| Field        | Type    | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |--------------|---------|----------|---------|--------------------------|
-| space_id     | string  | yes      |         | Space ID (duplicate từ path) |
-| start_date   | string  | no       | null    | ISO8601 datetime         |
-| end_date     | string  | no       | null    | ISO8601 datetime         |
-| sender_filter| string  | no       | null    | Filter by sender name/ID |
-| keyword      | string  | no       | null    | Search keyword           |
-| limit        | number  | no       | 1000    | Max 1000, newest first   |
+| space_id | string | yes | | Space ID (duplicate từ path) |
+| start_date | string | no | null | ISO8601 datetime |
+| end_date | string | no | null | ISO8601 datetime |
+| sender_filter| string | no | null | Filter by sender name/ID |
+| keyword | string | no | null | Search keyword |
+| limit | number | no | 1000 | Max 1000, newest first |
 
 **Response 200:**
+
 ```json
 {
   "messages": [
     {
-      "messageId": "msg-123",
-      "spaceId": "AAAAAAAAAAA",
-      "senderId": "user-123",
-      "senderName": "John Doe",
+      "message_id": "msg-123",
+      "space_id": "AAAAAAAAAAA",
+      "sender_id": "user-123",
+      "sender_name": "John Doe",
       "content": "Hôm nay vào họp lúc 2h30 nhé",
       "timestamp": "2024-12-19T14:30:00Z",
-      "threadId": null
+      "thread_id": null
     }
   ],
-  "totalCount": 1,
-  "spaceName": "Team Engineering"
+  "total_count": 1,
+  "space_name": "Team Engineering"
 }
 ```
 
 **Errors:**
+
 - `403` – Space không trong whitelist hoặc user chưa connect
 - `500` – Google Chat API error
 
@@ -1116,42 +1216,45 @@ Lấy messages từ Google Chat space với filter
 #### 6.6.8. `POST /api/v1/integration/spaces/{space_id}/generate-todos`
 
 **Mục đích:**  
-Generate todos từ Google Chat messages sử dụng AI (sync)
+Generate todos từ Google Chat messages sử dụng AI
 
 **Auth:** `required`
 
 **Path Params:**
-| Name     | Type   | Required | Mô tả         |
+| Name | Type | Required | Mô tả |
 |----------|--------|----------|---------------|
-| space_id | string | yes      | Google Chat space ID |
+| space_id | string | yes | Google Chat space ID |
 
-**Request Body:** (camelCase)
+**Request Body:**
+
 ```json
 {
-  "spaceId": "AAAAAAAAAAA",
-  "messageIds": ["msg-123", "msg-456"],
-  "autoSave": true
+  "space_id": "AAAAAAAAAAA",
+  "message_ids": ["msg-123", "msg-456"],
+  "auto_save": true
 }
 ```
 
 **Fields:**
-| Field       | Type    | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |-------------|---------|----------|---------|--------------------------|
-| spaceId     | string  | yes      |         | Space ID (duplicate từ path) |
-| messageIds  | array   | yes      |         | List of message IDs      |
-| autoSave    | boolean | no       | true    | Tự động lưu todos        |
+| space_id | string | yes | | Space ID (duplicate từ path) |
+| message_ids | array | yes | | List of message IDs |
+| auto_save | boolean | no | true | Tự động lưu todos |
 
-**Response 200:** (camelCase)
+**Response 200:**
+
 ```json
 {
-  "totalMessagesProcessed": 2,
-  "totalTodosGenerated": 3,
-  "totalTodosSaved": 3,
+  "total_messages_processed": 2,
+  "total_todos_generated": 3,
+  "total_todos_saved": 3,
   "summary": "Processed 2 messages from space 'Team Engineering'. Generated 3 todos, saved 3 to database."
 }
 ```
 
 **Errors:**
+
 - `404` – Không tìm thấy messages với IDs đã cho
 - `403` – Space không trong whitelist
 - `500` – AI extraction error hoặc Google Chat API error
@@ -1163,196 +1266,206 @@ Generate todos từ Google Chat messages sử dụng AI (sync)
 #### 6.6.9. `POST /api/v1/integration/spaces/whitelist/generate-todos`
 
 **Mục đích:**  
-Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI (sync)
+Generate todos từ tất cả whitelisted Google Chat spaces sử dụng AI
 
 **Auth:** `required`
 
-**Request Body:** (snake_case)
+**Request Body:**
+
 ```json
 {
   "auto_save": true,
-  "limit_per_space": 100
+  "limit_per_space": 1000
 }
 ```
 
 **Fields:**
-| Field          | Type    | Required | Default | Mô tả                    |
+| Field | Type | Required | Default | Mô tả |
 |----------------|---------|----------|---------|--------------------------|
-| auto_save      | boolean | no       | true    | Tự động lưu todos        |
-| limit_per_space| number  | no       | 100     | Max messages per space (max 1000, newest first) |
+| auto_save | boolean | no | true | Tự động lưu todos |
+| limit_per_space | number | no | 30 | Max messages per space (max 100, newest first) |
 
-**Response 200:** (camelCase)
+**Response 200:**
+
 ```json
 {
-  "totalMessagesProcessed": 2500,
-  "totalTodosGenerated": 45,
-  "totalTodosSaved": 45,
-  "summary": "Processed 2500 messages from 3 whitelisted spaces. Generated 45 todos, saved 45 to database."
+  "total_messages_processed": 2500,
+  "total_todos_generated": 45,
+  "total_todos_saved": 45,
+  "summary": "Processed 2500 messages from 3 whitelisted spaces. Generated 45 todos, saved 45 to database. Spaces: Team Engineering (1000 messages), General Chat (800 messages), Project Alpha (700 messages)"
 }
 ```
 
 **Errors:**
+
 - `400` – Không có whitelisted spaces nào
 - `403` – User chưa connect Google Chat
 - `500` – AI extraction error hoặc Google Chat API error
 
-**Note:** 
+**Note:**
+
 - Endpoint này sẽ xử lý tất cả spaces trong whitelist của user
-- Mỗi space sẽ lấy `limit_per_space` tin nhắn mới nhất (default: 100)
+- Mỗi space sẽ lấy `limit_per_space` tin nhắn mới nhất (default: 1000)
 - Todos được tạo sẽ có `source_space_id` và `source_message_id` để link về message gốc
 - Nếu một space có lỗi, endpoint sẽ tiếp tục xử lý các space khác
 
 ---
 
-### 6.7. Async Task Endpoints
+### 6.7. AI Inbox Endpoints (Human-in-the-loop)
 
-Các endpoint async cho việc generate todos từ nhiều spaces (tránh HTTP timeout).
+Mới thêm vào v1.3. Các endpoint này thay thế cho `/ai/extract` truyền thống, đưa todos vào một hàng đợi review (AI Inbox) thay vì tạo trực tiếp.
 
-#### 6.7.1. `POST /api/v1/integration/tasks/whitelist/generate-todos`
-
-**Mục đích:**  
-Start async task để generate todos từ tất cả whitelisted spaces
-
-**Auth:** `required`
-
-**Request Body:** (camelCase)
-```json
-{
-  "autoSave": true,
-  "limitPerSpace": 100
-}
-```
-
-**Fields:**
-| Field          | Type    | Required | Default | Mô tả                    |
-|----------------|---------|----------|---------|--------------------------|
-| autoSave       | boolean | no       | true    | Tự động lưu todos        |
-| limitPerSpace  | number  | no       | 100     | Max messages per space (max 1000) |
-
-**Response 200:**
-```json
-{
-  "taskId": "abc123-task-id",
-  "status": "PENDING",
-  "message": "Task started",
-  "pollUrl": "/api/v1/integration/tasks/abc123-task-id"
-}
-```
-
----
-
-#### 6.7.2. `POST /api/v1/integration/tasks/spaces/{space_id}/generate-todos`
+#### 6.7.1. `POST /api/v1/ai/inbox/extract`
 
 **Mục đích:**  
-Start async task để generate todos từ một space cụ thể
+Phân tích text và tạo các đề xuất todo (suggestions) trong AI Inbox.
 
 **Auth:** `required`
-
-**Path Params:**
-| Name     | Type   | Required | Mô tả         |
-|----------|--------|----------|---------------|
-| space_id | string | yes      | Google Chat space ID |
 
 **Request Body:**
+
 ```json
 {
-  "messageIds": ["msg-123", "msg-456"],
-  "autoSave": true,
-  "limit": 30
+  "text": "Meeting lúc 3pm, gửi mail cho Hưng",
+  "context_id": "optional-uuid",
+  "source": {
+    "source_type": "chat",
+    "source_space_id": "space-123"
+  }
 }
 ```
 
-**Fields:**
-| Field       | Type    | Required | Default | Mô tả                    |
-|-------------|---------|----------|---------|--------------------------|
-| messageIds  | array   | no       | null    | Specific message IDs (optional) |
-| autoSave    | boolean | no       | true    | Tự động lưu todos        |
-| limit       | number  | no       | 30      | Max messages if messageIds not specified |
-
 **Response 200:**
+
 ```json
 {
-  "taskId": "abc123-task-id",
-  "status": "PENDING",
-  "message": "Task started",
-  "pollUrl": "/api/v1/integration/tasks/abc123-task-id"
-}
-```
-
----
-
-#### 6.7.3. `GET /api/v1/integration/tasks/{task_id}`
-
-**Mục đích:**  
-Poll task status và progress
-
-**Auth:** `required`
-
-**Path Params:**
-| Name    | Type   | Required | Mô tả    |
-|---------|--------|----------|----------|
-| task_id | string | yes      | Task ID  |
-
-**Response 200:**
-```json
-{
-  "taskId": "abc123-task-id",
-  "status": "PROGRESS",
-  "progress": {
-    "progress": "Processing space 2/3",
-    "percent": 66,
-    "completed_spaces": 2,
-    "total_spaces": 3
+  "run": {
+    "run_id": "run-uuid",
+    "prompt_version": "v3-balanced",
+    "provider_used": "gemini",
+    "todo_count": 2,
+    "confidence": 0.95,
+    "latency_ms": 1200
   },
-  "result": null,
-  "error": null
-}
-```
-
-**Status Enum:** `PENDING`, `STARTED`, `PROGRESS`, `SUCCESS`, `FAILURE`, `REVOKED`
-
-**Response khi SUCCESS:**
-```json
-{
-  "taskId": "abc123-task-id",
-  "status": "SUCCESS",
-  "progress": null,
-  "result": {
-    "status": "SUCCESS",
-    "result": {
-      "total_messages_processed": 150,
-      "total_todos_generated": 12,
-      "total_todos_saved": 12,
-      "processed_spaces": ["space1", "space2"],
-      "todos": [...],
-      "summary": "Processed 150 messages..."
+  "suggestions": [
+    {
+      "suggestion_id": "sugg-uuid-1",
+      "title": "Meeting lúc 3pm",
+      "priority": "medium",
+      "due_date": "2025-12-24T15:00:00Z",
+      "ai_confidence": 0.98,
+      "quality_flags": [],
+      "evidence": {
+        "quote": "Meeting lúc 3pm",
+        "reason": "Direct task mention"
+      },
+      "review_status": "pending"
     }
-  },
-  "error": null
+  ]
 }
 ```
 
-**Polling Strategy:**
-- Poll mỗi 2-5 giây
-- Dừng khi status là `SUCCESS` hoặc `FAILURE`
-
 ---
 
-#### 6.7.4. `DELETE /api/v1/integration/tasks/{task_id}`
+#### 6.7.2. `GET /api/v1/ai/inbox/suggestions`
 
 **Mục đích:**  
-Cancel một task đang chạy
+Lấy danh sách các đề xuất todo trong AI Inbox.
 
 **Auth:** `required`
 
-**Path Params:**
-| Name    | Type   | Required | Mô tả    |
-|---------|--------|----------|----------|
-| task_id | string | yes      | Task ID  |
+**Query Params:**
+| Name | Type | Default | Mô tả |
+|-------------|--------|---------|-------|
+| status | string | pending | Filter: `pending`, `accepted`, `rejected` |
+| context_id | string | null | Filter by context |
+| source_type | string | null | Filter: `chat`, `email`, `meeting` |
+| limit | number | 20 | Phân trang |
+| offset | number | 0 | Phân trang |
 
-**Response 204:** No content
+**Response 200:**
 
-**Note:** Không thể cancel task đã completed hoặc failed
+```json
+{
+  "items": [
+    {
+      "suggestion_id": "...",
+      "title": "...",
+      "review_status": "pending",
+      "created_at": "2025-12-23T10:00:00Z"
+    }
+  ],
+  "total": 45,
+  "next_cursor": "20"
+}
+```
+
+---
+
+#### 6.7.3. `POST /api/v1/ai/inbox/suggestions/{id}/accept`
+
+**Mục đích:**  
+Chấp nhận đề xuất, chuyển thành TodoItem thật.
+
+**Auth:** `required`
+
+**Request Body:** (Optional)
+
+```json
+{
+  "apply_edits": {
+    "title": "Tên mới nếu muốn sửa",
+    "priority": "high"
+  }
+}
+```
+
+**Response 200:**
+
+```json
+{
+  "status": "accepted",
+  "suggestion_id": "...",
+  "linked_todo_id": "new-todo-uuid",
+  "saved_count": 1
+}
+```
+
+---
+
+#### 6.7.4. `POST /api/v1/ai/inbox/suggestions/{id}/reject`
+
+**Mục đích:**  
+Từ chối đề xuất.
+
+**Auth:** `required`
+
+**Request Body:** (Optional)
+
+```json
+{
+  "reason_code": "not_a_task",
+  "comment": "Đây là tin nhắn chào hỏi"
+}
+```
+
+---
+
+#### 6.7.5. `PATCH /api/v1/ai/inbox/suggestions/{id}`
+
+**Mục đích:**  
+Cập nhật nội dung đề xuất (title, priority, due_date...) trước khi user quyết định accept hay reject.
+
+**Auth:** `required`
+
+**Request Body:** (Các fields giống TodoItem)
+
+```json
+{
+  "title": "Học React và Next.js",
+  "priority": "high"
+}
+```
 
 ---
 
@@ -1362,15 +1475,15 @@ Cancel một task đang chạy
 
 ```typescript
 type User = {
-  user_id: string;           // UUID
-  username: string;          // 3-50 chars, unique
-  email: string;             // Valid email, unique
+  user_id: string; // UUID
+  username: string; // 3-50 chars, unique
+  email: string; // Valid email, unique
   full_name: string | null;
-  avatar: string | null;     // URL
+  avatar: string | null; // URL
   role: "admin" | "user" | "guest";
-  timezone: string;          // Default: "UTC"
+  timezone: string; // Default: "UTC"
   working_hours: object | null;
-  created_at: string;        // ISO8601
+  created_at: string; // ISO8601
   last_login_at: string | null;
 };
 ```
@@ -1379,26 +1492,31 @@ type User = {
 
 ```typescript
 type TodoItem = {
-  todo_id: string;           // UUID
-  user_id: string;           // UUID
+  todo_id: string; // UUID
+  user_id: string; // UUID
   context_id: string | null; // UUID
-  title: string;             // 1-255 chars
+  title: string; // 1-255 chars
   description: string | null;
   status: "todo" | "in_progress" | "completed" | "cancelled";
   priority: "low" | "medium" | "high" | "urgent";
-  due_date: string | null;   // ISO8601
+  due_date: string | null; // ISO8601
   estimated_time: number | null; // Minutes
-  actual_time: number | null;    // Minutes
+  actual_time: number | null; // Minutes
   source_type: "manual" | "chat" | "email" | "meeting" | "template";
   source_id: string | null;
-  source_space_id: string | null;    // Google Chat space ID
-  source_message_id: string | null;  // Google Chat message ID
+  source_space_id: string | null; // Google Chat space ID
+  source_message_id: string | null; // Google Chat message ID
   template_id: string | null;
   tags: string[] | null;
-  eisenhower: "urgent_important" | "not_urgent_important" | "urgent_not_important" | "not_urgent_not_important" | null;
-  completed_at: string | null;       // ISO8601
-  created_at: string;                // ISO8601
-  updated_at: string;                // ISO8601
+  eisenhower:
+    | "urgent_important"
+    | "not_urgent_important"
+    | "urgent_not_important"
+    | "not_urgent_not_important"
+    | null;
+  completed_at: string | null; // ISO8601
+  created_at: string; // ISO8601
+  updated_at: string; // ISO8601
   subtasks: SubTask[];
 };
 ```
@@ -1407,12 +1525,12 @@ type TodoItem = {
 
 ```typescript
 type SubTask = {
-  subtask_id: string;        // UUID
-  todo_id: string;           // UUID
-  title: string;             // 1-255 chars
+  subtask_id: string; // UUID
+  todo_id: string; // UUID
+  title: string; // 1-255 chars
   status: "todo" | "completed";
-  order: number;             // Default: 0
-  created_at: string;        // ISO8601
+  order: number; // Default: 0
+  created_at: string; // ISO8601
   completed_at: string | null;
 };
 ```
@@ -1421,13 +1539,13 @@ type SubTask = {
 
 ```typescript
 type Context = {
-  context_id: string;        // UUID
-  name: string;              // 1-100 chars
+  context_id: string; // UUID
+  name: string; // 1-100 chars
   description: string | null;
-  color: string | null;      // Hex color (#RRGGBB)
+  color: string | null; // Hex color (#RRGGBB)
   icon: string | null;
   is_active: boolean;
-  created_at: string;        // ISO8601
+  created_at: string; // ISO8601
 };
 ```
 
@@ -1435,12 +1553,12 @@ type Context = {
 
 ```typescript
 type GoogleChatSpace = {
-  id: string;                // Space ID
-  name: string;              // Display name
+  id: string; // Space ID
+  name: string; // Display name
   description: string | null;
-  isWhitelisted: boolean;
-  displayName: string | null;
-  spaceType: string | null;  // "SPACE", "DIRECT_MESSAGE", "GROUP_CONVERSATION"
+  is_whitelisted: boolean;
+  display_name: string | null;
+  space_type: string | null; // "SPACE", "DIRECT_MESSAGE", "GROUP_CONVERSATION"
 };
 ```
 
@@ -1448,13 +1566,13 @@ type GoogleChatSpace = {
 
 ```typescript
 type GoogleChatMessage = {
-  messageId: string;
-  spaceId: string;
-  senderId: string;
-  senderName: string;
+  message_id: string;
+  space_id: string;
+  sender_id: string;
+  sender_name: string;
   content: string;
-  timestamp: string;         // ISO8601
-  threadId: string | null;
+  timestamp: string; // ISO8601
+  thread_id: string | null;
 };
 ```
 
@@ -1464,63 +1582,73 @@ type GoogleChatMessage = {
 type ExtractedTodo = {
   title: string;
   description: string | null;
-  priority: string;          // "low" | "medium" | "high" | "urgent"
-  due_date: string | null;   // ISO8601
+  priority: string; // "low" | "medium" | "high" | "urgent"
+  due_date: string | null; // ISO8601
   estimated_time: number | null; // Minutes
   tags: string[];
   eisenhower: string | null;
 };
 ```
 
-### 7.8. Async Task Types
+### 7.8. PaginationMeta
 
 ```typescript
-type TaskStatus = "PENDING" | "STARTED" | "PROGRESS" | "SUCCESS" | "FAILURE" | "REVOKED";
-
-type StartTaskResponse = {
-  taskId: string;
-  status: "PENDING";
-  message: string;
-  pollUrl: string;
-};
-
-type TaskProgress = {
-  progress: string;
-  percent: number;
-  completed_spaces: number;
-  total_spaces: number;
-};
-
-type TaskResultData = {
-  total_messages_processed: number;
-  total_todos_generated: number;
-  total_todos_saved: number;
-  processed_spaces: string[];
-  todos: GeneratedTodo[];
-  summary: string;
-};
-
-type TaskStatusResponse = {
-  taskId: string;
-  status: TaskStatus;
-  progress: TaskProgress | null;
-  result: { status: "SUCCESS"; result: TaskResultData } | null;
-  error: string | null;
+type PaginationMeta = {
+  total: number | null;
+  limit: number;
+  offset: number;
+  has_more: boolean;
 };
 ```
 
-### 7.9. Pagination
-
-**Note:** API trả về array trực tiếp, không có pagination wrapper. FE cần tự track:
-- `skip`: Số items đã load (dùng cho request tiếp theo)
-- `limit`: Số items mỗi request (default: 100)
+### 7.9. PaginatedResponse<T>
 
 ```typescript
-// FE pagination state example
-type PaginationState = {
-  skip: number;      // Current offset
-  limit: number;     // Items per page (default: 100)
-  hasMore: boolean;  // FE tự track dựa trên response.length === limit
+type PaginatedResponse<T> = {
+  data: T[];
+  meta: PaginationMeta;
+};
+```
+
+### 7.10. TodoSuggestion (AI Inbox)
+
+```typescript
+type TodoSuggestion = {
+  suggestion_id: string;
+  run_id: string;
+  title: string;
+  description: string | null;
+  priority: "low" | "medium" | "high" | "urgent";
+  due_date: string | null;
+  assignee: string | null;
+  tags: string[];
+  ai_confidence: number | null;
+  quality_flags: string[];
+  follow_up_questions: string[];
+  evidence: {
+    quote?: string;
+    reason?: string;
+    message_index?: number;
+  };
+  review_status: "pending" | "accepted" | "rejected" | "expired";
+  linked_todo_id: string | null;
+  created_at: string;
+};
+```
+
+### 7.11. AIExtractionRun
+
+```typescript
+type AIExtractionRun = {
+  run_id: string;
+  request_type: "single_text" | "batch_messages" | "platform_sync";
+  prompt_version: string;
+  provider_used: string | null;
+  model_used: string | null;
+  todo_count: number;
+  confidence: number | null;
+  latency_ms: number | null;
+  status: "success" | "failed";
 };
 ```
 
@@ -1528,80 +1656,91 @@ type PaginationState = {
 
 ## 8. Changelog
 
-### 2025-12-11 (v1.3)
-- **Cập nhật theo OpenAPI spec thực tế**:
-  - Pagination: Sử dụng `skip` (không phải `offset`), default `limit=100`
-  - Response format: Array trực tiếp (không có wrapper `{ data, meta }`)
-  - Cập nhật field naming conventions cho Google Chat endpoints
-- **Thêm mới**: Async Task Endpoints (Section 6.7)
-  - `POST /api/v1/integration/tasks/whitelist/generate-todos` - Start async task
-  - `POST /api/v1/integration/tasks/spaces/{space_id}/generate-todos` - Start space task
-  - `GET /api/v1/integration/tasks/{task_id}` - Poll task status
-  - `DELETE /api/v1/integration/tasks/{task_id}` - Cancel task
-- **Cập nhật**: Google Chat generate-todos endpoints
-  - Request body dùng `snake_case` cho whitelist endpoint (`auto_save`, `limit_per_space`)
-  - Request body dùng `camelCase` cho space endpoint (`spaceId`, `messageIds`, `autoSave`)
-  - Response dùng `camelCase` (`totalMessagesProcessed`, `totalTodosGenerated`, etc.)
+### 2025-12-23 (v1.3)
 
-### 2024-12-19 (v1.0)
-- Tạo tài liệu lần đầu
-- Thêm endpoints: Authentication, Users, Todos, Contexts, AI extraction
-- Thêm Google Chat integration endpoints
-- Thêm fields `source_space_id` và `source_message_id` vào TodoItem model
+- **Feature Mới: AI Inbox**:
+  - Thêm cụm endpoint `/api/v1/ai/inbox/*` hỗ trợ review workflow.
+  - Chống tình trạng AI spam tạo quá nhiều todo rác.
+  - Hỗ trợ Logging Feedback để cải tiến AI model.
+- **Tiêu chuẩn hóa**: Chuyển toàn bộ field API trả về sang `snake_case` thống nhất với core system.
+
+### 2025-12-11 (v1.2)
+
+- **Thay đổi Core**:
+  - Cập nhật Pagination cho `GET /todos` và `GET /contexts`.
+  - Sử dụng `offset` thay cho `skip`.
+  - Default limit giảm xuống 50.
+  - Response format thay đổi sang wrapper object `{ data, meta }`.
+- **Thay đổi Google Chat**:
+  - `POST /api/v1/integration/spaces/whitelist/generate-todos`: Default limitPerSpace = 30, Max = 100.
 
 ### 2025-11-16 (v1.1)
+
 - **Thay đổi**: `POST /api/v1/integration/spaces/{space_id}/messages`
   - Limit mặc định thay đổi từ 100 thành 1000
   - Messages được trả về theo thứ tự mới nhất trước (newest first)
 - **Thêm mới**: `GET /api/v1/integration/spaces/whitelist`
+  - Endpoint để lấy danh sách spaces đã được whitelist của user
+  - Trả về thông tin chi tiết của các spaces trong whitelist
 - **Thêm mới**: `POST /api/v1/integration/spaces/whitelist/generate-todos`
+  - Endpoint để generate todos từ tất cả whitelisted spaces
+  - Hỗ trợ batch processing với `limitPerSpace` parameter
 
 ---
 
 ## 9. Notes & Best Practices
 
 ### 9.1. Error Handling
+
 - FE nên handle tất cả error codes (400, 401, 403, 404, 422, 500)
 - Khi nhận 401, FE nên clear token và redirect về login
 - Hiển thị user-friendly error messages từ `detail` field
 
 ### 9.2. Token Management
+
 - Lưu token trong localStorage hoặc httpOnly cookie (khuyến nghị httpOnly)
 - Implement auto-refresh hoặc redirect login khi token expired
 - Không gửi token trong URL params
 
 ### 9.3. Pagination
-- Sử dụng `skip` và `limit` cho pagination
-- Default: `skip=0`, `limit=100`
-- Response là array trực tiếp (không có wrapper)
+
+### 9.3. Pagination
+
+- Sử dụng `offset` và `limit` cho pagination
+- Default limit = 50, response có wrapper `{ data, meta }`
 - Implement infinite scroll hoặc "Load more" button
-- FE cần track số items đã load để tính `skip` cho request tiếp theo
+- Check `meta.has_more` để biết còn data không
 
 ### 9.4. AI Extraction
+
 - `auto_save=false` để preview trước khi save
 - Hiển thị `confidence` score để user biết độ tin cậy
 - Cho phép user edit todos trước khi save
 
 ### 9.5. Google Chat Integration
+
 - Check `status` trước khi gọi các endpoints khác
 - Handle `error` status và hiển thị `lastError` cho user
 - Chỉ spaces được whitelist mới có thể lấy messages
 - Messages được lấy theo thứ tự mới nhất trước (newest first), mặc định 1000 tin nhắn
 - Có thể lấy danh sách whitelisted spaces bằng `GET /api/v1/integration/spaces/whitelist`
 - Có 2 cách generate todos:
-  - **Sync**: Dùng `/integration/spaces/{space_id}/generate-todos` hoặc `/integration/spaces/whitelist/generate-todos`
-  - **Async**: Dùng `/integration/tasks/...` endpoints để tránh HTTP timeout
-- **Khuyến nghị**: Dùng async endpoints khi xử lý nhiều spaces hoặc nhiều messages
+  - **Từ một space cụ thể**: Chọn messages và generate
+  - **Từ tất cả whitelisted spaces**: Generate tự động từ tất cả spaces trong whitelist
+- Background worker tự động scan messages mỗi 5 phút (không cần FE gọi)
 
-### 9.6. Async Task Best Practices
-- Sử dụng async endpoints khi xử lý > 1 space hoặc > 100 messages
-- Poll task status mỗi 2-5 giây
-- Hiển thị progress bar dựa trên `progress.percent`
-- Handle các status: `SUCCESS`, `FAILURE`, `REVOKED`
-- Cho phép user cancel task đang chạy bằng DELETE endpoint
+### 9.6. AI Inbox & Human-in-the-loop
+
+- Nên mặc định sử dụng Flow Inbox thay vì `auto_save=true` để tăng trust cho người dùng.
+- Sử dụng `quality_flags` để hiển thị các tag cảnh báo (ví dụ: "Thiếu deadline", "Nội dung mơ hồ").
+- Hiển thị `evidence.quote` để user biết AI trích xuất task này từ đâu.
+- Khi user `Accept`, FE nên cho phép edit nốt lần cuối qua `apply_edits`.
 
 ---
 
-**Cập nhật:** 2025-12-11
+**Cập nhật:** 2025-12-23  
 **Phiên bản:** 1.3.0
 
+```
+
+```

@@ -37,7 +37,6 @@ export default function WhitelistPage() {
     clearError,
   } = useSyncTodo();
 
-  const [generateSuccess, setGenerateSuccess] = useState(false);
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
 
   // Generate todos handler
@@ -52,7 +51,7 @@ export default function WhitelistPage() {
     });
 
     if (result.success) {
-      setGenerateSuccess(true);
+      // Handled by global taskStatus
     } else {
       setSyncErrorMessage(result.error || "Failed to generate todos");
     }
@@ -68,12 +67,11 @@ export default function WhitelistPage() {
 
   // Sync more handler
   const handleSyncMore = () => {
-    setGenerateSuccess(false);
     clearError();
   };
 
-  // Render Sync Success View
-  if (generateSuccess && lastSyncResult) {
+  // Render Sync Success View based on Global State
+  if (taskStatus === "SUCCESS" && lastSyncResult) {
     return (
       <SyncSuccessView
         result={lastSyncResult}
@@ -91,7 +89,7 @@ export default function WhitelistPage() {
       : null);
 
   return (
-    <div className="flex h-screen flex-col p-6 md:p-8 overflow-hidden bg-white">
+    <div className="flex h-screen flex-col p-6 md:p-8 overflow-hidden bg-bg font-sans">
       <WhitelistHeader
         isSyncing={isSyncing}
         isLoading={isLoading}
@@ -106,10 +104,10 @@ export default function WhitelistPage() {
       {/* Messages */}
       {activeMessage && (
         <div
-          className={`mb-6 rounded-lg p-4 text-sm flex items-center gap-2 shrink-0 ${
+          className={`mb-6 rounded-md p-4 text-sm flex items-center gap-2 shrink-0 ${
             activeMessage.type === "success"
-              ? "bg-green-50 text-green-600"
-              : "bg-red-50 text-red-600"
+              ? "bg-successSoft text-success"
+              : "bg-dangerSoft text-danger"
           }`}
         >
           {activeMessage.type === "success" ? (

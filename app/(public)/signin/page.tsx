@@ -93,8 +93,8 @@ export default function SignIn() {
 
   return (
     <div className="flex min-h-screen w-full">
-      {/* Left Panel - Image & Branding (Giữ nguyên ảnh gốc) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-50 text-white p-12 flex-col justify-between">
+      {/* Left Panel - Image & Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-surface2 text-ink p-12 flex-col justify-between">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/login-thumb.png"
@@ -110,47 +110,63 @@ export default function SignIn() {
           <div className="mb-6">
             <Logo />
           </div>
-          <h1 className="text-4xl font-bold leading-tight max-w-md mb-4">
-            Capture tasks from email & chat, automatically
+          <h1 className="font-heading text-4xl font-bold leading-tight max-w-md mb-4 text-white">
+            Your pathway to <br />
+            results begins here
           </h1>
-          <p className="text-lg text-white/90 max-w-md">
-            Connect Gmail, Google Chat, and Slack to never miss a task again
-          </p>
         </div>
 
         {/* Trust Badge */}
         <div className="relative z-10 flex items-center gap-2 text-sm text-white/80">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
           <span>Secure sign-in with encryption</span>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-50 px-6 py-12 lg:px-12">
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-bg px-6 py-12 lg:px-12">
         <div className="w-full max-w-[440px]">
           {/* Card Container */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-surface rounded-lg shadow-s1 border border-border p-8">
             {/* Header */}
             <div className="mb-8 text-center lg:text-left">
               <div className="flex items-center gap-2 mb-6 justify-center lg:justify-start">
                 <Logo />
-                <span className="text-xl font-bold text-gray-900">SpiderX</span>
+                <span className="text-xl font-bold text-ink">SpiderX</span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="font-heading text-2xl font-bold text-ink mb-2">
                 Welcome back
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-ink2">
                 Sign in to SpiderX to continue
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 flex items-start gap-2">
-                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <div className="rounded-lg bg-dangerSoft border border-danger/20 p-3 text-sm text-danger flex items-start gap-2">
+                  <svg
+                    className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <span>{error}</span>
                 </div>
@@ -158,7 +174,7 @@ export default function SignIn() {
 
               <div>
                 <label
-                  className="mb-2 block text-sm font-medium text-gray-700"
+                  className="mb-2 block text-sm font-semibold text-ink"
                   htmlFor="username"
                 >
                   Work email
@@ -166,7 +182,7 @@ export default function SignIn() {
                 <input
                   id="username"
                   type="text"
-                  className="form-input w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-brand-500 focus:ring-brand-500 transition-colors"
+                  className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none transition duration-150"
                   placeholder="name@company.com"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -179,7 +195,7 @@ export default function SignIn() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-semibold text-ink"
                     htmlFor="password"
                   >
                     Password
@@ -189,7 +205,7 @@ export default function SignIn() {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    className="form-input w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-brand-500 focus:ring-brand-500 pr-11 transition-colors"
+                    className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none pr-11 transition duration-150"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -199,9 +215,11 @@ export default function SignIn() {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink3 hover:text-ink2 transition-colors p-1"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -217,32 +235,44 @@ export default function SignIn() {
                 <input
                   id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primarySoft"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-600"
+                  className="ml-2 block text-sm text-ink2"
                 >
-                  Keep me signed in <span className="text-gray-400">(on this device)</span>
+                  Keep me signed in{" "}
+                  <span className="text-ink3">(on this device)</span>
                 </label>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || !username || !password}
-                className="w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white 
-                         hover:bg-brand-700 active:bg-brand-800
-                         focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 
-                         disabled:opacity-50 disabled:cursor-not-allowed 
-                         transition-all duration-200 shadow-sm"
+                className="btn-primary w-full"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Signing in...
                   </span>
@@ -252,17 +282,17 @@ export default function SignIn() {
               </button>
 
               {/* Trust Message */}
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-xs text-center text-ink3">
                 Secure sign-in. We never post without permission.
               </p>
             </form>
           </div>
 
           {/* Sign Up Link */}
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-ink2">
             Don't have an account?{" "}
-            <Link 
-              className="font-semibold text-brand-600 hover:text-brand-700 transition-colors hover:underline" 
+            <Link
+              className="font-semibold text-primary hover:text-primaryHover transition-colors hover:underline"
               href="/signup"
             >
               Create an account
@@ -270,12 +300,12 @@ export default function SignIn() {
           </div>
 
           {/* Footer Links */}
-          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-gray-500">
-            <Link href="/privacy" className="hover:text-gray-700 transition-colors">
+          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-ink3">
+            <Link href="/privacy" className="hover:text-ink2 transition-colors">
               Privacy
             </Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-gray-700 transition-colors">
+            <Link href="/terms" className="hover:text-ink2 transition-colors">
               Terms
             </Link>
           </div>

@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { RefreshCw, ChevronDown, Calendar, Check, AlertCircle, X, Loader2 } from "lucide-react";
+import {
+  RefreshCw,
+  ChevronDown,
+  Calendar,
+  Check,
+  AlertCircle,
+  X,
+  Loader2,
+} from "lucide-react";
 import { useSyncTodo } from "../hooks/useSyncTodo";
 import { TimeRangePicker } from "./TimeRangePicker";
 import type { SyncResult } from "../types/sync";
@@ -40,7 +48,10 @@ const getStatusIndicator = (status: TaskStatus | "IDLE"): string => {
  * SyncTodoButton - Button component for syncing todos from Google Chat
  * Update v2: Modeless design - chip + drawer pattern for better UX
  */
-export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButtonProps) => {
+export const SyncTodoButton = ({
+  onSyncComplete,
+  className = "",
+}: SyncTodoButtonProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showTimeRangePicker, setShowTimeRangePicker] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -61,33 +72,35 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
     clearError,
   } = useSyncTodo();
 
-
   const handleQuickSync = useCallback(async () => {
     setShowDropdown(false);
     setShowResult(false);
     const result = await syncTodos();
-    
+
     if (result.success && result.data) {
       setShowResult(true);
       onSyncComplete?.(result.data);
-      
+
       // Auto-hide result after 5 seconds
       setTimeout(() => setShowResult(false), 5000);
     }
   }, [syncTodos, onSyncComplete]);
 
-  const handleCustomRangeSync = useCallback(async (startDate: Date, endDate: Date) => {
-    setShowResult(false);
-    const result = await syncTodosWithRange({ startDate, endDate });
-    
-    if (result.success && result.data) {
-      setShowResult(true);
-      onSyncComplete?.(result.data);
-      
-      // Auto-hide result after 5 seconds
-      setTimeout(() => setShowResult(false), 5000);
-    }
-  }, [syncTodosWithRange, onSyncComplete]);
+  const handleCustomRangeSync = useCallback(
+    async (startDate: Date, endDate: Date) => {
+      setShowResult(false);
+      const result = await syncTodosWithRange({ startDate, endDate });
+
+      if (result.success && result.data) {
+        setShowResult(true);
+        onSyncComplete?.(result.data);
+
+        // Auto-hide result after 5 seconds
+        setTimeout(() => setShowResult(false), 5000);
+      }
+    },
+    [syncTodosWithRange, onSyncComplete]
+  );
 
   const handleCancel = useCallback(async () => {
     await cancelSync();
@@ -100,7 +113,7 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
 
   const formatLastSync = (timestamp: string | null): string => {
     if (!timestamp) return "Never synced";
-    
+
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -120,9 +133,9 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
   return (
     <div className={`relative ${className}`}>
       {/* Main Button - Terracotta themed split-button */}
-      <div 
+      <div
         className="flex items-center"
-        style={{ boxShadow: '0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F' }}
+        style={{ boxShadow: "0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F" }}
       >
         {/* Button 44: Main Sync section - 90px x 36px */}
         <button
@@ -130,44 +143,61 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
           disabled={isSyncing}
           className="flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           style={{
-            width: '90px',
-            height: '36px',
-            backgroundColor: '#EA916EFF',
-            color: '#FFFFFFFF',
-            borderRadius: '6px 0px 0px 6px',
+            width: "90px",
+            height: "36px",
+            backgroundColor: "#EA916EFF",
+            color: "#FFFFFFFF",
+            borderRadius: "6px 0px 0px 6px",
           }}
-          onMouseEnter={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E5784CFF'; }}
-          onMouseLeave={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#EA916EFF'; }}
-          onMouseDown={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E1602CFF'; }}
-          onMouseUp={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E5784CFF'; }}
+          onMouseEnter={(e) => {
+            if (!isSyncing) e.currentTarget.style.backgroundColor = "#E5784CFF";
+          }}
+          onMouseLeave={(e) => {
+            if (!isSyncing) e.currentTarget.style.backgroundColor = "#EA916EFF";
+          }}
+          onMouseDown={(e) => {
+            if (!isSyncing) e.currentTarget.style.backgroundColor = "#E1602CFF";
+          }}
+          onMouseUp={(e) => {
+            if (!isSyncing) e.currentTarget.style.backgroundColor = "#E5784CFF";
+          }}
         >
           {isSyncing ? (
-            <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#FFFFFFFF' }} />
+            <Loader2
+              className="w-4 h-4 animate-spin"
+              style={{ color: "#FFFFFFFF" }}
+            />
           ) : (
-            <RefreshCw className="w-4 h-4" style={{ color: '#FFFFFFFF' }} />
+            <RefreshCw className="w-4 h-4" style={{ color: "#FFFFFFFF" }} />
           )}
-          <span className="text-sm font-medium" style={{ color: '#FFFFFFFF' }}>
-            {isSyncing ? `${Math.round(taskProgress?.percent ?? syncProgress)}%` : "Sync"}
+          <span className="text-sm font-medium" style={{ color: "#FFFFFFFF" }}>
+            {isSyncing
+              ? `${Math.round(taskProgress?.percent ?? syncProgress)}%`
+              : "Sync"}
           </span>
         </button>
-        
+
         {isSyncing ? (
           <button
             onClick={handleCancel}
             className="flex items-center justify-center transition-colors"
             style={{
-              width: '36px',
-              height: '36px',
-              backgroundColor: '#ef4444',
-              color: '#FFFFFFFF',
-              borderRadius: '0px 6px 6px 0px',
-              borderLeft: '1px solid #dc2626',
+              width: "36px",
+              height: "36px",
+              backgroundColor: "#ef4444",
+              color: "#FFFFFFFF",
+              borderRadius: "0px 6px 6px 0px",
+              borderLeft: "1px solid #dc2626",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ef4444'; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#dc2626";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#ef4444";
+            }}
             title="Cancel sync"
           >
-            <X className="w-4 h-4" style={{ color: '#FFFFFFFF' }} />
+            <X className="w-4 h-4" style={{ color: "#FFFFFFFF" }} />
           </button>
         ) : (
           /* Button 45: Dropdown section - 36px x 36px */
@@ -176,27 +206,41 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
             disabled={isSyncing}
             className="flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             style={{
-              width: '36px',
-              height: '36px',
-              backgroundColor: '#EA916EFF',
-              color: '#FFFFFFFF',
-              borderRadius: '0px 6px 6px 0px',
-              borderLeft: '1px solid #E5784CFF',
+              width: "36px",
+              height: "36px",
+              backgroundColor: "#EA916EFF",
+              color: "#FFFFFFFF",
+              borderRadius: "0px 6px 6px 0px",
+              borderLeft: "1px solid #E5784CFF",
             }}
-            onMouseEnter={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E5784CFF'; }}
-            onMouseLeave={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#EA916EFF'; }}
-            onMouseDown={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E1602CFF'; }}
-            onMouseUp={(e) => { if (!isSyncing) e.currentTarget.style.backgroundColor = '#E5784CFF'; }}
+            onMouseEnter={(e) => {
+              if (!isSyncing)
+                e.currentTarget.style.backgroundColor = "#E5784CFF";
+            }}
+            onMouseLeave={(e) => {
+              if (!isSyncing)
+                e.currentTarget.style.backgroundColor = "#EA916EFF";
+            }}
+            onMouseDown={(e) => {
+              if (!isSyncing)
+                e.currentTarget.style.backgroundColor = "#E1602CFF";
+            }}
+            onMouseUp={(e) => {
+              if (!isSyncing)
+                e.currentTarget.style.backgroundColor = "#E5784CFF";
+            }}
           >
-            <ChevronDown className="w-4 h-4" style={{ color: '#FFFFFFFF' }} />
+            <ChevronDown className="w-4 h-4" style={{ color: "#FFFFFFFF" }} />
           </button>
         )}
       </div>
 
       {/* Dropdown Menu - Enhanced UX with Light Theme */}
       {showDropdown && !isSyncing && (
-        <div className="absolute top-full right-0 mt-1 w-80 bg-white border border-gray-200 
-                      rounded-lg shadow-lg z-50">
+        <div
+          className="absolute top-full right-0 mt-1 w-80 bg-white border border-gray-200 
+                      rounded-lg shadow-lg z-50"
+        >
           <div className="p-2">
             <button
               onClick={handleQuickSync}
@@ -213,7 +257,7 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                 </p>
               </div>
             </button>
-            
+
             <button
               onClick={openCustomRange}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg
@@ -230,16 +274,17 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
               </div>
             </button>
           </div>
-          
+
           {lastSyncAt && (
             <div className="px-4 py-2 border-t border-gray-200">
               <p className="text-xs text-gray-500">
-                Last synced: {new Date(lastSyncAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                Last synced:{" "}
+                {new Date(lastSyncAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </p>
             </div>
@@ -247,45 +292,24 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
         </div>
       )}
 
-
-      {/* Progress Chip - Modeless, không che list */}
-      {isSyncing && !showDrawer && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-white border border-blue-200 rounded-full shadow-lg px-4 py-2 flex items-center gap-3">
-            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-            <span className="text-sm text-gray-700">
-              Syncing · Step {Math.ceil((taskProgress?.percent ?? syncProgress) / 25)}/4 · {Math.round(taskProgress?.percent ?? syncProgress)}%
-            </span>
-            <button
-              onClick={() => setShowDrawer(true)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-            >
-              View
-            </button>
-            <button
-              onClick={() => {/* Dismiss chip only */}}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Progress Chip - REMOVED (Handled by GlobalSyncProgress) */}
 
       {/* Sync Drawer - Chi tiết, chỉ mở khi cần */}
       {isSyncing && showDrawer && (
         <>
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/20 z-40"
             onClick={() => setShowDrawer(false)}
           />
-          
+
           {/* Drawer */}
           <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-50 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-base font-semibold text-gray-900">Sync Progress</h3>
+              <h3 className="text-base font-semibold text-gray-900">
+                Sync Progress
+              </h3>
               <button
                 onClick={() => setShowDrawer(false)}
                 className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
@@ -304,9 +328,7 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                     <p className="text-base font-medium text-gray-900">
                       Syncing messages...
                     </p>
-                    <p className="text-sm text-gray-600">
-                      Google Chat & Gmail
-                    </p>
+                    <p className="text-sm text-gray-600">Google Chat & Gmail</p>
                   </div>
                 </div>
 
@@ -314,16 +336,19 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-gray-700">
-                      {Math.round(taskProgress?.percent ?? syncProgress)}% complete
+                      {Math.round(taskProgress?.percent ?? syncProgress)}%
+                      complete
                     </span>
                     <span className="text-gray-500">
                       May take a few minutes
                     </span>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-blue-500 transition-all duration-500 ease-out"
-                      style={{ width: `${taskProgress?.percent ?? syncProgress}%` }}
+                      style={{
+                        width: `${taskProgress?.percent ?? syncProgress}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -332,10 +357,20 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
               {/* TẦNG 2: Current Step */}
               <div className="mb-6 p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm font-medium text-blue-900">
-                  {taskProgress && taskProgress.percent < 25 && "Step 1 of 4: Scanning messages"}
-                  {taskProgress && taskProgress.percent >= 25 && taskProgress.percent < 50 && "Step 2 of 4: Detecting tasks"}
-                  {taskProgress && taskProgress.percent >= 50 && taskProgress.percent < 75 && "Step 3 of 4: Creating todos"}
-                  {taskProgress && taskProgress.percent >= 75 && "Step 4 of 4: Finalizing"}
+                  {taskProgress &&
+                    taskProgress.percent < 25 &&
+                    "Step 1 of 4: Scanning messages"}
+                  {taskProgress &&
+                    taskProgress.percent >= 25 &&
+                    taskProgress.percent < 50 &&
+                    "Step 2 of 4: Detecting tasks"}
+                  {taskProgress &&
+                    taskProgress.percent >= 50 &&
+                    taskProgress.percent < 75 &&
+                    "Step 3 of 4: Creating todos"}
+                  {taskProgress &&
+                    taskProgress.percent >= 75 &&
+                    "Step 4 of 4: Finalizing"}
                   {!taskProgress && "Initializing..."}
                 </p>
               </div>
@@ -350,13 +385,19 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                     {taskProgress.completed_spaces > 0 && (
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-600" />
-                        <span>{taskProgress.completed_spaces} conversation{taskProgress.completed_spaces > 1 ? 's' : ''} processed</span>
+                        <span>
+                          {taskProgress.completed_spaces} conversation
+                          {taskProgress.completed_spaces > 1 ? "s" : ""}{" "}
+                          processed
+                        </span>
                       </div>
                     )}
                     {taskProgress.total_spaces && (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{taskProgress.total_spaces} total conversations</span>
+                        <span>
+                          {taskProgress.total_spaces} total conversations
+                        </span>
                       </div>
                     )}
                   </div>
@@ -405,7 +446,7 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                     Try again
                   </button>
                   <button
-                    onClick={clearError}
+                    onClick={() => clearError()}
                     className="text-xs text-red-500 hover:text-red-600 hover:underline"
                   >
                     Dismiss
@@ -413,7 +454,7 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
                 </div>
               </div>
               <button
-                onClick={clearError}
+                onClick={() => clearError()}
                 className="flex-shrink-0 text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />
@@ -466,8 +507,8 @@ export const SyncTodoButton = ({ onSyncComplete, className = "" }: SyncTodoButto
 
       {/* Click outside to close dropdown */}
       {showDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowDropdown(false)}
         />
       )}

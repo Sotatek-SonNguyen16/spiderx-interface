@@ -9,6 +9,7 @@ import CalendarStrip from "./CalendarStrip";
 import TodoTabs, { type TodoTabType } from "./TodoTabs";
 import { PasteExtractModal } from "./PasteExtractModal";
 import { useThreadFilter } from "../hooks/useThreadFilter";
+import { useSyncTodo } from "../hooks/useSyncTodo";
 import type { ConnectedThread } from "../types/thread";
 import type { Todo } from "../types";
 
@@ -19,7 +20,7 @@ import { SimpleSwipeView } from "./SimpleSwipeView";
 import { Pagination } from "./Pagination";
 import { SmartSuggestionsCard } from "./SmartSuggestionsCard";
 import { CompletedTasksSection } from "./CompletedTasksSection";
-import { LayoutGrid, Layers, Calendar, Search, X } from "lucide-react";
+import { LayoutGrid, Layers, Calendar, Search, X, Loader2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -41,6 +42,7 @@ export default function TodoList() {
 
   // Replace useGoogleChat with useWhitelistManagement as requested
   const { whitelistedSpaces, isLoading } = useWhitelistManagement();
+  const { isSyncing } = useSyncTodo();
 
   const [activeTab, setActiveTab] = useState<TodoTabType>("todo");
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -97,12 +99,14 @@ export default function TodoList() {
     };
 
     const targetStatus = statusMap[activeTab];
-    let filtered = threadFilteredTodos.filter((todo) => todo.status === targetStatus);
+    let filtered = threadFilteredTodos.filter(
+      (todo) => todo.status === targetStatus
+    );
 
     // Apply date filter
     const selectedDayStart = startOfDay(selectedDate);
     const selectedDayEnd = endOfDay(selectedDate);
-    
+
     filtered = filtered.filter((todo) => {
       if (!todo.dueDate) {
         // Include todos without due date only if today is selected
@@ -128,7 +132,7 @@ export default function TodoList() {
     // Apply smart filters
     if (smartFilter) {
       const now = new Date();
-      
+
       if (smartFilter === "overdue") {
         filtered = filtered.filter((todo) => {
           if (!todo.dueDate) return false;
@@ -220,9 +224,12 @@ export default function TodoList() {
   }, []);
 
   // Search handlers
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    []
+  );
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
@@ -245,7 +252,9 @@ export default function TodoList() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-                  {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
+                  {isToday(selectedDate)
+                    ? "Today"
+                    : format(selectedDate, "EEEE")}
                 </h1>
                 <span className="text-lg text-gray-400 font-medium">
                   {format(selectedDate, "MMM d, yyyy")}
@@ -348,7 +357,7 @@ export default function TodoList() {
             )}
 
             {/* Calendar Strip */}
-            <div className="mb-4">
+            <div className="mb-4 hidden">
               <CalendarStrip
                 selectedDate={selectedDate}
                 onDateSelect={handleDateSelect}
@@ -443,7 +452,9 @@ export default function TodoList() {
             onItemClick={handleItemClick}
             onNavigateToDetail={handleNavigateToDetail}
             onAddSubtasks={handleAddSubtasks}
-            hasActiveFilters={!!searchQuery || !!smartFilter || selectedThreadIds.length > 0}
+            hasActiveFilters={
+              !!searchQuery || !!smartFilter || selectedThreadIds.length > 0
+            }
           />
 
           {/* Pagination */}

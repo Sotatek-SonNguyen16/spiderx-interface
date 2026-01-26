@@ -43,14 +43,14 @@ export const WhitelistHeader = ({
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
           >
             <Logo />
-            <span className="text-xl font-bold text-gray-900">SpiderX</span>
+            <span className="text-xl font-bold text-ink">SpiderX</span>
           </Link>
-          <div className="hidden md:block w-px h-12 bg-gray-200 mx-1"></div>
+          <div className="hidden md:block w-px h-12 bg-border mx-1"></div>
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-ink">
               Google Chat Integration
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-ink2 mt-1">
               Sync conversations → actionable todos
             </p>
           </div>
@@ -59,40 +59,28 @@ export const WhitelistHeader = ({
         {/* CTA Button with 3 states */}
         <div className="flex items-center gap-3">
           {ctaState === "processing" ? (
-            /* Processing State */
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-2 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 px-5 py-3 shadow-sm">
-                  <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-purple-700">
-                      {taskStatus === "PROGRESS" &&
-                      taskProgress?.percent != null
-                        ? `Analyzing... ${taskProgress.percent}%`
-                        : taskStatus === "PENDING" || taskStatus === "STARTED"
-                        ? "Starting analysis..."
-                        : "Analyzing conversations..."}
-                    </span>
-                    <span className="text-xs text-purple-500">
-                      {taskProgress?.progress || "This may take 1-2 minutes"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            /* Processing State - Simplified */
+            <button
+              disabled
+              className="flex h-12 items-center gap-2 rounded-xl border border-aiSoft bg-surface px-6 py-3 font-semibold text-ink shadow-sm opacity-80"
+            >
+              <Loader2 className="h-5 w-5 animate-spin text-ai" />
+              <span>Syncing...</span>
+              <span className="ml-2 h-12 w-px bg-border/50" />
               <button
                 onClick={onCancelSync}
-                className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-200 bg-white text-red-500 transition-all hover:bg-red-50 hover:border-red-300 hover:shadow-sm"
+                className="ml-1 p-1 rounded-md hover:bg-surface2 text-red-500 transition-colors pointer-events-auto"
                 title="Cancel sync"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
-            </div>
+            </button>
           ) : ctaState === "ready" ? (
             /* Ready State */
             <button
               onClick={onGenerateTodos}
               disabled={isLoading}
-              className="group relative flex flex-col items-center gap-0.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-3 font-medium text-white transition-all hover:from-brand-700 hover:to-brand-800 hover:shadow-lg hover:shadow-brand-200/50 disabled:opacity-50 shadow-md"
+              className="group relative flex flex-col items-center gap-0.5 rounded-xl bg-gradient-to-r from-primary to-primaryPressed px-6 py-3 font-medium text-white transition-all hover:from-primaryHover hover:to-primaryPressed hover:shadow-lg hover:shadow-brand-200/50 disabled:opacity-50 shadow-md cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
@@ -108,7 +96,7 @@ export const WhitelistHeader = ({
             <div className="relative group">
               <button
                 disabled
-                className="flex flex-col items-center gap-0.5 rounded-xl bg-gray-100 px-6 py-3 font-medium text-gray-400 cursor-not-allowed border border-gray-200"
+                className="flex flex-col items-center gap-0.5 rounded-xl bg-surface2 px-6 py-3 font-medium text-ink3 cursor-not-allowed border border-border"
               >
                 <div className="flex items-center gap-2">
                   <Zap className="h-5 w-5" />

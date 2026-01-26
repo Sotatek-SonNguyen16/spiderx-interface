@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function TodosPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bg font-sans">
       <TodoList />
     </div>
   );

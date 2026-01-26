@@ -27,8 +27,8 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
       className={`
         relative flex flex-col h-full rounded-2xl border bg-white shadow-sm
         transition-all duration-200 hover:shadow-lg hover:-translate-y-1
-        ${recommended 
-          ? 'border-brand-600 ring-2 ring-brand-600/20' 
+        ${recommended
+          ? 'border-brand-600 ring-2 ring-brand-600/20'
           : 'border-gray-200'
         }
       `}
@@ -45,7 +45,7 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
 
       <div className="p-6 md:p-8 flex flex-col flex-1">
         {/* Plan Name */}
-        <h3 
+        <h3
           className="text-xl md:text-2xl font-semibold text-gray-900 mb-4"
           data-element="plan-name"
         >
@@ -79,7 +79,7 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
         </div>
 
         {/* Best For */}
-        <p 
+        <p
           className="text-sm text-gray-600 mb-6"
           data-element="best-for"
         >
@@ -88,7 +88,7 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
 
         {/* Key Limits */}
         {plan.limits && (
-          <div 
+          <div
             className="mb-6 space-y-2"
             data-element="limits"
           >
@@ -139,7 +139,7 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
         </div>
 
         {/* Features List */}
-        <div 
+        <div
           className="space-y-3 pt-6 border-t border-gray-100"
           data-element="features"
         >
@@ -148,17 +148,17 @@ export default function PlanCard({ plan, billingPeriod, recommended }: PlanCardP
           </p>
           {plan.features.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
-              <svg 
-                className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M5 13l4 4L19 7" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
                 />
               </svg>
               <span className="text-sm text-gray-700 leading-relaxed">

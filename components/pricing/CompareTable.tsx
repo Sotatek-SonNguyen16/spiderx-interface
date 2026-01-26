@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { PRICING_CONFIG, FeatureRow } from '@/lib/config/pricing';
+import React, { useState } from 'react';
+import { PRICING_CONFIG } from '@/lib/config/pricing';
 
 export default function CompareTable() {
   const { compareTable } = PRICING_CONFIG;
@@ -68,7 +68,7 @@ export default function CompareTable() {
 
                 {/* Feature Rows */}
                 {group.features.map((feature, featureIndex) => (
-                  <tr 
+                  <tr
                     key={featureIndex}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
@@ -95,7 +95,7 @@ export default function CompareTable() {
       {/* Mobile Accordion */}
       <div className="md:hidden space-y-4">
         {compareTable.groups.map((group, groupIndex) => (
-          <div 
+          <div
             key={groupIndex}
             className="border border-gray-200 rounded-xl overflow-hidden"
           >
@@ -107,10 +107,10 @@ export default function CompareTable() {
               <span className="font-semibold text-gray-900 text-sm uppercase tracking-wide">
                 {group.name}
               </span>
-              <svg 
+              <svg
                 className={`w-5 h-5 text-gray-600 transition-transform ${expandedGroup === group.name ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -149,6 +149,3 @@ export default function CompareTable() {
     </div>
   );
 }
-
-// Add React import for Fragment
-import React from 'react';

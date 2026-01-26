@@ -85,112 +85,114 @@ export default function SignUp() {
   };
 
   return (
-    <section>
+    <section className="bg-bg">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="py-12 md:py-20">
           {/* Section header */}
           <div className="pb-12 text-center">
-            <h1 className="animate-[gradient_6s_linear_infinite] bg-[linear-gradient(to_right,var(--color-gray-900),var(--color-brand-600),var(--color-gray-800),var(--color-purple-600),var(--color-gray-900))] bg-[length:200%_auto] bg-clip-text font-nacelle text-3xl font-semibold text-transparent md:text-4xl">
+            <h1 className="font-heading text-3xl font-semibold text-ink md:text-4xl">
               Create an account
             </h1>
           </div>
           {/* Contact form */}
           <form className="mx-auto max-w-[400px]" onSubmit={handleSubmit}>
-            {error && (
-              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-800">
-                {error}
+            <div className="bg-surface rounded-lg shadow-s1 border border-border p-8">
+              {error && (
+                <div className="mb-4 rounded-lg bg-dangerSoft border border-danger/20 p-3 text-sm text-danger">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-5">
+                <div>
+                  <label
+                    className="mb-1 block text-sm font-semibold text-ink"
+                    htmlFor="username"
+                  >
+                    Username <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="username"
+                    type="text"
+                    className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none transition duration-150"
+                    placeholder="Your username (3-50 chars)"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                    minLength={3}
+                    maxLength={50}
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label
+                    className="mb-1 block text-sm font-semibold text-ink"
+                    htmlFor="full_name"
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id="full_name"
+                    type="text"
+                    className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none transition duration-150"
+                    placeholder="Your full name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label
+                    className="mb-1 block text-sm font-semibold text-ink"
+                    htmlFor="email"
+                  >
+                    Email <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none transition duration-150"
+                    placeholder="Your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-sm font-semibold text-ink"
+                    htmlFor="password"
+                  >
+                    Password <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    className="w-full rounded-md bg-surface border border-border px-4 py-3 text-sm text-ink placeholder:text-ink3 focus:border-primary focus:ring-4 focus:ring-primarySoft focus:outline-none transition duration-150"
+                    placeholder="Password (at least 8 characters)"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    minLength={8}
+                    disabled={loading}
+                  />
+                </div>
               </div>
-            )}
-            <div className="space-y-5">
-              <div>
-                <label
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                  htmlFor="username"
-                >
-                  Username <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  className="form-input w-full"
-                  placeholder="Your username (3-50 chars)"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  minLength={3}
-                  maxLength={50}
+              <div className="mt-6 space-y-5">
+                <button
+                  type="submit"
                   disabled={loading}
-                />
-              </div>
-              <div>
-                <label
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                  htmlFor="full_name"
+                  className="btn-primary w-full"
                 >
-                  Full Name
-                </label>
-                <input
-                  id="full_name"
-                  type="text"
-                  className="form-input w-full"
-                  placeholder="Your full name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
+                  {loading ? "Registering..." : "Register"}
+                </button>
               </div>
-              <div>
-                <label
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                  htmlFor="email"
-                >
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  className="form-input w-full"
-                  placeholder="Your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="password"
-                >
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  className="form-input w-full"
-                  placeholder="Password (at least 8 characters)"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  minLength={8}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            <div className="mt-6 space-y-5">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn w-full bg-linear-to-t from-brand-600 to-brand-500 bg-[length:100%_100%] bg-[bottom] text-white shadow-[inset_0px_1px_0px_0px_--theme(--color-white/.16)] hover:bg-[length:100%_150%] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Registering..." : "Register"}
-              </button>
             </div>
           </form>
           {/* Bottom link */}
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-ink2">
             Already have an account?{" "}
-            <Link className="font-medium text-brand-600 hover:text-brand-500 transition-colors" href="/signin">
+            <Link className="font-semibold text-primary hover:text-primaryHover transition-colors" href="/signin">
               Sign in
             </Link>
           </div>

@@ -1,6 +1,6 @@
 import "./css/style.css";
 
-import { Inter } from "next/font/google";
+import { Inter, Fraunces } from "next/font/google";
 import localFont from "next/font/local";
 
 import { metadata as siteMetadata } from "@/lib/config/metadata";
@@ -9,6 +9,13 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 const nacelle = localFont({
@@ -40,6 +47,8 @@ const nacelle = localFont({
 
 export const metadata = siteMetadata;
 
+import { GlobalSyncProgress } from "@/features/todos/components/GlobalSyncProgress";
+
 export default function RootLayout({
   children,
 }: {
@@ -48,10 +57,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${nacelle.variable} bg-bg font-inter text-base text-ink antialiased`}
+        className={`${inter.variable} ${fraunces.variable} ${nacelle.variable} bg-bg font-body text-base text-ink antialiased`}
       >
         <div className="flex min-h-screen flex-col overflow-hidden supports-[overflow:clip]:overflow-clip">
           {children}
+          <GlobalSyncProgress />
         </div>
       </body>
     </html>

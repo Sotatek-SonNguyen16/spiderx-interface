@@ -48,12 +48,12 @@ export function SpaceListPanel({
 
   // Panel styling based on whether it's the output panel
   const panelClasses = isOutputPanel
-    ? "flex flex-1 flex-col rounded-xl border-2 border-blue-200 bg-gradient-to-b from-blue-50/50 to-white shadow-sm overflow-hidden h-full"
-    : "flex flex-1 flex-col rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden h-full";
+    ? "flex flex-1 flex-col rounded-xl border-2 border-primary/20 bg-surface shadow-s1 overflow-hidden h-full"
+    : "flex flex-1 flex-col rounded-xl border border-border bg-surface shadow-s1 overflow-hidden h-full";
 
   const headerClasses = isOutputPanel
-    ? "border-b border-blue-100 bg-blue-50/80 p-4 shrink-0"
-    : "border-b border-gray-100 bg-gray-50 p-4 shrink-0";
+    ? "border-b border-primary/10 bg-primarySoft/30 p-4 shrink-0"
+    : "border-b border-border bg-bg/50 p-4 shrink-0";
 
   return (
     <div className={panelClasses}>
@@ -63,21 +63,19 @@ export function SpaceListPanel({
           <div>
             <h3
               className={`font-bold ${
-                isOutputPanel ? "text-blue-900" : "text-gray-800"
+                isOutputPanel ? "text-primary" : "text-ink"
               }`}
             >
               {title}
             </h3>
-            {subtitle && (
-              <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-xs text-ink3 mt-0.5">{subtitle}</p>}
           </div>
           {showCount && (
             <span
               className={`rounded-full px-3 py-1 text-sm font-semibold ${
                 isOutputPanel
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-100 text-gray-600"
+                  ? "bg-primarySoft text-primary"
+                  : "bg-surface2 text-ink2"
               }`}
             >
               {spaces.length}
@@ -87,13 +85,13 @@ export function SpaceListPanel({
 
         {showSearch && (
           <div className="mt-3 relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink3" />
             <input
               type="text"
               placeholder="🔍 Search spaces by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primarySoft transition-all"
             />
           </div>
         )}
@@ -102,7 +100,7 @@ export function SpaceListPanel({
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-3">
         {isLoading && spaces.length === 0 ? (
-          <div className="flex h-48 items-center justify-center text-gray-400">
+          <div className="flex h-48 items-center justify-center text-ink3">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : filteredSpaces.length === 0 ? (
@@ -110,31 +108,27 @@ export function SpaceListPanel({
             {searchQuery ? (
               /* Search No Results */
               <>
-                <Search className="h-10 w-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-500">
-                  No spaces found
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Try another keyword
-                </p>
+                <Search className="h-10 w-10 text-ink3/40 mb-3" />
+                <p className="text-sm font-medium text-ink2">No spaces found</p>
+                <p className="text-xs text-ink3 mt-1">Try another keyword</p>
               </>
             ) : (
               /* Empty State */
               <>
                 <Inbox
                   className={`h-12 w-12 mb-3 ${
-                    isOutputPanel ? "text-blue-200" : "text-gray-200"
+                    isOutputPanel ? "text-primary/20" : "text-ink3/20"
                   }`}
                 />
                 <p
                   className={`text-sm font-medium ${
-                    isOutputPanel ? "text-blue-600" : "text-gray-500"
+                    isOutputPanel ? "text-primary" : "text-ink2"
                   }`}
                 >
                   {emptyMessage}
                 </p>
                 {emptySubMessage && (
-                  <p className="text-xs text-gray-400 mt-1.5 max-w-[200px]">
+                  <p className="text-xs text-ink3 mt-1.5 max-w-[200px]">
                     {emptySubMessage}
                   </p>
                 )}

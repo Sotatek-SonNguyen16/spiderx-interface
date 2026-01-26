@@ -1,45 +1,36 @@
-"use client";
-
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { googleChatService } from "@/features/googleChat";
-import type { SyncState, SyncResult, SyncTodoParams, TimeRange } from "../types/sync";
-import type { TaskStatusResponse, TaskStatus } from "@/features/googleChat/types";
+import { useSyncStore } from "../stores/syncStore";
+import type { SyncResult, SyncTodoParams, TimeRange } from "../types/sync";
+import type { TaskStatusResponse } from "@/features/googleChat/types";
 
-const LAST_SYNC_KEY = "spiderx_last_sync_at";
 const POLL_INTERVAL_MS = 2000;
 
 /**
- * Get last sync timestamp from localStorage
- */
-const getLastSyncAt = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(LAST_SYNC_KEY);
-};
-
-/**
- * Save last sync timestamp to localStorage
- */
-const setLastSyncAt = (timestamp: string): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LAST_SYNC_KEY, timestamp);
-};
-
-/**
  * Hook for syncing todos from Google Chat messages
- * Update v1: Uses async task flow with polling
+ * Update v2: Uses Global Zustand Store for persistence
  */
 export const useSyncTodo = () => {
-  const [syncState, setSyncState] = useState<SyncState>({
-    lastSyncAt: getLastSyncAt(),
-    isSyncing: false,
-    syncProgress: 0,
-    syncError: null,
-    lastSyncResult: null,
-    // Async task fields
-    taskId: null,
-    taskStatus: "IDLE",
-    taskProgress: null,
-  });
+  const isSyncing = useSyncStore((state) => state.isSyncing);
+  const taskId = useSyncStore((state) => state.taskId);
+  const taskStatus = useSyncStore((state) => state.taskStatus);
+  const taskProgress = useSyncStore((state) => state.taskProgress);
+  const syncProgress = useSyncStore((state) => state.syncProgress);
+  const syncError = useSyncStore((state) => state.syncError);
+  const lastSyncAt = useSyncStore((state) => state.lastSyncAt);
+  const lastSyncResult = useSyncStore((state) => state.lastSyncResult);
+
+  const {
+    setSyncing,
+    setSyncProgress,
+    setSyncError,
+    setTaskId,
+    setTaskStatus,
+    setTaskProgress,
+    setLastSyncResult,
+    updateLastSyncAt,
+    resetSyncState,
+  } = useSyncStore();
 
   // Ref to track if we should continue polling
   const shouldPollRef = useRef(true);
@@ -47,14 +38,16 @@ export const useSyncTodo = () => {
 
   /**
    * Handle task status update during polling
+   * STABLE: Does not depend on store state, only actions
    */
   const handleTaskStatusUpdate = useCallback((status: TaskStatusResponse) => {
-    setSyncState((prev) => ({
-      ...prev,
-      taskStatus: status.status,
-      taskProgress: status.progress,
-      syncProgress: status.progress?.percent ?? prev.syncProgress,
-    }));
+    const { setTaskStatus, setTaskProgress, setSyncProgress } =
+      useSyncStore.getState();
+    setTaskStatus(status.status);
+    setTaskProgress(status.progress);
+    if (status.progress?.percent !== undefined) {
+      setSyncProgress(status.progress.percent);
+    }
   }, []);
 
   /**
@@ -68,240 +61,221 @@ export const useSyncTodo = () => {
     }
   }, []);
 
-
-  /**
-   * Poll task status
-   */
-  const pollTaskStatus = useCallback(async (taskId: string): Promise<TaskStatusResponse | null> => {
-    const result = await googleChatService.getTaskStatus(taskId);
-    if (result.error || !result.data) {
-      return null;
-    }
-    return result.data;
-  }, []);
-
   /**
    * Start async sync task and poll until completion
    */
-  const syncTodosAsync = useCallback(async (params?: SyncTodoParams): Promise<{
-    success: boolean;
-    data?: SyncResult;
-    error?: string;
-  }> => {
-    // Reset state and start syncing
-    setSyncState((prev) => ({
-      ...prev,
-      isSyncing: true,
-      syncProgress: 0,
-      syncError: null,
-      taskId: null,
-      taskStatus: "PENDING",
-      taskProgress: null,
-    }));
-    shouldPollRef.current = true;
+  const syncTodosAsync = useCallback(
+    async (
+      params?: SyncTodoParams
+    ): Promise<{
+      success: boolean;
+      data?: SyncResult;
+      error?: string;
+    }> => {
+      // Reset state and start syncing in store
+      setSyncing(true);
+      setSyncProgress(0);
+      setSyncError(null);
+      setTaskId(null);
+      setTaskStatus("PENDING");
+      setTaskProgress(null);
 
-    try {
-      // Start the async task
-      const startResult = await googleChatService.startGenerateTodosTask({
-        autoSave: params?.autoSave ?? true,
-        limitPerSpace: params?.limitPerSpace ?? 100,
-      });
+      shouldPollRef.current = true;
 
-      if (startResult.error || !startResult.data) {
-        setSyncState((prev) => ({
-          ...prev,
-          isSyncing: false,
-          syncProgress: 0,
-          syncError: startResult.error || "Failed to start sync task",
-          taskStatus: "FAILURE",
-        }));
-        return { success: false, error: startResult.error || "Failed to start sync task" };
-      }
-
-      const taskId = startResult.data.taskId;
-      setSyncState((prev) => ({
-        ...prev,
-        taskId,
-        taskStatus: "PENDING",
-      }));
-
-      // Poll until completion
-      const pollResult = await googleChatService.pollTaskUntilComplete(
-        taskId,
-        handleTaskStatusUpdate,
-        POLL_INTERVAL_MS
-      );
-
-      if (pollResult.error || !pollResult.data) {
-        setSyncState((prev) => ({
-          ...prev,
-          isSyncing: false,
-          syncProgress: 0,
-          syncError: pollResult.error || "Polling failed",
-          taskStatus: "FAILURE",
-        }));
-        return { success: false, error: pollResult.error || "Polling failed" };
-      }
-
-      const finalStatus = pollResult.data;
-
-      // Handle different final states
-      if (finalStatus.status === "SUCCESS" && finalStatus.result) {
-        const resultData = finalStatus.result.result;
-        const syncResult: SyncResult = {
-          totalMessagesProcessed: resultData.total_messages_processed,
-          totalTodosGenerated: resultData.total_todos_generated,
-          totalTodosSaved: resultData.total_todos_saved,
-          summary: resultData.summary,
-          processedSpaces: resultData.processed_spaces,
-          todos: resultData.todos,
-        };
-
-        // Save the sync timestamp
-        const syncTimestamp = new Date().toISOString();
-        setLastSyncAt(syncTimestamp);
-
-        setSyncState({
-          lastSyncAt: syncTimestamp,
-          isSyncing: false,
-          syncProgress: 100,
-          syncError: null,
-          lastSyncResult: syncResult,
-          taskId,
-          taskStatus: "SUCCESS",
-          taskProgress: null,
+      try {
+        const startResult = await googleChatService.startGenerateTodosTask({
+          autoSave: params?.autoSave ?? true,
+          limitPerSpace: params?.limitPerSpace ?? 100,
         });
 
-        return { success: true, data: syncResult };
+        if (startResult.error || !startResult.data) {
+          const error = startResult.error || "Failed to start sync task";
+          setSyncError(error);
+          setTaskStatus("FAILURE");
+          return { success: false, error };
+        }
+
+        const taskId = startResult.data.taskId;
+        setTaskId(taskId);
+        setTaskStatus("PENDING");
+
+        const pollResult = await googleChatService.pollTaskUntilComplete(
+          taskId,
+          handleTaskStatusUpdate,
+          POLL_INTERVAL_MS
+        );
+
+        if (pollResult.error || !pollResult.data) {
+          const error = pollResult.error || "Polling failed";
+          setSyncError(error);
+          setTaskStatus("FAILURE");
+          return { success: false, error };
+        }
+
+        const finalStatus = pollResult.data;
+
+        if (finalStatus.status === "SUCCESS" && finalStatus.result) {
+          const resultData = finalStatus.result.result;
+          const syncResult: SyncResult = {
+            totalMessagesProcessed: resultData.total_messages_processed,
+            totalTodosGenerated: resultData.total_todos_generated,
+            totalTodosSaved: resultData.total_todos_saved,
+            summary: resultData.summary,
+            processedSpaces: resultData.processed_spaces,
+            todos: resultData.todos,
+          };
+
+          const syncTimestamp = new Date().toISOString();
+          updateLastSyncAt(syncTimestamp);
+          setSyncing(false);
+          setSyncProgress(100);
+          setLastSyncResult(syncResult);
+          setTaskStatus("SUCCESS");
+          setTaskProgress(null);
+
+          return { success: true, data: syncResult };
+        }
+
+        if (finalStatus.status === "FAILURE") {
+          const error = finalStatus.error || "Sync task failed";
+          setSyncError(error);
+          setTaskStatus("FAILURE");
+          return { success: false, error };
+        }
+
+        if (finalStatus.status === "REVOKED") {
+          setSyncing(false);
+          setTaskStatus("REVOKED");
+          return { success: false, error: "Sync was cancelled" };
+        }
+
+        return { success: false, error: "Unknown task status" };
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error occurred";
+        setSyncError(errorMessage);
+        setTaskStatus("FAILURE");
+        return { success: false, error: errorMessage };
       }
-
-      if (finalStatus.status === "FAILURE") {
-        setSyncState((prev) => ({
-          ...prev,
-          isSyncing: false,
-          syncProgress: 0,
-          syncError: finalStatus.error || "Sync task failed",
-          taskStatus: "FAILURE",
-        }));
-        return { success: false, error: finalStatus.error || "Sync task failed" };
-      }
-
-      if (finalStatus.status === "REVOKED") {
-        setSyncState((prev) => ({
-          ...prev,
-          isSyncing: false,
-          syncProgress: 0,
-          syncError: "Sync was cancelled",
-          taskStatus: "REVOKED",
-        }));
-        return { success: false, error: "Sync was cancelled" };
-      }
-
-      return { success: false, error: "Unknown task status" };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      setSyncState((prev) => ({
-        ...prev,
-        isSyncing: false,
-        syncProgress: 0,
-        syncError: errorMessage,
-        taskStatus: "FAILURE",
-      }));
-      return { success: false, error: errorMessage };
-    }
-  }, [handleTaskStatusUpdate]);
-
+    },
+    [
+      handleTaskStatusUpdate,
+      setSyncing,
+      setSyncProgress,
+      setSyncError,
+      setTaskId,
+      setTaskStatus,
+      setTaskProgress,
+      setLastSyncResult,
+      updateLastSyncAt,
+    ]
+  );
 
   /**
    * Cancel the current sync task
    */
-  const cancelSync = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
-    const taskId = syncState.taskId;
+  const cancelSync = useCallback(async (): Promise<{
+    success: boolean;
+    error?: string;
+  }> => {
     if (!taskId) {
       return { success: false, error: "No active task to cancel" };
     }
 
     stopPolling();
-
     const result = await googleChatService.cancelTask(taskId);
     if (result.error) {
       return { success: false, error: result.error };
     }
 
-    setSyncState((prev) => ({
-      ...prev,
-      isSyncing: false,
-      syncProgress: 0,
-      syncError: null,
-      taskStatus: "REVOKED",
-    }));
+    setSyncing(false);
+    setSyncProgress(0);
+    setTaskStatus("REVOKED");
 
     return { success: true };
-  }, [syncState.taskId, stopPolling]);
-
-  /**
-   * Sync todos with a custom time range
-   */
-  const syncTodosWithRange = useCallback(async (timeRange: TimeRange): Promise<{
-    success: boolean;
-    data?: SyncResult;
-    error?: string;
-  }> => {
-    return syncTodosAsync({
-      startDate: timeRange.startDate.toISOString(),
-      endDate: timeRange.endDate.toISOString(),
-    });
-  }, [syncTodosAsync]);
-
-  /**
-   * Get default time range (last sync to now)
-   */
-  const getDefaultTimeRange = useCallback((): TimeRange => {
-    const endDate = new Date();
-    const lastSync = syncState.lastSyncAt;
-    
-    // Default to 24 hours ago if no previous sync
-    const startDate = lastSync 
-      ? new Date(lastSync)
-      : new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
-
-    return { startDate, endDate };
-  }, [syncState.lastSyncAt]);
-
-  /**
-   * Clear sync error
-   */
-  const clearError = useCallback(() => {
-    setSyncState((prev) => ({ ...prev, syncError: null }));
-  }, []);
-
-  /**
-   * Reset sync state
-   */
-  const resetSyncState = useCallback(() => {
-    stopPolling();
-    setSyncState({
-      lastSyncAt: getLastSyncAt(),
-      isSyncing: false,
-      syncProgress: 0,
-      syncError: null,
-      lastSyncResult: null,
-      taskId: null,
-      taskStatus: "IDLE",
-      taskProgress: null,
-    });
-  }, [stopPolling]);
+  }, [taskId, stopPolling, setSyncing, setSyncProgress, setTaskStatus]);
 
   return {
-    // State
-    ...syncState,
-    
-    // Actions
+    isSyncing,
+    taskId,
+    taskStatus,
+    taskProgress,
+    syncProgress,
+    syncError,
+    lastSyncAt,
+    lastSyncResult,
     syncTodos: syncTodosAsync,
-    syncTodosWithRange,
+    syncTodosWithRange: useCallback(
+      async (range: TimeRange) =>
+        syncTodosAsync({
+          startDate: range.startDate.toISOString(),
+          endDate: range.endDate.toISOString(),
+        }),
+      [syncTodosAsync]
+    ),
     cancelSync,
-    getDefaultTimeRange,
-    clearError,
+    getDefaultTimeRange: useCallback(() => {
+      const endDate = new Date();
+      const startDate = lastSyncAt
+        ? new Date(lastSyncAt)
+        : new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+      return { startDate, endDate };
+    }, [lastSyncAt]),
+    clearError: useCallback(() => setSyncError(null), [setSyncError]),
     resetSyncState,
+    resumePolling: useCallback(
+      async (taskId: string) => {
+        setSyncing(true);
+        setTaskId(taskId);
+        setTaskStatus("PROGRESS");
+
+        const pollResult = await googleChatService.pollTaskUntilComplete(
+          taskId,
+          handleTaskStatusUpdate,
+          POLL_INTERVAL_MS
+        );
+
+        if (pollResult.data) {
+          const finalStatus = pollResult.data;
+          if (finalStatus.status === "SUCCESS" && finalStatus.result) {
+            const resultData = finalStatus.result.result;
+            const syncResult: SyncResult = {
+              totalMessagesProcessed: resultData.total_messages_processed,
+              totalTodosGenerated: resultData.total_todos_generated,
+              totalTodosSaved: resultData.total_todos_saved,
+              summary: resultData.summary,
+              processedSpaces: resultData.processed_spaces,
+              todos: resultData.todos,
+            };
+
+            const syncTimestamp = new Date().toISOString();
+            updateLastSyncAt(syncTimestamp);
+            setSyncing(false);
+            setSyncProgress(100);
+            setLastSyncResult(syncResult);
+            setTaskStatus("SUCCESS");
+            setTaskProgress(null);
+          } else if (
+            finalStatus.status === "FAILURE" ||
+            finalStatus.status === "REVOKED"
+          ) {
+            setSyncing(false);
+            setTaskStatus(finalStatus.status);
+            if (finalStatus.error) setSyncError(finalStatus.error);
+          }
+        }
+      },
+      [
+        handleTaskStatusUpdate,
+        setSyncing,
+        setTaskId,
+        setTaskStatus,
+        updateLastSyncAt,
+        setSyncProgress,
+        setLastSyncResult,
+        setTaskProgress,
+        setSyncError,
+      ]
+    ),
   };
 };

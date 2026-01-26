@@ -1,5 +1,8 @@
 "use client";
 
+import { activeVersion } from "../version-config";
+import PricingPageV3 from "./v3-page";
+
 import { useState } from "react";
 import Header from "@/components/ui/header";
 import AnchorTabs from "@/components/pricing/AnchorTabs";
@@ -12,13 +15,13 @@ import FAQSection from "@/components/pricing/FAQSection";
 import TrustSection from "@/components/pricing/TrustSection";
 import FinalCTASection from "@/components/pricing/FinalCTASection";
 
-export default function PricingPage() {
+function PricingPageLegacy() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly",
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Anchor Tabs */}
       <AnchorTabs />
 
@@ -36,7 +39,7 @@ export default function PricingPage() {
       </section>
 
       {/* Value Strip */}
-      <section className="py-8 px-4 md:px-6 bg-white">
+      <section className="py-8 px-4 md:px-6 bg-surface">
         <div className="max-w-7xl mx-auto">
           <ValueStrip />
         </div>
@@ -50,7 +53,7 @@ export default function PricingPage() {
       </section>
 
       {/* Add-ons */}
-      <section className="py-12 px-4 md:px-6 bg-white">
+      <section className="py-12 px-4 md:px-6 bg-surface">
         <div className="max-w-7xl mx-auto">
           <AddOnsSection />
         </div>
@@ -64,7 +67,7 @@ export default function PricingPage() {
       </section>
 
       {/* Trust Section */}
-      <section id="security" className="py-12 px-4 md:px-6 bg-white">
+      <section id="security" className="py-12 px-4 md:px-6 bg-surface">
         <div className="max-w-7xl mx-auto">
           <TrustSection />
         </div>
@@ -78,4 +81,11 @@ export default function PricingPage() {
       </section>
     </div>
   );
+}
+
+export default function PricingPage() {
+  if (activeVersion === 'v3') {
+    return <PricingPageV3 />;
+  }
+  return <PricingPageLegacy />;
 }

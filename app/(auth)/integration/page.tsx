@@ -233,18 +233,18 @@ export default function IntegrationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-bg font-sans">
       {/* ========== HEADER ========== */}
-      <div className="border-b border-gray-100 bg-white">
+      <div className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              <h1 className="text-2xl font-bold text-ink tracking-tight">
                 Integrations
               </h1>
-              <p className="mt-1.5 text-gray-500 text-sm max-w-lg">
+              <p className="mt-1.5 text-ink2 text-sm max-w-lg">
                 Connect your messaging platforms to{" "}
-                <span className="text-purple-600 font-medium">
+                <span className="text-ai font-medium">
                   automatically extract todos
                 </span>{" "}
                 using AI. Never miss an action item from your conversations.
@@ -254,25 +254,25 @@ export default function IntegrationPage() {
             {/* Quick Stats */}
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-successSoft">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-ink">
                     {isConnected ? 1 : 0}
                   </p>
-                  <p className="text-xs text-gray-500">Connected</p>
+                  <p className="text-xs text-ink3">Connected</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
-                  <Clock className="h-4 w-4 text-amber-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-warningSoft">
+                  <Clock className="h-4 w-4 text-warning" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-ink">
                     {comingSoonPlatforms.length}
                   </p>
-                  <p className="text-xs text-gray-500">Coming Soon</p>
+                  <p className="text-xs text-ink3">Coming Soon</p>
                 </div>
               </div>
             </div>
@@ -284,10 +284,10 @@ export default function IntegrationPage() {
         {/* Success/Error Message */}
         {successMessage && (
           <div
-            className={`mb-6 flex items-center gap-3 rounded-xl p-4 text-sm ${
+            className={`mb-6 flex items-center gap-3 rounded-lg p-4 text-sm ${
               successMessage.startsWith("Error")
-                ? "bg-red-50 text-red-700 border border-red-100"
-                : "bg-green-50 text-green-700 border border-green-100"
+                ? "bg-dangerSoft text-danger border border-danger/20"
+                : "bg-successSoft text-success border border-success/20"
             }`}
           >
             {successMessage.startsWith("Error") ? (
@@ -302,10 +302,10 @@ export default function IntegrationPage() {
         {/* ========== SECTION 1: CONNECTED PLATFORMS ========== */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-3.5 w-3.5 text-green-600" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-successSoft">
+              <Check className="h-3.5 w-3.5 text-success" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-ink">
               Connected Platforms
             </h2>
           </div>
@@ -313,17 +313,17 @@ export default function IntegrationPage() {
           {/* Google Chat - Connected Card (Prominent) */}
           <div
             className={`
-            relative overflow-hidden rounded-2xl border-2 transition-all duration-300
+            relative overflow-hidden rounded-xl border-2 transition-all duration-200
             ${
               isConnected
-                ? "border-green-200 bg-gradient-to-br from-green-50/50 to-white shadow-lg shadow-green-100/50"
-                : "border-gray-200 bg-white hover:border-blue-200 hover:shadow-md"
+                ? "border-success/30 bg-successSoft/30 shadow-s2"
+                : "border-border bg-surface hover:border-primary/30 hover:shadow-s1"
             }
           `}
           >
             {/* Connection Status Ribbon */}
             {isConnected && (
-              <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-success text-surface text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-rMd">
                 Active
               </div>
             )}
@@ -332,7 +332,7 @@ export default function IntegrationPage() {
               <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                 {/* Platform Info */}
                 <div className="flex items-start gap-4 flex-1">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-gray-100 shadow-sm">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface border border-border shadow-s1">
                     <Image
                       src="/images/Google-Chat.png"
                       alt="Google Chat"
@@ -343,17 +343,17 @@ export default function IntegrationPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-ink">
                         Google Chat
                       </h3>
                       {isConnected && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                          <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-successSoft text-success text-xs font-medium">
+                          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                           Connected
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ink2">
                       Turn Google Chat messages into actionable todos
                       automatically
                     </p>
@@ -365,16 +365,16 @@ export default function IntegrationPage() {
                   <div className="flex flex-col sm:flex-row gap-3 lg:w-auto w-full">
                     <button
                       onClick={() => router.push("/integration/google-chat")}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium text-sm 
-                        hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary text-surface font-medium text-sm 
+                        hover:bg-primaryHover transition-all duration-200 shadow-s1"
                     >
                       <Settings className="h-4 w-4" />
                       Settings
                     </button>
                     <button
                       onClick={() => router.push("/whitelist")}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm
-                        hover:bg-gray-50 hover:border-gray-300 transition-all"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border border-border text-ink2 font-medium text-sm
+                        hover:bg-surface2 transition-all duration-200"
                     >
                       <MessageSquare className="h-4 w-4" />
                       Manage Spaces
@@ -384,8 +384,8 @@ export default function IntegrationPage() {
                   <button
                     onClick={handleGoogleChatConnect}
                     disabled={googleChatLoading || saving}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm
-                      hover:bg-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-primary text-surface font-semibold text-sm
+                      hover:bg-primaryHover transition-all duration-200 shadow-s1 disabled:opacity-50 w-full sm:w-auto"
                   >
                     {saving ? (
                       <>
@@ -404,51 +404,51 @@ export default function IntegrationPage() {
 
               {/* Sync Details - Only shown when connected */}
               {isConnected && (
-                <div className="mt-6 pt-5 border-t border-green-100">
+                <div className="mt-6 pt-5 border-t border-success/20">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* What's syncing */}
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/60">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 flex-shrink-0">
-                        <MessageSquare className="h-4 w-4 text-blue-600" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-surface/60">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-aiSoft flex-shrink-0">
+                        <MessageSquare className="h-4 w-4 text-ai" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        <p className="text-xs text-ink3 font-medium uppercase tracking-wide">
                           Syncing
                         </p>
-                        <p className="text-sm text-gray-900 font-medium">
+                        <p className="text-sm text-ink font-medium">
                           Direct & Group Messages
                         </p>
                       </div>
                     </div>
 
                     {/* AI Status */}
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/60">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 flex-shrink-0">
-                        <Sparkles className="h-4 w-4 text-purple-600" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-surface/60">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-aiSoft flex-shrink-0">
+                        <Sparkles className="h-4 w-4 text-ai" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        <p className="text-xs text-ink3 font-medium uppercase tracking-wide">
                           AI Extraction
                         </p>
-                        <p className="text-sm text-gray-900 font-medium flex items-center gap-1">
-                          <span className="h-2 w-2 rounded-full bg-green-500" />
+                        <p className="text-sm text-ink font-medium flex items-center gap-1">
+                          <span className="h-2 w-2 rounded-full bg-success" />
                           Enabled
                         </p>
                       </div>
                     </div>
 
                     {/* Spaces */}
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/60">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 flex-shrink-0">
-                        <Users className="h-4 w-4 text-amber-600" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-surface/60">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-warningSoft flex-shrink-0">
+                        <Users className="h-4 w-4 text-warning" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        <p className="text-xs text-ink3 font-medium uppercase tracking-wide">
                           Connected Spaces
                         </p>
                         <button
                           onClick={() => router.push("/whitelist")}
-                          className="text-sm text-blue-600 font-medium hover:underline flex items-center gap-1"
+                          className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
                         >
                           View & Manage
                           <ChevronRight className="h-3 w-3" />
@@ -461,18 +461,18 @@ export default function IntegrationPage() {
 
               {/* Value Proposition - Only shown when not connected */}
               {!isConnected && (
-                <div className="mt-6 pt-5 border-t border-gray-100">
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="mt-6 pt-5 border-t border-border">
+                  <div className="flex flex-wrap gap-4 text-sm text-ink2">
                     <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-success" />
                       <span>Auto-extract todos from messages</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-success" />
                       <span>AI-powered task detection</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-success" />
                       <span>Sync across all spaces</span>
                     </div>
                   </div>
@@ -486,14 +486,14 @@ export default function IntegrationPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100">
-                <Clock className="h-3.5 w-3.5 text-amber-600" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warningSoft">
+                <Clock className="h-3.5 w-3.5 text-warning" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-ink">
                 Coming Soon
               </h2>
             </div>
-            <p className="text-xs text-gray-500">Vote to help us prioritize</p>
+            <p className="text-xs text-ink3">Vote to help us prioritize</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -503,11 +503,11 @@ export default function IntegrationPage() {
               return (
                 <div
                   key={platform.id}
-                  className="group flex flex-col rounded-xl border border-gray-100 bg-white p-5 
-                    transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
+                  className="group flex flex-col rounded-lg border border-border bg-surface p-5 
+                    transition-all duration-200 hover:shadow-s1"
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-50 border border-gray-100">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface2 border border-border">
                       {platform.icon ? (
                         <Image
                           src={platform.icon}
@@ -523,18 +523,18 @@ export default function IntegrationPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold text-ink text-sm">
                         {platform.name}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                      <p className="text-xs text-ink3 mt-0.5 line-clamp-2">
                         {platform.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+                  <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
                     {/* Request Count */}
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <div className="flex items-center gap-1.5 text-xs text-ink3">
                       <Users className="h-3.5 w-3.5" />
                       <span>{platform.requestCount} teams requested</span>
                     </div>
@@ -543,10 +543,10 @@ export default function IntegrationPage() {
                     <button
                       onClick={() => handleNotifyRequest(platform.id)}
                       disabled={isNotified}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
                         isNotified
-                          ? "bg-green-50 text-green-600 cursor-default"
-                          : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                          ? "bg-successSoft text-success cursor-default"
+                          : "bg-surface2 text-ink2 hover:bg-primarySoft hover:text-primary"
                       }`}
                     >
                       {isNotified ? (
@@ -568,10 +568,10 @@ export default function IntegrationPage() {
           </div>
 
           {/* Request New Integration */}
-          <div className="mt-6 p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/50 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-6 p-4 rounded-lg border border-dashed border-border bg-surface2/50 text-center">
+            <p className="text-sm text-ink2">
               Don't see your platform?{" "}
-              <button className="text-blue-600 font-medium hover:underline">
+              <button className="text-primary font-medium hover:underline">
                 Request an integration
               </button>
             </p>

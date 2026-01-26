@@ -1,0 +1,45 @@
+/* Design System Tokens - Forest Primary / Quiet Luxury / Museum-core */
+:root {
+  /* Core Neutrals */
+  --bg: #F7F3EA;
+  --surface: #FFFDFA;
+  --surface2: #F2EEE6;
+  --border: #E7E1D7;
+
+  /* Text Colors (Ink) */
+  --ink: #14171F;
+  --ink2: #4B5563;
+  --ink3: #7B8794;
+
+  /* Primary (Forest) */
+  --primary: #1F3A2E;
+  --primaryHover: #173025;
+  --primaryPressed: #102219;
+  --primarySoft: #E3EFE8;
+
+  /* AI Accent (Lavender) */
+  --ai: #6D5BD0;
+  --aiSoft: #EEEAFE;
+
+  /* Status Colors */
+  --success: #1E7A4C;
+  --successSoft: #E7F4ED;
+  --warning: #B45309;
+  --warningSoft: #FEF3C7;
+  --danger: #B42318;
+  --dangerSoft: #FEE4E2;
+
+  /* Gold (Pricing) */
+  --gold: #B58B2A;
+  --goldSoft: #F4E7C7;
+
+  /* Shadows */
+  --shadow1: 0 8px 20px rgba(20, 23, 31, 0.06);
+  --shadow2: 0 12px 28px rgba(20, 23, 31, 0.08);
+
+  /* Border Radius */
+  --rSm: 10px;
+  --rMd: 14px;
+  --rLg: 18px;
+  --rXl: 24px;
+}

@@ -3,6 +3,7 @@ import { activeVersion } from "./version-config";
 // Import version pages
 import HomeV1 from "./versions/v1/page";
 import HomeV2 from "./versions/v2/page";
+import HomeV3 from "./versions/v3/page";
 
 // Export metadata (will be inherited from the active version or use default)
 export const metadata = {
@@ -18,6 +19,9 @@ export const metadata = {
  */
 export default function Home() {
   // Render the active version based on config
+  if (activeVersion === 'v3') {
+    return <HomeV3 />;
+  }
   if (activeVersion === 'v2') {
     return <HomeV2 />;
   }

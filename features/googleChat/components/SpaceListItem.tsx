@@ -23,8 +23,8 @@ export function SpaceListItem({
     <div
       className={`group flex items-center justify-between rounded-xl p-3.5 min-h-[56px] transition-all duration-200 ${
         isWhitelisted
-          ? "bg-white border border-blue-100 hover:border-red-200 hover:bg-red-50/30"
-          : "bg-white border border-transparent hover:bg-blue-50 hover:border-blue-100"
+          ? "bg-surface border border-primarySoft hover:border-dangerSoft hover:bg-dangerSoft/10"
+          : "bg-surface border border-transparent hover:bg-primarySoft/30 hover:border-primarySoft"
       }`}
     >
       {/* Left: Avatar + Name */}
@@ -33,8 +33,8 @@ export function SpaceListItem({
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold text-sm ${
             isWhitelisted
-              ? "bg-gradient-to-br from-green-100 to-emerald-100 text-green-700"
-              : "bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700"
+              ? "bg-primarySoft text-primary"
+              : "bg-surface2 text-ink2"
           }`}
         >
           {displayName.charAt(0).toUpperCase()}
@@ -43,13 +43,13 @@ export function SpaceListItem({
         {/* Name + Status */}
         <div className="flex flex-col overflow-hidden">
           <span
-            className="truncate text-sm font-medium text-gray-800"
+            className="truncate text-sm font-medium text-ink"
             title={displayName}
           >
             {displayName}
           </span>
           {isWhitelisted && (
-            <span className="flex items-center gap-1 text-xs text-green-600">
+            <span className="flex items-center gap-1 text-xs text-success">
               <Check className="h-3 w-3" />
               Enabled
             </span>
@@ -63,8 +63,8 @@ export function SpaceListItem({
         disabled={isUpdating}
         className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all disabled:opacity-50 shrink-0 ${
           isWhitelisted
-            ? "text-gray-400 hover:text-red-600 hover:bg-red-100 group-hover:text-red-500"
-            : "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700"
+            ? "text-ink3 hover:text-danger hover:bg-dangerSoft group-hover:text-ink2"
+            : "text-primary bg-primarySoft hover:bg-primary hover:text-surface"
         } ${
           /* Show on hover for available, always visible for whitelisted on mobile */
           isWhitelisted
