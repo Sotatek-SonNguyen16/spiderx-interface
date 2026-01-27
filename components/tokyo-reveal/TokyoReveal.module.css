@@ -1,0 +1,190 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 200vh; /* Reduced from 300vh to minimize gaps */
+  background-color: transparent;
+}
+
+/* Sticky wrapper */
+.stickyWrapper {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Frame */
+.windowFrame {
+  position: relative;
+  width: auto;
+  height: 80vh;
+  aspect-ratio: 9/16;
+  background-color: #f2f0e9;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(255, 255, 255, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.bottomContainer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 45px;
+  background-color: #f2f0e9;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Sky Square */
+.skySquare {
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 50%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Title */
+.titleBig {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(60px, 9vw, 130px);
+  line-height: 0.75;
+  text-transform: uppercase;
+  color: #8daab6;
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  text-align: center;
+  letter-spacing: -3px;
+  opacity: 0.9;
+}
+
+/* Tower */
+.towerContainer {
+  position: absolute;
+  bottom: -20px; /* Hide bottom padding of image if any, anchor firmly */
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: 70vh;
+  aspect-ratio: 9/16;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.towerImage {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  /* Filter combined properly */
+  filter: sepia(0.2) contrast(1.1) brightness(0.95)
+    drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* Description Container - Centered below Title in beige area */
+.descriptionContainer {
+  position: absolute;
+  top: 185px; /* Moved down below title */
+  transform: translateX(-50%);
+  width: 80%;
+  text-align: center;
+  z-index: 2;
+}
+
+.description {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.6rem;
+  line-height: 1.1;
+  font-weight: 500;
+  color: #5a7585; /* Muted teal text on beige */
+  text-align: center;
+}
+
+/* Split Meta Container - Aligned with top of Blue Box */
+.metaContainer {
+  position: absolute;
+  top: 240px; /* Positioned near top of sky square */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%; /* Wide enough to flank tower */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.metaLeft {
+  text-align: left;
+  flex: 1;
+}
+
+.metaRight {
+  text-align: right;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.japaneseTitle {
+  font-family: "Hiragino Mincho ProN", "MS PMincho", serif; /* Japanese Serif */
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: rgba(141, 170, 182, 0.6); /* Muted Watermark style */
+  mix-blend-mode: normal;
+  letter-spacing: 2px;
+}
+
+.number {
+  font-family: Impact, Haettenschweiler, sans-serif;
+  font-size: 2rem;
+  line-height: 0.8;
+  color: rgba(141, 170, 182, 0.6); /* Muted Watermark style */
+  position: relative;
+}
+
+.numberLine {
+  width: 40px;
+  height: 3px;
+  background-color: rgba(141, 170, 182, 0.6);
+  margin-bottom: 5px;
+}
+
+/* Grain overlay */
+.grain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1MTInIGhlaWdodD0nNTEyJz48ZmlsdGVyIGlkPSdub2lzZSc+PHZlVHVyYnVsZW5jZSB0eXBlPSdmcmFjdGFsTm9pc2UnIGJhc2VGcmVxdWVuY3k9JzAuNjUnIG51bU9jdGF2ZXM9JzMnIHN0aXRjaFRpbGVzPSdzdGl0Y2gnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBmaWx0ZXI9J3VybCgjbm9pc2UpJyBvcGFjaXR5PScwLjA1Jy8+PC9zdmc+");
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0.3;
+}

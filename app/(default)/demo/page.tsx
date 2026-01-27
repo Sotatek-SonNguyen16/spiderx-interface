@@ -1,30 +1,38 @@
-import { SolarEclipse } from "@/components/solar-eclipse/SolarEclipse";
-import { LoginSide } from "@/components/login-effect/LoginSide";
-import { VisaCard } from "@/components/visa-card/VisaCard";
+import { TokyoReveal } from "@/components/tokyo-reveal/TokyoReveal";
 import { ParallaxWing } from "@/components/parallax-wing/ParallaxWing";
-import { GlowMobile } from "@/components/glow-mobile/GlowMobile";
+import { SolarEclipse } from "@/components/solar-eclipse/SolarEclipse";
+import { VisaCard } from "@/components/visa-card/VisaCard";
+import { LoginSide } from "@/components/login-effect/LoginSide";
 
-const components = [
-  { name: "Solar Eclipse", component: <SolarEclipse /> },
-  { name: "Login Side", component: <LoginSide /> },
-  { name: "Visa Card", component: <VisaCard /> },
-  { name: "Parallax Wing", component: <ParallaxWing /> },
-  // { name: "Glow Mobile", component: <GlowMobile /> },
+const components: {
+  name: string;
+  variant?: "default" | "centered";
+  component: React.ReactNode;
+}[] = [
+  { name: "Parallax Wing", variant: "centered", component: <ParallaxWing /> },
+  { name: "Visa Card", variant: "centered", component: <VisaCard /> },
+  { name: "Login Side", variant: "centered", component: <LoginSide /> },
+  { name: "Solar Eclipse", variant: "centered", component: <SolarEclipse /> },
+  { name: "Tokyo Reveal", variant: "default", component: <TokyoReveal /> },
 ];
 
-const Section = ({ children }: { children: React.ReactNode }) => {
+const Section = ({
+  children,
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "centered";
+}) => {
   return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
         minHeight: "100vh",
         backgroundColor: "#161618",
-        overflow: "hidden",
-        gap: "40px",
-        flexWrap: "wrap",
-        padding: "40px",
+        ...(variant === "centered" && {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }),
       }}
     >
       {children}
@@ -36,7 +44,9 @@ export default function DemoPage() {
   return (
     <>
       {components.map((component, index) => (
-        <Section key={index}>{component.component}</Section>
+        <Section key={index} variant={component.variant}>
+          {component.component}
+        </Section>
       ))}
     </>
   );
