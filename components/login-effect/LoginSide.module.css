@@ -1,0 +1,61 @@
+.loginSideContainer {
+  position: relative;
+  width: 480px;
+  height: 720px;
+  background-color: #ffffff; /* Dark background similar to body */
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+}
+
+.blob {
+  position: absolute;
+  width: 1200px;
+  height: 1000px;
+  border-radius: 50%;
+  /* filter: blur(80px); Fallback */
+  filter: blur(100px);
+  /* Custom blur */
+  left: 0%;
+  transform: translateX(-50%);
+}
+
+/* 
+   Order reversed from previous:
+   Visually from Top to Bottom: Dark -> Teal -> Light
+   So we stack them:
+   - Light at bottom (z-index high to be on top?)
+   - Teal above light physically? No.
+   
+   Let's create the "Sunrise" effect where Light is at the bottom (closest to viewer/foreground),
+   Teal is behind it, Dark is behind Teal.
+   
+   Z-index:
+   Light: 1
+   Teal: 2
+   Dark: 3
+*/
+
+/* Layer 3: Light Cyan - Bottom Most visually, Top z-index */
+.blobLight {
+  background-color: #caf0e5;
+  z-index: 1;
+  top: -200px; /* Push down to bottom */
+}
+
+/* Layer 2: Teal - Middle */
+.blobTeal {
+  background-color: #3eb28f;
+  z-index: 2;
+  top: -350px; /* Higher than Light */
+  scale: 1;
+}
+
+/* Layer 1: Dark - Top Most visually, Bottom z-index */
+.blobDark {
+  background-color: #0f1716;
+  z-index: 3;
+  top: -450px; /* Higher than Teal */
+  scale: 1;
+}

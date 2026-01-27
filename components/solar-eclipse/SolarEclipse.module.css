@@ -1,0 +1,52 @@
+.eclipseContainer {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.commonCircle {
+  position: absolute;
+  border-radius: 50%;
+}
+/* 1. Hình tròn màu đen viền trắng - Lớp đầu tiên (trên cùng) */
+.blackCircle {
+  width: 335px;
+  height: 335px;
+  background-color: #161618;
+  z-index: 10;
+  position: relative; /* Đặt làm trung tâm */
+}
+/* Effect Blur chung cho các lớp nền */
+.blurEffect {
+  filter: blur(25px);
+  width: 335px;
+  height: 335px;
+  opacity: 0.6;
+}
+/* 2. Hình tròn màu vàng - Lệch trên 50px */
+.yellowCircle {
+  background-color: #d58612; /* Gold/Yellow */
+  z-index: 9;
+  transform: translateY(-7.5px) translateX(2.5px);
+}
+/* 3. Hình tròn màu cam - Lệch trên 100px */
+.orangeCircle {
+  background-color: #d2451b; /* DarkOrange */
+  z-index: 8;
+  transform: translateY(-35px);
+  scale: 1.1;
+}
+/* 4. Hình tròn gradient xanh ngọc vàng - Lệch dưới 200px */
+.gradientCircle {
+  background: radial-gradient(
+    circle,
+    #88a727 0%,
+    #243d39 70%
+  ); /* Turquoise to Gold */
+  z-index: 7;
+  transform: translateY(120px);
+  scale: 0.8;
+}
