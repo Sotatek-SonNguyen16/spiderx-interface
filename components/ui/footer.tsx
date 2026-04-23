@@ -18,6 +18,7 @@ export default function Footer() {
             width={1076}
             height={378}
             alt="Footer illustration"
+            loading="eager"
           />
         </div>
       </div>

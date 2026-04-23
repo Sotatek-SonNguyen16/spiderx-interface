@@ -50,12 +50,15 @@ importers:
       react-scroll-parallax:
         specifier: ^3.5.0
         version: 3.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      three:
+        specifier: ^0.184.0
+        version: 0.184.0
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
       zustand:
         specifier: ^5.0.8
-        version: 5.0.8(@types/react@19.0.8)(react@19.0.0)
+        version: 5.0.8(@types/react@19.0.8)(react@19.0.0)(use-sync-external-store@1.6.0(react@19.0.0))
     devDependencies:
       '@tailwindcss/forms':
         specifier: ^0.5.10
@@ -69,6 +72,9 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
+      '@types/three':
+        specifier: ^0.184.0
+        version: 0.184.0
       fast-check:
         specifier: ^4.4.0
         version: 4.4.0
@@ -93,8 +99,11 @@ packages:
     resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
-  '@emnapi/runtime@1.3.1':
-    resolution: {integrity: sha512-kEBmG8KyqtxJZv+ygbEim+KCGtIq1fC22Ms3S4ziXmYKm8uyoLX0MHONVKwp+9opg390VaKRNt4a7A9NwmpNhw==}
+  '@dimforge/rapier3d-compat@0.12.0':
+    resolution: {integrity: sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow==}
+
+  '@emnapi/runtime@1.10.0':
+    resolution: {integrity: sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==}
 
   '@floating-ui/core@1.6.9':
     resolution: {integrity: sha512-uMXCuQ3BItDUbAMhIXw7UPXRfAlOAvZzdK9BWpE60MCn+Svt3aLn9jsPTi/WNGlRUu2uI0v5S7JiIUsbsvh3fw==}
@@ -437,6 +446,9 @@ packages:
   '@tanstack/virtual-core@3.12.0':
     resolution: {integrity: sha512-7mDINtua3v/pOnn6WUmuT9dPXYSO7WidFej7JzoAfqEOcbbpt/iZ1WPqd+eg+FnrL9nUJK8radqj4iAU51Zchg==}
 
+  '@tweenjs/tween.js@23.1.3':
+    resolution: {integrity: sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA==}
+
   '@types/aos@3.0.7':
     resolution: {integrity: sha512-sEhyFqvKauUJZDbvAB3Pggynrq6g+2PS4XB3tmUr+mDL1gfDJnwslUC4QQ7/l8UD+LWpr3RxZVR/rHoZrLqZVg==}
 
@@ -465,6 +477,15 @@ packages:
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
+
+  '@types/stats.js@0.17.4':
+    resolution: {integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==}
+
+  '@types/three@0.184.0':
+    resolution: {integrity: sha512-4mY2tZAu0y0B0567w7013BBXSpsP0+Z48NJvmNo4Y/Pf76yCyz6Jw4P3tUVs10WuYNXXZ+wmHyGWpCek3amJxA==}
+
+  '@types/webxr@0.5.24':
+    resolution: {integrity: sha512-h8fgEd/DpoS9CBrjEQXR+dIDraopAEfu4wYVNY2tEPwk60stPWhvZMf4Foo5FakuQ7HFZoa8WceaWFervK2Ovg==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -563,8 +584,8 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
 
-  detect-libc@2.0.3:
-    resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
+  detect-libc@2.1.2:
+    resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
   dunder-proto@1.0.1:
@@ -605,6 +626,9 @@ packages:
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
+
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -671,8 +695,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  is-arrayish@0.3.2:
-    resolution: {integrity: sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ==}
+  is-arrayish@0.3.4:
+    resolution: {integrity: sha512-m6UrgzFVUYawGBh1dUsWR5M2Clqic9RVXC/9f8ceNlv2IcO9j9J/z8UoCLPqtsPBFNzEpfR3xftohbfqDx8EQA==}
 
   is-buffer@2.0.5:
     resolution: {integrity: sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==}
@@ -792,6 +816,9 @@ packages:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
+  meshoptimizer@1.1.1:
+    resolution: {integrity: sha512-oRFNWJRDA/WTrVj7NWvqa5HqE1t9MYDj2VaWirQCzCCrAd2GHrqR/sQezCxiWATPNlKTcRaPRHPJwIRoPBAp5g==}
+
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
@@ -895,8 +922,8 @@ packages:
   scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
 
-  semver@7.7.1:
-    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
+  semver@7.7.4:
+    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -904,8 +931,8 @@ packages:
     resolution: {integrity: sha512-haPVm1EkS9pgvHrQ/F3Xy+hgcuMV0Wm9vfIBSiwZ05k+xgb0PkBQpGsAA/oWdDobNaZTH5ppvHtzCFbnSEwHVw==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
 
-  simple-swizzle@0.2.2:
-    resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
+  simple-swizzle@0.2.4:
+    resolution: {integrity: sha512-nAu1WFPQSMNr2Zn9PGSZK9AGn4t/y97lEm+MXTtUDwfP0ksAIX4nO+6ruD9Jwut4C49SB1Ws+fbXsm/yScWOHw==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -950,6 +977,9 @@ packages:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
 
+  three@0.184.0:
+    resolution: {integrity: sha512-wtTRjG92pM5eUg/KuUnHsqSAlPM296brTOcLgMRqEeylYTh/CdtvKUvCyyCQTzFuStieWxvZb8mVTMvdPyUpxg==}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -964,6 +994,11 @@ packages:
 
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
+  use-sync-external-store@1.6.0:
+    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   zustand@5.0.8:
     resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
@@ -995,7 +1030,9 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.28.5': {}
 
-  '@emnapi/runtime@1.3.1':
+  '@dimforge/rapier3d-compat@0.12.0': {}
+
+  '@emnapi/runtime@1.10.0':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -1100,7 +1137,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.33.5':
     dependencies:
-      '@emnapi/runtime': 1.3.1
+      '@emnapi/runtime': 1.10.0
     optional: true
 
   '@img/sharp-win32-ia32@0.33.5':
@@ -1288,6 +1325,8 @@ snapshots:
 
   '@tanstack/virtual-core@3.12.0': {}
 
+  '@tweenjs/tween.js@23.1.3': {}
+
   '@types/aos@3.0.7': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
@@ -1318,6 +1357,19 @@ snapshots:
       csstype: 3.1.3
 
   '@types/stack-utils@2.0.3': {}
+
+  '@types/stats.js@0.17.4': {}
+
+  '@types/three@0.184.0':
+    dependencies:
+      '@dimforge/rapier3d-compat': 0.12.0
+      '@tweenjs/tween.js': 23.1.3
+      '@types/stats.js': 0.17.4
+      '@types/webxr': 0.5.24
+      fflate: 0.8.2
+      meshoptimizer: 1.1.1
+
+  '@types/webxr@0.5.24': {}
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -1392,7 +1444,7 @@ snapshots:
   color-string@1.9.1:
     dependencies:
       color-name: 1.1.4
-      simple-swizzle: 0.2.2
+      simple-swizzle: 0.2.4
     optional: true
 
   color@4.2.3:
@@ -1413,7 +1465,7 @@ snapshots:
 
   detect-libc@1.0.3: {}
 
-  detect-libc@2.0.3:
+  detect-libc@2.1.2:
     optional: true
 
   dunder-proto@1.0.1:
@@ -1458,6 +1510,8 @@ snapshots:
       pure-rand: 7.0.1
 
   fast-deep-equal@3.1.3: {}
+
+  fflate@0.8.2: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -1518,7 +1572,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  is-arrayish@0.3.2:
+  is-arrayish@0.3.4:
     optional: true
 
   is-buffer@2.0.5: {}
@@ -1627,6 +1681,8 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
+  meshoptimizer@1.1.1: {}
+
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
@@ -1722,14 +1778,14 @@ snapshots:
 
   scheduler@0.25.0: {}
 
-  semver@7.7.1:
+  semver@7.7.4:
     optional: true
 
   sharp@0.33.5:
     dependencies:
       color: 4.2.3
-      detect-libc: 2.0.3
-      semver: 7.7.1
+      detect-libc: 2.1.2
+      semver: 7.7.4
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.33.5
       '@img/sharp-darwin-x64': 0.33.5
@@ -1752,9 +1808,9 @@ snapshots:
       '@img/sharp-win32-x64': 0.33.5
     optional: true
 
-  simple-swizzle@0.2.2:
+  simple-swizzle@0.2.4:
     dependencies:
-      is-arrayish: 0.3.2
+      is-arrayish: 0.3.4
     optional: true
 
   slash@3.0.0: {}
@@ -1782,6 +1838,8 @@ snapshots:
 
   tapable@2.2.1: {}
 
+  three@0.184.0: {}
+
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
@@ -1792,7 +1850,13 @@ snapshots:
 
   undici-types@6.20.0: {}
 
-  zustand@5.0.8(@types/react@19.0.8)(react@19.0.0):
+  use-sync-external-store@1.6.0(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+    optional: true
+
+  zustand@5.0.8(@types/react@19.0.8)(react@19.0.0)(use-sync-external-store@1.6.0(react@19.0.0)):
     optionalDependencies:
       '@types/react': 19.0.8
       react: 19.0.0
+      use-sync-external-store: 1.6.0(react@19.0.0)
