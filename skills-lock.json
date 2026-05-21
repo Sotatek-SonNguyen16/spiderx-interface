@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "skills": {
+    "Customize Markdown": {
+      "source": "ssshooter/mind-elixir-core",
+      "sourceType": "github",
+      "skillPath": "skills/customize-markdown/SKILL.md",
+      "computedHash": "1ffa9f5811d85022373452a3bbdf5f6d8e8e0ecb9b5397d6e858fd645820f833"
+    },
+    "Export Mind Map as Image": {
+      "source": "ssshooter/mind-elixir-core",
+      "sourceType": "github",
+      "skillPath": "skills/export-mindmap-image/SKILL.md",
+      "computedHash": "10a5ebeddd56b74cb7c607535f3e8a40403f2bf681e09f7316556689b7be18da"
+    },
+    "Integrate Mind Elixir": {
+      "source": "ssshooter/mind-elixir-core",
+      "sourceType": "github",
+      "skillPath": "skills/integrate-mind-elixir/SKILL.md",
+      "computedHash": "612fbc41af113dd8406ff9563bf024ebac9b254de489d1497b9302da37fd6392"
+    },
+    "Mind Elixir Plaintext Format": {
+      "source": "ssshooter/mind-elixir-core",
+      "sourceType": "github",
+      "skillPath": "skills/plaintext-format/SKILL.md",
+      "computedHash": "708a975f7a7f4bd5f3916a23f4ae9fbdfc0b76561ff29f2ca79c378704aad315"
+    },
+    "Streaming Mindmap Rendering": {
+      "source": "ssshooter/mind-elixir-core",
+      "sourceType": "github",
+      "skillPath": "skills/streaming-mindmap/SKILL.md",
+      "computedHash": "e9ecf76c8640b73db697ef96bf8ccf4ade482a1760ec42bfa09e9fc0a4f094d2"
+    },
+    "design-md": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "skillPath": "skills/design-md/SKILL.md",
+      "computedHash": "44af3e6e89a42a765d9cebf943f1e2ff3cdf43d1958341eb43fb7b74116f6691"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    }
+  }
+}

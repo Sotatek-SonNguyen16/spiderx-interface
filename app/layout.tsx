@@ -1,4 +1,5 @@
 import "./css/style.css";
+import "mind-elixir/style.css";
 
 import { Inter, Fraunces } from "next/font/google";
 import localFont from "next/font/local";

@@ -9,6 +9,7 @@
 2. **Todo Management**: CRUD todos, subtasks, contexts (projects/categories)
 3. **Google Chat Integration**: Kết nối Google Chat, whitelist spaces, sync messages
 4. **AI-powered Todo Extraction**: Extract todos từ text/messages sử dụng AI (Gemini)
+5. **Mind Map**: Interactive mind map editor với templates, themes, export/import
 
 ### Tech Stack
 - **Frontend**: Next.js 14+ (App Router), React, TypeScript
