@@ -594,3 +594,131 @@
     outline-offset: 5px;
   }
 }
+
+/* ─── v2: Fishbone (Ishikawa) layout ─────────────────────────────────────── */
+@layer components {
+  /*
+   * Approach B: direction:2 + custom path generators (fishboneMainBranch/fishboneSubBranch).
+   * The generators draw straight diagonal lines (bones) instead of curves.
+   * mind-elixir handles all node positioning — no CSS rotation needed.
+   * Extra vertical gap ensures branches don't overlap.
+   */
+
+  /* Increase vertical spacing so diagonal lines have room */
+  .mindmap-fishbone .map-container {
+    --main-gap-x: 52px;
+    --main-gap-y: 52px;
+    --node-gap-x: 36px;
+    --node-gap-y: 10px;
+  }
+
+  /* Bolder, sharper connector lines for fishbone feel */
+  .mindmap-fishbone .map-container svg path,
+  .mindmap-fishbone .map-container svg polyline,
+  .mindmap-fishbone .map-container svg line {
+    stroke-width: 2.4px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Spine overlay line (horizontal line through root, drawn by JS) */
+  .mindmap-fishbone .map-container .fishbone-spine-overlay {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: visible;
+  }
+
+  .mindmap-fishbone .map-container .fishbone-spine-overlay line {
+    stroke: currentColor;
+    stroke-width: 3px;
+    stroke-linecap: round;
+    opacity: 0.3;
+  }
+
+  /* Nodes: clean centered text */
+  .mindmap-fishbone .map-container me-tpc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Smooth path transitions */
+  .mindmap-smooth.mindmap-fishbone .map-container svg path,
+  .mindmap-smooth.mindmap-fishbone .map-container svg polyline {
+    transition:
+      d 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      stroke 200ms ease,
+      stroke-width 200ms ease;
+  }
+}
+
+/* ─── v2: Bracket Outline layout ─────────────────────────────────────────── */
+@layer components {
+  /*
+   * Right-oriented outline: root left, branches right, bracket connectors.
+   * Style: compact rectangular cards (NOT pills), thin teal connectors,
+   * tight column spacing for clear hierarchy.
+   */
+
+  .mindmap-bracket .map-container {
+    --main-gap-x: 48px;
+    --main-gap-y: 28px;
+    --node-gap-x: 36px;
+    --node-gap-y: 12px;
+    --root-radius: 10px;
+    --main-radius: 6px;
+    --topic-padding: 8px 16px;
+  }
+
+  /* Connector lines: thin, rounded caps, slight transparency */
+  .mindmap-bracket .map-container svg path,
+  .mindmap-bracket .map-container svg polyline,
+  .mindmap-bracket .map-container svg line {
+    stroke-width: 1.4px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.65;
+    fill: none;
+  }
+
+  /* Override pill/oval shapes — force compact rectangular cards */
+  .mindmap-bracket .map-container me-tpc {
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    min-width: 110px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Root node: slightly larger, more pronounced */
+  .mindmap-bracket .map-container me-root me-tpc {
+    border-radius: 10px !important;
+    padding: 11px 22px !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Leaf nodes (no children): minimal, white card with shadow */
+  .mindmap-bracket .map-container me-children me-parent:not(:has(me-children)) > me-tpc {
+    border-radius: 4px !important;
+    padding: 6px 14px !important;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+  }
+
+  /* Smooth transitions */
+  .mindmap-smooth.mindmap-bracket .map-container svg path,
+  .mindmap-smooth.mindmap-bracket .map-container svg polyline {
+    transition:
+      d 280ms cubic-bezier(0.22, 1, 0.36, 1),
+      stroke 200ms ease;
+  }
+
+  .mindmap-smooth.mindmap-bracket .map-container me-tpc {
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms ease;
+  }
+}

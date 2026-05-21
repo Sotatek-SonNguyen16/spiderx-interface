@@ -28,6 +28,13 @@ import {
   type Theme as MindElixirTheme,
 } from "mind-elixir";
 import { snapdom, type SnapdomOptions } from "@zumer/snapdom";
+import type { MindmapLineStyle } from "@/lib/mindmap-elixir/template-presets";
+import {
+  fishboneMainBranch,
+  fishboneSubBranch,
+  bracketMainBranch,
+  bracketSubBranch,
+} from "@/lib/mindmap-elixir/fishbone-layout";
 
 // Check document class for theme (works with next-themes, etc.)
 function getDocumentTheme(): Theme | null {
@@ -126,6 +133,12 @@ interface MindMapProps {
   fit?: boolean;
   readonly?: boolean;
   smoothInteractions?: boolean;
+  /** v2: custom SVG stroke style injected into connector paths */
+  lineStyle?: MindmapLineStyle;
+  /** v2: activates .mindmap-fishbone CSS class for Ishikawa layout */
+  fishbone?: boolean;
+  /** v2: layout engine — determines which custom path generators to use */
+  layoutEngine?: "default" | "fishbone" | "bracket";
   onChange?: (data: MindMapData, operation: unknown) => void;
   onOperation?: (operation: unknown) => void;
   onSelectNodes?: (nodeObj: NodeObj[]) => void;
@@ -309,6 +322,9 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
     fit = true,
     readonly = false,
     smoothInteractions = false,
+    lineStyle,
+    fishbone = false,
+    layoutEngine: layoutEngineProp = "default",
     onChange,
     onOperation,
     onSelectNodes,
@@ -403,6 +419,14 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
         editable: !readonly,
         alignment: "nodes",
         theme: themeToUse,
+        // v2: use custom path generators based on layout engine
+        ...(layoutEngineProp === "fishbone" ? {
+          generateMainBranch: fishboneMainBranch,
+          generateSubBranch: fishboneSubBranch,
+        } : layoutEngineProp === "bracket" ? {
+          generateMainBranch: bracketMainBranch,
+          generateSubBranch: bracketSubBranch,
+        } : {}),
       } as Options;
 
       try {
@@ -474,6 +498,8 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
     readonly,
     fit,
     smoothInteractions,
+    fishbone,
+    layoutEngineProp,
   ]);
 
   // Track internal changes to avoid refresh loops
@@ -491,6 +517,60 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
       scheduleScaleFit(140);
     }
   }, [data, isLoaded]);
+
+  // v2: Draw fishbone spine overlay — a horizontal line through root node
+  useEffect(() => {
+    if (!isLoaded || !containerRef.current || !fishbone) return;
+
+    const drawSpine = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Remove previous overlay
+      container.querySelector(".fishbone-spine-overlay")?.remove();
+
+      const nodeLayer = container.querySelector("me-nodes");
+      const rootEl = nodeLayer?.querySelector(":scope > me-root > me-tpc");
+      if (!nodeLayer || !rootEl) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const rootRect = rootEl.getBoundingClientRect();
+
+      // Spine extends from left edge of container to right edge, at root's vertical center
+      const rootCenterY = rootRect.top - containerRect.top + rootRect.height / 2;
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.classList.add("fishbone-spine-overlay");
+      svg.setAttribute("width", `${container.clientWidth}`);
+      svg.setAttribute("height", `${container.clientHeight}`);
+      svg.setAttribute("viewBox", `0 0 ${container.clientWidth} ${container.clientHeight}`);
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", "0");
+      line.setAttribute("y1", `${rootCenterY.toFixed(1)}`);
+      line.setAttribute("x2", `${container.clientWidth}`);
+      line.setAttribute("y2", `${rootCenterY.toFixed(1)}`);
+      svg.appendChild(line);
+
+      container.appendChild(svg);
+    };
+
+    const timers = [150, 500, 1200].map((d) => window.setTimeout(drawSpine, d));
+    const observer = new ResizeObserver(drawSpine);
+    observer.observe(containerRef.current);
+
+    const opListener = () => window.setTimeout(drawSpine, 100);
+    mindRef.current?.bus.addListener("operation", opListener);
+    mindRef.current?.bus.addListener("expandNode", opListener);
+
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+      observer.disconnect();
+      containerRef.current?.querySelector(".fishbone-spine-overlay")?.remove();
+      mindRef.current?.bus.removeListener?.("operation", opListener);
+      mindRef.current?.bus.removeListener?.("expandNode", opListener);
+    };
+  }, [fishbone, data, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded || !containerRef.current) return;
@@ -652,6 +732,77 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
     };
   }, [fit, isLoaded]);
 
+  // v2: inject custom SVG line style (dashed/dotted/thick) into connector paths
+  useEffect(() => {
+    if (!isLoaded || !containerRef.current) return;
+
+    const styleId = `me-line-style-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+    const existing = containerRef.current.querySelector(`#${styleId}`);
+
+    if (!lineStyle || Object.keys(lineStyle).length === 0) {
+      existing?.remove();
+      return;
+    }
+
+    const safeContainerId = `mindmap-${id}`.replace(/[^a-zA-Z0-9_-]/g, "");
+    const parts: string[] = [];
+
+    // Sanitize each value — only allow safe CSS value characters
+    const safeDasharray = lineStyle.strokeDasharray?.replace(/[^0-9.\s]/g, "");
+    const safeWidth =
+      lineStyle.strokeWidth !== undefined &&
+      lineStyle.strokeWidth >= 0.5 &&
+      lineStyle.strokeWidth <= 8
+        ? lineStyle.strokeWidth
+        : undefined;
+    const safeLinecap =
+      lineStyle.strokeLinecap === "round" ||
+      lineStyle.strokeLinecap === "square" ||
+      lineStyle.strokeLinecap === "butt"
+        ? lineStyle.strokeLinecap
+        : undefined;
+    const safeOpacity =
+      lineStyle.opacity !== undefined &&
+      lineStyle.opacity >= 0 &&
+      lineStyle.opacity <= 1
+        ? lineStyle.opacity
+        : undefined;
+
+    if (safeDasharray) parts.push(`stroke-dasharray: ${safeDasharray};`);
+    if (safeWidth !== undefined) parts.push(`stroke-width: ${safeWidth}px;`);
+    if (safeLinecap) parts.push(`stroke-linecap: ${safeLinecap};`);
+    if (safeOpacity !== undefined) parts.push(`opacity: ${safeOpacity};`);
+
+    if (parts.length === 0) {
+      existing?.remove();
+      return;
+    }
+
+    const css = `
+      #${safeContainerId} me-main svg path,
+      #${safeContainerId} me-main svg polyline,
+      #${safeContainerId} me-main svg line,
+      #${safeContainerId} me-children svg path,
+      #${safeContainerId} me-children svg polyline,
+      #${safeContainerId} me-children svg line {
+        ${parts.join("\n        ")}
+      }
+    `;
+
+    if (existing) {
+      existing.textContent = css;
+    } else {
+      const styleEl = document.createElement("style");
+      styleEl.id = styleId;
+      styleEl.textContent = css;
+      containerRef.current.appendChild(styleEl);
+    }
+
+    return () => {
+      containerRef.current?.querySelector(`#${styleId}`)?.remove();
+    };
+  }, [lineStyle, isLoaded, id]);
+
   // Update theme when resolvedTheme or monochrome changes
   // BUT only if the data itself doesn't have a theme (data.theme has highest priority)
   useEffect(() => {
@@ -675,6 +826,8 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
         className={cn(
           "relative w-full h-full",
           smoothInteractions && "mindmap-smooth",
+          fishbone && "mindmap-fishbone",
+          layoutEngineProp === "bracket" && "mindmap-bracket",
           className,
         )}
       >

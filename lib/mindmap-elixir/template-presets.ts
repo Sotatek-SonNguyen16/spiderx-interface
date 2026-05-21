@@ -29,10 +29,12 @@ export type MindmapSkeletonTemplate = {
 
 export type MindmapDirection = 0 | 1 | 2;
 
+import type { FishboneConfig } from "./fishbone-layout";
+
 export type MindmapLayoutPreset = {
   id: string;
   name: string;
-  category: "Tree" | "Map" | "Orbit";
+  category: "Tree" | "Map" | "Orbit" | "Diagram";
   direction: MindmapDirection;
   description: string;
   shapeId?: string;
@@ -40,6 +42,10 @@ export type MindmapLayoutPreset = {
   connectorId?: string;
   geometryId?: string;
   maxExpandedDepth?: number;
+  /** v2: layout engine — "fishbone" activates CSS fishbone transform */
+  layoutEngine?: "default" | "fishbone" | "bracket";
+  /** v2: config passed to applyFishboneLayout when layoutEngine = "fishbone" */
+  fishboneConfig?: Partial<FishboneConfig>;
 };
 
 export type MindmapViewPreset = {
@@ -149,6 +155,17 @@ export type MindmapBranchPalettePreset = {
   colors: string[];
 };
 
+export type MindmapLineStyle = {
+  /** SVG stroke-dasharray value, e.g. "6 3" for dashed, "2 5" for dotted */
+  strokeDasharray?: string;
+  /** Stroke width in px (0.5–8) */
+  strokeWidth?: number;
+  /** SVG stroke-linecap */
+  strokeLinecap?: "round" | "square" | "butt";
+  /** Opacity 0–1 */
+  opacity?: number;
+};
+
 export type MindmapConnectorPreset = {
   id: string;
   name: string;
@@ -156,6 +173,8 @@ export type MindmapConnectorPreset = {
   branchColors?: string[];
   arrowMode?: "none" | "primary" | "sequence" | "bidirectional";
   arrowStyle?: MindmapArrowStyle;
+  /** v2: custom SVG line style injected into connector paths */
+  lineStyle?: MindmapLineStyle;
 };
 
 export type MindmapGeometryPreset = {
@@ -1380,6 +1399,33 @@ export const layoutPresets: MindmapLayoutPreset[] = [
     connectorId: "elbow",
     geometryId: "flow-card",
     maxExpandedDepth: 3,
+  },
+  {
+    id: "fishbone",
+    name: "Fishbone",
+    category: "Diagram",
+    direction: 2,
+    description: "Ishikawa / cause-and-effect diagram with branches split left and right from a central spine.",
+    shapeId: "rounded",
+    densityId: "balanced",
+    connectorId: "fishbone-sharp",
+    geometryId: "rounded-rect",
+    maxExpandedDepth: 3,
+    layoutEngine: "fishbone",
+    fishboneConfig: { spineAngle: 35, alternating: true },
+  },
+  {
+    id: "bracket-outline",
+    name: "Bracket Outline",
+    category: "Tree",
+    direction: 1,
+    description: "Right-oriented outline with bracket/elbow connectors. Ideal for knowledge maps, grammar trees, and long-text outlines.",
+    shapeId: "rounded",
+    densityId: "compact",
+    connectorId: "bracket-rounded",
+    geometryId: "rounded-rect",
+    maxExpandedDepth: 4,
+    layoutEngine: "bracket",
   },
 ];
 
@@ -2793,6 +2839,69 @@ export const connectorPresets: MindmapConnectorPreset[] = [
       strokeDasharray: "6 4",
       strokeLinecap: "round",
       opacity: 0.7,
+    },
+  },
+  // v2 line-style presets
+  {
+    id: "dashed-flow",
+    name: "Dashed Flow",
+    mainLinkStyle: 2,
+    lineStyle: {
+      strokeDasharray: "8 4",
+      strokeWidth: 2,
+      strokeLinecap: "round",
+    },
+  },
+  {
+    id: "dotted-light",
+    name: "Dotted Light",
+    mainLinkStyle: 2,
+    lineStyle: {
+      strokeDasharray: "2 5",
+      strokeWidth: 1.5,
+      strokeLinecap: "round",
+      opacity: 0.7,
+    },
+  },
+  {
+    id: "thick-solid",
+    name: "Thick Solid",
+    mainLinkStyle: 2,
+    lineStyle: {
+      strokeWidth: 3.5,
+      strokeLinecap: "round",
+    },
+  },
+  {
+    id: "thin-dashed",
+    name: "Thin Dashed",
+    mainLinkStyle: 1,
+    lineStyle: {
+      strokeDasharray: "6 3",
+      strokeWidth: 1,
+      strokeLinecap: "butt",
+      opacity: 0.6,
+    },
+  },
+  {
+    id: "fishbone-sharp",
+    name: "Fishbone Sharp",
+    mainLinkStyle: 3,
+    branchColors: ["#374151", "#4b5563", "#6b7280", "#9ca3af"],
+    lineStyle: {
+      strokeWidth: 2.4,
+      strokeLinecap: "round",
+    },
+  },
+  {
+    id: "bracket-rounded",
+    name: "Bracket Rounded",
+    mainLinkStyle: 1,
+    branchColors: ["#26b6b0", "#0f766e", "#64748b", "#475569", "#334155"],
+    lineStyle: {
+      strokeWidth: 1.4,
+      strokeLinecap: "round",
+      opacity: 0.65,
     },
   },
 ];

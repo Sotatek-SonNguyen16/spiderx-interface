@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { MindElixirData, NodeObj } from "mind-elixir";
 import {
   AlertTriangle,
@@ -29,6 +29,12 @@ import {
   markdownToMindElixir,
   type MindElixirMarkdownFormat,
 } from "@/lib/mindmap-elixir/markdown-to-mind-elixir";
+import {
+  applyFishboneLayout,
+  isFishboneLayout,
+  bracketMainBranch,
+  bracketSubBranch,
+} from "@/lib/mindmap-elixir/fishbone-layout";
 import {
   applyMindmapTemplateStyle,
   branchPalettePresets,
@@ -90,6 +96,12 @@ export function MarkdownMindmapPage() {
   const [activePresetGroupId, setActivePresetGroupId] = useState("view");
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<NodeObj | null>(null);
+  // v2: track whether the active layout uses fishbone engine
+  const [isFishbone, setIsFishbone] = useState(false);
+  // v2: track layout engine type for custom path generators
+  const [layoutEngine, setLayoutEngine] = useState<"default" | "fishbone" | "bracket">("default");
+  // v2: ref to the active fishbone config (avoids extra re-renders)
+  const fishboneConfigRef = useRef<Parameters<typeof applyFishboneLayout>[1]>(undefined);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDeferredSource(source), 320);
@@ -119,9 +131,12 @@ export function MarkdownMindmapPage() {
   const selectedConnector = getConnectorPreset(selectedConnectorId);
   const activeMainLinkStyle =
     selectedConnectorId === "style" ? selectedStyle.mainLinkStyle : selectedConnector.mainLinkStyle;
+  // v2: line style from connector preset (dashed/dotted/thick)
+  const activeLineStyle = selectedConnector.lineStyle;
+
   const styledData = useMemo(
-    () =>
-      applyMindmapTemplateStyle(parsed.data, selectedThemeId, selectedStyleId, {
+    () => {
+      const base = applyMindmapTemplateStyle(parsed.data, selectedThemeId, selectedStyleId, {
         shapeId: selectedShapeId,
         densityId: selectedDensityId,
         typographyId: selectedTypographyId,
@@ -130,7 +145,10 @@ export function MarkdownMindmapPage() {
         geometryId: selectedGeometryId,
         finishId: selectedFinishId,
         maxExpandedDepth,
-      }),
+      });
+      // v2: apply fishbone layout annotation when active
+      return isFishbone ? applyFishboneLayout(base, fishboneConfigRef.current) : base;
+    },
     [
       parsed.data,
       selectedThemeId,
@@ -143,6 +161,7 @@ export function MarkdownMindmapPage() {
       selectedGeometryId,
       selectedFinishId,
       maxExpandedDepth,
+      isFishbone,
     ],
   );
   const isCanvasDark = styledData.theme?.type === "dark";
@@ -225,6 +244,12 @@ export function MarkdownMindmapPage() {
     if (layout.connectorId) setSelectedConnectorId(layout.connectorId);
     if (layout.geometryId) setSelectedGeometryId(layout.geometryId);
     setMaxExpandedDepth(layout.maxExpandedDepth);
+    // v2: activate layout engine
+    const engine = layout.layoutEngine ?? "default";
+    const useFishbone = engine === "fishbone" || isFishboneLayout(layout.id);
+    setIsFishbone(useFishbone);
+    setLayoutEngine(useFishbone ? "fishbone" : engine);
+    fishboneConfigRef.current = useFishbone ? layout.fishboneConfig : undefined;
   };
 
   const applyView = (viewId: string) => {
@@ -541,6 +566,9 @@ export function MarkdownMindmapPage() {
               direction={selectedDirection}
               fit
               mainLinkStyle={activeMainLinkStyle}
+              lineStyle={activeLineStyle}
+              fishbone={isFishbone}
+              layoutEngine={layoutEngine}
               onSelectNodes={(nodes) => setSelectedNode(nodes[0] ?? null)}
               smoothInteractions
               theme={isCanvasDark ? "dark" : "light"}

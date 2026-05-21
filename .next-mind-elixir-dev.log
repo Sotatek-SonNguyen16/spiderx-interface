@@ -235,3 +235,4 @@
  GET /mindmap-elixir 200 in 48ms (next.js: 1854µs, application-code: 46ms)
  GET / 200 in 59ms (next.js: 1844µs, application-code: 57ms)
  GET /mindmap-elixir 200 in 47ms (next.js: 1735µs, application-code: 45ms)
+[?25h
