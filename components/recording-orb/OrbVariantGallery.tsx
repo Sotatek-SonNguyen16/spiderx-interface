@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { AquaCore2Orb, type AquaCore2OrbStatus } from "./AquaCore2Orb";
 import { LiquidAIOrb, type LiquidAIOrbStatus } from "./LiquidAIOrb";
 import { RecordingOrb, type RecordingOrbStatus, type RecordingOrbVariant } from "./RecordingOrb";
 import { UiverseOrb } from "./UiverseOrb";
@@ -28,7 +29,12 @@ type UiverseOrbSample = BaseOrbSample & {
   kind: "uiverse";
 };
 
-type OrbSample = RecordingOrbSample | LiquidOrbSample | UiverseOrbSample;
+type AquaCore2OrbSample = BaseOrbSample & {
+  kind: "aqua-core-2";
+  status: AquaCore2OrbStatus;
+};
+
+type OrbSample = RecordingOrbSample | LiquidOrbSample | UiverseOrbSample | AquaCore2OrbSample;
 
 const orbSamples: OrbSample[] = [
   {
@@ -37,6 +43,12 @@ const orbSamples: OrbSample[] = [
     tone: "Clean assistant recording",
     status: "idle",
     variant: "aqua",
+  },
+  {
+    kind: "aqua-core-2",
+    name: "Aqua Core 2",
+    tone: "Blue water core with fast white flow",
+    status: "recording",
   },
   {
     kind: "recording",
@@ -116,6 +128,8 @@ export function OrbVariantGallery() {
         {activeSample.kind === "liquid" && <LiquidAIOrb size={300} status={activeSample.status} />}
 
         {activeSample.kind === "uiverse" && <UiverseOrb />}
+
+        {activeSample.kind === "aqua-core-2" && <AquaCore2Orb size={240} status={activeSample.status} />}
 
         {activeSample.kind === "recording" && (
           <RecordingOrb
