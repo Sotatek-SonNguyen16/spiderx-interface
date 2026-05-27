@@ -400,6 +400,152 @@ export function bracketSubBranch(p: BranchParams): string {
   return drawDirectionalRoundedBracket(start, end, p.direction, 3, 30);
 }
 
+// ─── Right Organic generators (classic mindmap, cubic Bezier curves) ────────
+
+/**
+ * Đường cong organic kiểu cubic Bezier — control points kéo ngang từ 2 đầu.
+ * Tạo curve mềm mại như classic mindmap.
+ *
+ * `strength` = mức độ kéo control points theo phương ngang (0 = thẳng, 0.5 = cong vừa, 1 = cong cực mạnh).
+ */
+export function drawOrganicCurve(start: Point, end: Point, strength = 0.5): string {
+  const dxValue = end.x - start.x;
+
+  const c1: Point = {
+    x: start.x + dxValue * strength,
+    y: start.y,
+  };
+
+  const c2: Point = {
+    x: end.x - dxValue * strength,
+    y: end.y,
+  };
+
+  return path(moveTo(start), cubicTo(c1, c2, end));
+}
+
+/**
+ * Heuristic: chọn curve strength theo khoảng cách giữa 2 điểm.
+ *
+ * Lý do: mind-elixir không truyền depth cho generateSubBranch, nhưng:
+ *   - Root → Level 1: distance lớn nhất (qua nhiều cột) → curve rõ (strength 0.4)
+ *   - Level 1 → Level 2: distance trung bình → curve mềm (strength 0.45)
+ *   - Level 2 → Level 3+: distance ngắn → cong nhẹ (strength 0.35)
+ *
+ * Threshold dựa trên khoảng cách ngang Δx.
+ */
+export function curveStrengthByDistance(start: Point, end: Point): number {
+  const distanceX = Math.abs(end.x - start.x);
+
+  if (distanceX > 200) return 0.4;   // root → level 1
+  if (distanceX > 100) return 0.45;  // level 1 → level 2 (mềm)
+  return 0.35;                        // level 2 → level 3+ (vẫn mềm)
+}
+
+/**
+ * Main branch (Root → Level 1):
+ * Cong rõ (strength 0.4) — nhánh chính tỏa ra từ root.
+ * Đường nối:
+ *   1. Từ cạnh root (lifted -50) cong mềm tới đầu node con
+ *   2. Kéo thẳng ngang qua hết node con tạo underline
+ */
+export function rightOrganicMainBranch(p: BranchParams): string {
+  const start = parentOuterCenter(p);
+  // Curve end: cạnh trong child (đầu node con), dịch xuống 50px
+  const curveEnd: Point = {
+    x: isRight(p) ? p.cL : p.cL + p.cW,
+    y: p.cT + p.cH / 2 + 50,
+  };
+  // Underline end: cạnh ngoài child (cuối node con) + extra
+  const underlineExtra = 12;
+  const underlineEnd: Point = {
+    x: isRight(p) ? p.cL + p.cW + underlineExtra : p.cL - underlineExtra,
+    y: curveEnd.y,
+  };
+
+  const liftedStart: Point = { x: start.x, y: start.y + 50 };
+
+  // Cubic Bezier từ liftedStart → curveEnd với strength 0.4
+  const dxValue = curveEnd.x - liftedStart.x;
+  const c1: Point = {
+    x: liftedStart.x + dxValue * 0.4,
+    y: liftedStart.y,
+  };
+  const c2: Point = {
+    x: curveEnd.x - dxValue * 0.4,
+    y: curveEnd.y,
+  };
+
+  return [
+    `M ${liftedStart.x} ${liftedStart.y}`,
+    `C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${curveEnd.x} ${curveEnd.y}`,
+    `L ${underlineEnd.x} ${underlineEnd.y}`,
+  ].join(" ");
+}
+
+/**
+ * Sub branch (Level 1 → Level 2 → Level 3+):
+ *
+ * Logic:
+ *   1. Stem từ cạnh trái parent (đầu node) kéo ngang qua hết parent + extra
+ *   2. Cong mềm S-curve từ cuối stem → đầu node con (đúng hướng lên/xuống)
+ *   3. Underline thẳng từ đầu node con → cuối node con + extra
+ *
+ * S-curve direction:
+ *   - c1: kéo ngang từ stemEnd theo phương ngang (giữ y stemEnd) → curve bắt đầu phẳng
+ *   - c2: kéo ngang từ curveEnd theo phương ngang (giữ y curveEnd) → curve kết thúc phẳng
+ *   - Khoảng cách kéo = |Δx| × strength, đảm bảo positive khi child ở bên phải parent
+ */
+export function rightOrganicSubBranch(p: BranchParams): string {
+  // Stem start: cạnh TRÁI parent (đầu node), dịch xuống 50px
+  const stemStart: Point = {
+    x: isRight(p) ? p.pL : p.pL + p.pW,
+    y: p.pT + p.pH / 2 + 50,
+  };
+
+  // Stem end: cạnh PHẢI parent + extra
+  const stemExtra = 16;
+  const stemEnd: Point = {
+    x: isRight(p) ? p.pL + p.pW + stemExtra : p.pL - stemExtra,
+    y: stemStart.y,
+  };
+
+  // Curve end: đầu node con (cạnh trong), dịch xuống 50px
+  const curveEnd: Point = {
+    x: isRight(p) ? p.cL : p.cL + p.cW,
+    y: p.cT + p.cH / 2 + 50,
+  };
+
+  // Underline end: cuối node con + extra
+  const underlineExtra = 12;
+  const underlineEnd: Point = {
+    x: isRight(p) ? p.cL + p.cW + underlineExtra : p.cL - underlineExtra,
+    y: curveEnd.y,
+  };
+
+  // S-curve: dùng |Δx| × sideSign để control points luôn kéo đúng hướng
+  // (về phía child theo phương ngang, bất kể parent ở đâu)
+  const dxValue = curveEnd.x - stemEnd.x;
+  const absDxControl = Math.abs(dxValue);
+  const strength = 0.5;
+  const sign = sideSign(p);
+  const c1: Point = {
+    x: stemEnd.x + sign * absDxControl * strength,
+    y: stemEnd.y,
+  };
+  const c2: Point = {
+    x: curveEnd.x - sign * absDxControl * strength,
+    y: curveEnd.y,
+  };
+
+  return [
+    `M ${stemStart.x} ${stemStart.y}`,
+    `L ${stemEnd.x} ${stemEnd.y}`,
+    `C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${curveEnd.x} ${curveEnd.y}`,
+    `L ${underlineEnd.x} ${underlineEnd.y}`,
+  ].join(" ");
+}
+
 // ─── Fishbone data helpers ──────────────────────────────────────────────────
 
 const FISHBONE_LAYOUT_IDS = new Set(["fishbone", "fishbone-ishikawa"]);

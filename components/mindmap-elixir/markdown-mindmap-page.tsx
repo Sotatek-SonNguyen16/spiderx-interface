@@ -99,7 +99,7 @@ export function MarkdownMindmapPage() {
   // v2: track whether the active layout uses fishbone engine
   const [isFishbone, setIsFishbone] = useState(false);
   // v2: track layout engine type for custom path generators
-  const [layoutEngine, setLayoutEngine] = useState<"default" | "fishbone" | "bracket">("default");
+  const [layoutEngine, setLayoutEngine] = useState<"default" | "fishbone" | "bracket" | "right-organic">("default");
   // v2: ref to the active fishbone config (avoids extra re-renders)
   const fishboneConfigRef = useRef<Parameters<typeof applyFishboneLayout>[1]>(undefined);
 

@@ -722,3 +722,124 @@
       box-shadow 220ms ease;
   }
 }
+
+/* ─── v2: Right Organic mindmap ──────────────────────────────────────────── */
+@layer components {
+  /*
+   * Classic text-label mindmap aesthetic:
+   *   - Root: uppercase title text, no box
+   *   - Level 1: bold text on branch, no box
+   *   - Level 2: small text + colored endpoint dot
+   *   - Level 3+: micro detail labels
+   * Soft Bezier curves, each main branch its own color.
+   */
+
+  .mindmap-right-organic .map-container {
+    --main-gap-x: 96px;
+    --main-gap-y: 50px;
+    --node-gap-x: 64px;
+    --node-gap-y: 50px;
+    --map-padding: 60px 80px;
+  }
+
+  /* Strip ALL card decoration on every level */
+  .mindmap-right-organic .map-container me-tpc {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 2px 6px !important;
+    text-align: left;
+    line-height: 1.25;
+  }
+
+  /* Root: uppercase title text */
+  .mindmap-right-organic .map-container me-root me-tpc {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 4px 8px !important;
+  }
+
+  /* Level 1 (main topics): bold branch label */
+  .mindmap-right-organic .map-container me-main > me-wrapper > me-parent > me-tpc {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Level 2: small subtopic text */
+  .mindmap-right-organic .map-container me-main > me-wrapper > me-children me-tpc {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    padding: 1px 4px !important;
+  }
+
+  /* Level 3+: micro detail (deeper nesting) */
+  .mindmap-right-organic .map-container me-main me-children me-children me-tpc {
+    font-size: 10px !important;
+    font-weight: 400 !important;
+    color: #4b5563 !important;
+    padding: 1px 3px !important;
+  }
+
+  /* Endpoint dot — colored circle at end of branch (uses branchColor via currentColor) */
+  .mindmap-right-organic .map-container me-children me-parent > me-tpc::after {
+    content: "";
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--branch-color, currentColor);
+    pointer-events: none;
+  }
+
+  /* Smaller endpoint dot for deeper levels */
+  .mindmap-right-organic .map-container me-children me-children me-parent > me-tpc::after {
+    width: 5px;
+    height: 5px;
+    right: -5px;
+    opacity: 0.85;
+  }
+
+  /* Make me-tpc relative so endpoint dots position correctly */
+  .mindmap-right-organic .map-container me-children me-parent > me-tpc {
+    position: relative;
+  }
+
+  /* Connector lines: thin, colored per branch */
+  .mindmap-right-organic .map-container svg path,
+  .mindmap-right-organic .map-container svg polyline {
+    stroke-width: 1.8px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  /* Sub-branch lines (Level 1 → Level 2) — thinner */
+  .mindmap-right-organic .map-container me-children svg path,
+  .mindmap-right-organic .map-container me-children svg polyline {
+    stroke-width: 1.3px;
+  }
+
+  /* Deep-branch lines (Level 2 → Level 3+) — thinnest */
+  .mindmap-right-organic .map-container me-children me-children svg path,
+  .mindmap-right-organic .map-container me-children me-children svg polyline {
+    stroke-width: 1.1px;
+  }
+
+  /* Smooth transitions */
+  .mindmap-smooth.mindmap-right-organic .map-container svg path,
+  .mindmap-smooth.mindmap-right-organic .map-container svg polyline {
+    transition:
+      d 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      stroke 200ms ease;
+  }
+}

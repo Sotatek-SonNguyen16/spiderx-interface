@@ -34,6 +34,8 @@ import {
   fishboneSubBranch,
   bracketMainBranch,
   bracketSubBranch,
+  rightOrganicMainBranch,
+  rightOrganicSubBranch,
 } from "@/lib/mindmap-elixir/fishbone-layout";
 
 // Check document class for theme (works with next-themes, etc.)
@@ -138,7 +140,7 @@ interface MindMapProps {
   /** v2: activates .mindmap-fishbone CSS class for Ishikawa layout */
   fishbone?: boolean;
   /** v2: layout engine — determines which custom path generators to use */
-  layoutEngine?: "default" | "fishbone" | "bracket";
+  layoutEngine?: "default" | "fishbone" | "bracket" | "right-organic";
   onChange?: (data: MindMapData, operation: unknown) => void;
   onOperation?: (operation: unknown) => void;
   onSelectNodes?: (nodeObj: NodeObj[]) => void;
@@ -426,6 +428,9 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
         } : layoutEngineProp === "bracket" ? {
           generateMainBranch: bracketMainBranch,
           generateSubBranch: bracketSubBranch,
+        } : layoutEngineProp === "right-organic" ? {
+          generateMainBranch: rightOrganicMainBranch,
+          generateSubBranch: rightOrganicSubBranch,
         } : {}),
       } as Options;
 
@@ -828,6 +833,7 @@ export const MindMap = forwardRef<MindMapRef, MindMapProps>(function MindMap(
           smoothInteractions && "mindmap-smooth",
           fishbone && "mindmap-fishbone",
           layoutEngineProp === "bracket" && "mindmap-bracket",
+          layoutEngineProp === "right-organic" && "mindmap-right-organic",
           className,
         )}
       >

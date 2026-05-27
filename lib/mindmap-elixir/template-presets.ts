@@ -43,7 +43,7 @@ export type MindmapLayoutPreset = {
   geometryId?: string;
   maxExpandedDepth?: number;
   /** v2: layout engine — "fishbone" activates CSS fishbone transform */
-  layoutEngine?: "default" | "fishbone" | "bracket";
+  layoutEngine?: "default" | "fishbone" | "bracket" | "right-organic";
   /** v2: config passed to applyFishboneLayout when layoutEngine = "fishbone" */
   fishboneConfig?: Partial<FishboneConfig>;
 };
@@ -1426,6 +1426,19 @@ export const layoutPresets: MindmapLayoutPreset[] = [
     geometryId: "rounded-rect",
     maxExpandedDepth: 4,
     layoutEngine: "bracket",
+  },
+  {
+    id: "right-organic",
+    name: "Right Organic",
+    category: "Map",
+    direction: 1,
+    description: "Classic right-radial mindmap. Root left, branches right, soft cubic Bezier curves. Each main branch has its own color. Best for keywords and brainstorming.",
+    shapeId: "underlined",
+    densityId: "spacious",
+    connectorId: "organic-soft",
+    geometryId: "rail",
+    maxExpandedDepth: 3,
+    layoutEngine: "right-organic",
   },
 ];
 
@@ -2902,6 +2915,17 @@ export const connectorPresets: MindmapConnectorPreset[] = [
       strokeWidth: 1.4,
       strokeLinecap: "round",
       opacity: 0.65,
+    },
+  },
+  {
+    id: "organic-soft",
+    name: "Organic Soft",
+    mainLinkStyle: 2,
+    // Classic mindmap colors — each main branch gets its own
+    branchColors: ["#7C83FF", "#EF4444", "#22C55E", "#3B82F6", "#F5B700", "#8B5CF6"],
+    lineStyle: {
+      strokeWidth: 1.6,
+      strokeLinecap: "round",
     },
   },
 ];
